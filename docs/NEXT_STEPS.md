@@ -11,66 +11,70 @@
 - 認証コマンド（auth add/list/remove/status）
 - サイト情報取得コマンド（site）
 
-## Phase 2: コンテンツ管理（Posts/Pages）
+✅ **Phase 2: コンテンツ管理（Posts/Pages）** - 完了（2026-01-29）
+
+- Posts API（ListPosts、GetPost、CreatePost、UpdatePost、DeletePost）
+- Pages API（ListPages、GetPage、CreatePage、UpdatePage、DeletePage）
+- Postsコマンド（list、get、create、update、delete、publish）
+- Pagesコマンド（list、get、create、update、delete）
+
+## Phase 3: タクソノミー + メディア
 
 ### 目標
 
-Posts/Pagesの作成、更新、削除、公開機能を実装する
+Tags APIとImages APIを実装し、Ghost Admin APIの基本的なコンテンツ管理機能を完成させる
 
 ### タスクリスト
 
-#### 1. Posts API実装
+#### 1. Tags API実装
 
-- [ ] `internal/ghostapi/posts.go` を作成
-  - [ ] Post型定義
-  - [ ] ListOptions型定義（limit, status, filterなど）
-  - [ ] テスト作成（`posts_test.go`）
-  - [ ] `ListPosts(options ListOptions) ([]Post, error)` 実装
-  - [ ] `GetPost(idOrSlug string) (*Post, error)` 実装
-  - [ ] `CreatePost(post *Post) (*Post, error)` 実装
-  - [ ] `UpdatePost(id string, post *Post) (*Post, error)` 実装
-  - [ ] `DeletePost(id string) error` 実装
+- [ ] `internal/ghostapi/tags.go` を作成
+  - [ ] Tag型定義（ID、Name、Slug、Description、VisibilityなどGhost Admin APIのTag構造に準拠）
+  - [ ] TagListOptions型定義（Limit、Filter、Orderなど）
+  - [ ] テスト作成（`tags_test.go`）
+  - [ ] `ListTags(options TagListOptions) ([]Tag, error)` 実装
+  - [ ] `GetTag(idOrSlug string) (*Tag, error)` 実装
+  - [ ] `CreateTag(tag *Tag) (*Tag, error)` 実装
+  - [ ] `UpdateTag(id string, tag *Tag) (*Tag, error)` 実装
+  - [ ] `DeleteTag(id string) error` 実装
 
-#### 2. Postsコマンド実装
+#### 2. Tagsコマンド実装
 
-- [ ] `internal/cmd/posts.go` を作成
-  - [ ] PostsCmd構造体定義
-  - [ ] PostsListCmd実装
-    - [ ] `--status` フラグ（draft/published/scheduled）
+- [ ] `internal/cmd/tags.go` を作成
+  - [ ] TagsCmd構造体定義
+  - [ ] TagsListCmd実装
     - [ ] `--limit` フラグ
-  - [ ] PostsGetCmd実装
-  - [ ] PostsCreateCmd実装
-    - [ ] `--title` フラグ（必須）
-    - [ ] `--html` フラグ
-    - [ ] `--status` フラグ
-  - [ ] PostsUpdateCmd実装
-  - [ ] PostsDeleteCmd実装
-  - [ ] PostsPublishCmd実装
+    - [ ] `--filter` フラグ（オプション）
+  - [ ] TagsGetCmd実装
+  - [ ] TagsCreateCmd実装
+    - [ ] `--name` フラグ（必須）
+    - [ ] `--slug` フラグ（オプション、自動生成）
+    - [ ] `--description` フラグ（オプション）
+  - [ ] TagsUpdateCmd実装
+  - [ ] TagsDeleteCmd実装
 
-#### 3. Pages API実装
+#### 3. Images API実装
 
-- [ ] `internal/ghostapi/pages.go` を作成
-  - [ ] Page型定義
-  - [ ] テスト作成（`pages_test.go`）
-  - [ ] `ListPages(options ListOptions) ([]Page, error)` 実装
-  - [ ] `GetPage(idOrSlug string) (*Page, error)` 実装
-  - [ ] `CreatePage(page *Page) (*Page, error)` 実装
-  - [ ] `UpdatePage(id string, page *Page) (*Page, error)` 実装
-  - [ ] `DeletePage(id string) error` 実装
+- [ ] `internal/ghostapi/images.go` を作成
+  - [ ] Image型定義（URL、Refなど）
+  - [ ] テスト作成（`images_test.go`）
+  - [ ] `UploadImage(filePath string) (*Image, error)` 実装
+    - [ ] ファイル読み込み
+    - [ ] multipart/form-dataでアップロード
+    - [ ] アップロード後のURL取得
 
-#### 4. Pagesコマンド実装
+#### 4. Imagesコマンド実装
 
-- [ ] `internal/cmd/pages.go` を作成
-  - [ ] PagesCmd構造体定義
-  - [ ] PagesListCmd実装
-  - [ ] PagesGetCmd実装
-  - [ ] PagesCreateCmd実装
-  - [ ] PagesUpdateCmd実装
-  - [ ] PagesDeleteCmd実装
+- [ ] `internal/cmd/images.go` を作成
+  - [ ] ImagesCmd構造体定義
+  - [ ] ImagesUploadCmd実装
+    - [ ] ファイルパス引数（必須）
+    - [ ] ファイル存在確認
+    - [ ] 画像形式検証（jpg、png、gif、webpなど）
 
 #### 5. CLIに統合
 
-- [ ] `internal/cmd/root.go` に PostsCmd と PagesCmd を追加
+- [ ] `internal/cmd/root.go` に TagsCmd と ImagesCmd を追加
 
 #### 6. 品質チェック
 
@@ -81,44 +85,45 @@ Posts/Pagesの作成、更新、削除、公開機能を実装する
 
 #### 7. 動作確認
 
-- [ ] `./gho posts list` でPosts一覧が表示される
-- [ ] `./gho posts get <slug>` で投稿詳細が表示される
-- [ ] `./gho posts create --title "Test" --status draft` で投稿が作成される
-- [ ] `./gho posts update <id> --title "Updated"` で投稿が更新される
-- [ ] `./gho posts publish <id>` で投稿が公開される
-- [ ] `./gho posts delete <id>` で投稿が削除される
-- [ ] `./gho pages list` でPages一覧が表示される
-- [ ] `./gho pages create --title "Test Page"` でページが作成される
+- [ ] `./gho tags list` でTags一覧が表示される
+- [ ] `./gho tags get <slug>` でタグ詳細が表示される
+- [ ] `./gho tags create --name "Technology"` でタグが作成される
+- [ ] `./gho tags update <id> --name "Tech"` でタグが更新される
+- [ ] `./gho tags delete <id>` でタグが削除される
+- [ ] `./gho images upload path/to/image.jpg` で画像がアップロードされる
+- [ ] アップロード後にURLが表示される
 
 #### 8. ドキュメント更新
 
 - [ ] `docs/PROJECT_STATUS.md` を更新
-- [ ] `README.md` にPosts/Pagesコマンドの使用例を追加
+- [ ] `docs/NEXT_STEPS.md` を更新（Phase 4に移行）
+- [ ] `README.md` にTags/Imagesコマンドの使用例を追加
 
 #### 9. コミット
 
-- [ ] Phase 2完了のコミットを作成
+- [ ] Phase 3完了のコミットを作成
 
 ### 実装の開始方法
 
 ```bash
 # featureブランチを作成
-git checkout -b feature/phase2-content-management
+git checkout -b feature/phase3-taxonomy-media
 
-# Posts APIのテストから開始（TDD）
-# internal/ghostapi/posts_test.go を作成
+# Tags APIのテストから開始（TDD）
+# internal/ghostapi/tags_test.go を作成
 ```
 
 ### 参考: Ghost Admin API仕様
 
-**Posts API**:
-- エンドポイント: `/ghost/api/admin/posts/`
+**Tags API**:
+- エンドポイント: `/ghost/api/admin/tags/`
 - メソッド: GET, POST, PUT, DELETE
-- パラメータ: `limit`, `status`, `filter`, `include`
+- パラメータ: `limit`, `filter`, `order`, `include`
 
-**Pages API**:
-- エンドポイント: `/ghost/api/admin/pages/`
-- メソッド: GET, POST, PUT, DELETE
+**Images API**:
+- エンドポイント: `/ghost/api/admin/images/upload/`
+- メソッド: POST (multipart/form-data)
+- フィールド: `file` (画像ファイル)
 
 詳細: https://ghost.org/docs/admin-api/
 
@@ -132,6 +137,7 @@ git checkout -b feature/phase2-content-management
 2. **エラーハンドリング**
    - エラーメッセージは日本語で具体的に
    - エラーのラップに `fmt.Errorf` と `%w` を使用
+   - 画像アップロード時のファイルサイズ制限を考慮
 
 3. **出力フォーマット**
    - JSON/Table/Plain形式をサポート
@@ -147,12 +153,12 @@ git checkout -b feature/phase2-content-management
    - featureブランチで作業
    - コミット前に品質チェック
 
-## Phase 3以降の予定
+6. **画像アップロード特有の注意点**
+   - ファイルサイズ制限（Ghost Admin APIの制限を確認）
+   - MIME type検証
+   - アップロード進捗表示（大きいファイルの場合）
 
-### Phase 3: タクソノミー + メディア
-
-- Tags API（list/get/create/update/delete）
-- Images API（upload）
+## Phase 4以降の予定
 
 ### Phase 4: Members管理
 

@@ -52,6 +52,65 @@ gho -s myblog site
 gho site --json
 ```
 
+### Posts（投稿）
+
+```bash
+# 投稿一覧を取得
+gho posts list
+
+# ステータスでフィルタリング
+gho posts list --status draft
+gho posts list --status published
+gho posts list --status scheduled
+
+# 件数を制限
+gho posts list --limit 10
+
+# 投稿詳細を取得（IDまたはSlugで指定）
+gho posts get <id-or-slug>
+
+# 新規投稿を作成
+gho posts create --title "タイトル" --html "本文" --status draft
+
+# 投稿を更新
+gho posts update <id> --title "新しいタイトル"
+gho posts update <id> --html "新しい本文"
+
+# 投稿を削除
+gho posts delete <id>
+
+# 投稿を公開
+gho posts publish <id>
+```
+
+### Pages（固定ページ）
+
+```bash
+# ページ一覧を取得
+gho pages list
+
+# ステータスでフィルタリング
+gho pages list --status draft
+gho pages list --status published
+gho pages list --status scheduled
+
+# 件数を制限
+gho pages list --limit 10
+
+# ページ詳細を取得（IDまたはSlugで指定）
+gho pages get <id-or-slug>
+
+# 新規ページを作成
+gho pages create --title "タイトル" --html "本文"
+
+# ページを更新
+gho pages update <id> --title "新しいタイトル"
+gho pages update <id> --html "新しい本文"
+
+# ページを削除
+gho pages delete <id>
+```
+
 ## 開発
 
 ### テスト実行

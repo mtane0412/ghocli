@@ -57,28 +57,57 @@
 
 **コミット**: `68b9340 Phase 1: 基盤実装を完了`
 
-### 🚧 Phase 2: コンテンツ管理（Posts/Pages）（未実装）
+### ✅ Phase 2: コンテンツ管理（Posts/Pages）（完了）
 
-**予定内容**:
+**完了日**: 2026-01-29
 
-1. **Posts API** (`internal/ghostapi/posts.go`, `internal/cmd/posts.go`)
+**実装内容**:
+
+1. **Posts API** (`internal/ghostapi/posts.go`)
+   - Post型定義（ID、Title、Slug、HTML、Status、PublishedAtなど）
+   - ListOptions型定義（Limit、Status、Filterなど）
+   - `ListPosts(options ListOptions) ([]Post, error)` 実装
+   - `GetPost(idOrSlug string) (*Post, error)` 実装
+   - `CreatePost(post *Post) (*Post, error)` 実装
+   - `UpdatePost(id string, post *Post) (*Post, error)` 実装
+   - `DeletePost(id string) error` 実装
+
+2. **Pages API** (`internal/ghostapi/pages.go`)
+   - Page型定義（ID、Title、Slug、HTML、Statusなど）
+   - `ListPages(options ListOptions) ([]Page, error)` 実装
+   - `GetPage(idOrSlug string) (*Page, error)` 実装
+   - `CreatePage(page *Page) (*Page, error)` 実装
+   - `UpdatePage(id string, page *Page) (*Page, error)` 実装
+   - `DeletePage(id string) error` 実装
+
+3. **Postsコマンド** (`internal/cmd/posts.go`)
    ```
    gho posts list [--status draft|published|scheduled] [--limit N]
    gho posts get <id-or-slug>
-   gho posts create --title "..." [--html "..."]
-   gho posts update <id> --title "..."
+   gho posts create --title "..." [--html "..."] [--status draft|published]
+   gho posts update <id> [--title "..."] [--html "..."]
    gho posts delete <id>
    gho posts publish <id>
    ```
 
-2. **Pages API** (`internal/ghostapi/pages.go`, `internal/cmd/pages.go`)
+4. **Pagesコマンド** (`internal/cmd/pages.go`)
    ```
-   gho pages list
+   gho pages list [--status draft|published|scheduled] [--limit N]
    gho pages get <id-or-slug>
-   gho pages create --title "..."
-   gho pages update <id> ...
+   gho pages create --title "..." [--html "..."]
+   gho pages update <id> [--title "..."] [--html "..."]
    gho pages delete <id>
    ```
+
+**品質チェック**:
+- ✅ すべてのテストがパス（Posts: 7テスト、Pages: 5テスト）
+- ✅ 型チェック（`go vet`）成功
+- ✅ ビルド成功
+
+**コミット**:
+- `40c33f2 feat(ghostapi): Posts APIを実装`
+- `016fe5c feat(ghostapi): Pages APIを実装`
+- `a84e3da feat(cmd): Posts/Pagesコマンドを実装`
 
 ### 📋 Phase 3: タクソノミー + メディア（未実装）
 
@@ -118,7 +147,9 @@ gho/
 │   ├── cmd/                  # CLIコマンド定義
 │   │   ├── root.go          # CLI構造体、RootFlags
 │   │   ├── auth.go          # 認証コマンド
-│   │   └── site.go          # サイト情報コマンド
+│   │   ├── site.go          # サイト情報コマンド
+│   │   ├── posts.go         # Postsコマンド
+│   │   └── pages.go         # Pagesコマンド
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -129,7 +160,11 @@ gho/
 │   │   ├── client.go        # HTTPクライアント
 │   │   ├── client_test.go
 │   │   ├── jwt.go           # JWT生成
-│   │   └── jwt_test.go
+│   │   ├── jwt_test.go
+│   │   ├── posts.go         # Posts API
+│   │   ├── posts_test.go
+│   │   ├── pages.go         # Pages API
+│   │   └── pages_test.go
 │   └── outfmt/              # 出力フォーマット
 │       ├── outfmt.go
 │       └── outfmt_test.go
@@ -148,10 +183,13 @@ gho/
 
 - `internal/config/` - 設定ファイル管理（6テスト）
 - `internal/secrets/` - キーリング統合（5テスト）
-- `internal/ghostapi/` - APIクライアント（9テスト）
+- `internal/ghostapi/` - APIクライアント（21テスト）
+  - `client.go`, `jwt.go` - 9テスト
+  - `posts.go` - 7テスト
+  - `pages.go` - 5テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 25テスト、すべてパス
+合計: 37テスト、すべてパス
 
 ## 依存関係
 
@@ -179,4 +217,4 @@ make build
 
 ## 次のステップ
 
-Phase 2の実装を開始します。詳細は `docs/NEXT_STEPS.md` を参照してください。
+Phase 3（タクソノミー + メディア）の実装を開始します。詳細は `docs/NEXT_STEPS.md` を参照してください。
