@@ -9,10 +9,12 @@
 package ghostapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -90,6 +92,79 @@ func (c *Client) doRequest(method, path string, body io.Reader) ([]byte, error) 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+
+	// リクエストを実行
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("リクエストの実行に失敗: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// レスポンスボディを読み込む
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("レスポンスボディの読み込みに失敗: %w", err)
+	}
+
+	// ステータスコードをチェック
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		// エラーレスポンスをパース
+		var errResp ErrorResponse
+		if err := json.Unmarshal(respBody, &errResp); err == nil && len(errResp.Errors) > 0 {
+			return nil, fmt.Errorf("APIエラー: %s", errResp.Errors[0].Message)
+		}
+		return nil, fmt.Errorf("HTTPエラー: %d", resp.StatusCode)
+	}
+
+	return respBody, nil
+}
+
+// doMultipartRequest はmultipart/form-dataのHTTPリクエストを実行し、レスポンスボディを返します。
+func (c *Client) doMultipartRequest(path string, file io.Reader, filename string, fields map[string]string) ([]byte, error) {
+	// JWTトークンを生成
+	token, err := GenerateJWT(c.keyID, c.secret)
+	if err != nil {
+		return nil, fmt.Errorf("JWTの生成に失敗: %w", err)
+	}
+
+	// マルチパートフォームを構築
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// ファイルフィールドを追加
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		return nil, fmt.Errorf("ファイルフィールドの作成に失敗: %w", err)
+	}
+	if _, err := io.Copy(part, file); err != nil {
+		return nil, fmt.Errorf("ファイルのコピーに失敗: %w", err)
+	}
+
+	// 追加フィールドを追加
+	for key, val := range fields {
+		if err := writer.WriteField(key, val); err != nil {
+			return nil, fmt.Errorf("フィールド %s の追加に失敗: %w", key, err)
+		}
+	}
+
+	// マルチパートライターを閉じる
+	if err := writer.Close(); err != nil {
+		return nil, fmt.Errorf("マルチパートライターのクローズに失敗: %w", err)
+	}
+
+	// リクエストURLを構築
+	url := c.baseURL + path
+
+	// HTTPリクエストを作成
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return nil, fmt.Errorf("リクエストの作成に失敗: %w", err)
+	}
+
+	// ヘッダーを設定
+	req.Header.Set("Authorization", "Ghost "+token)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	// リクエストを実行
 	resp, err := c.httpClient.Do(req)
