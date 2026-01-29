@@ -18,112 +18,96 @@
 - Postsコマンド（list、get、create、update、delete、publish）
 - Pagesコマンド（list、get、create、update、delete）
 
-## Phase 3: タクソノミー + メディア
+✅ **Phase 3: タクソノミー + メディア** - 完了（2026-01-30）
+
+- Tags API（ListTags、GetTag、CreateTag、UpdateTag、DeleteTag）
+- Images API（UploadImage）
+- Tagsコマンド（list、get、create、update、delete）
+- Imagesコマンド（upload）
+
+## Phase 4: Members管理
 
 ### 目標
 
-Tags APIとImages APIを実装し、Ghost Admin APIの基本的なコンテンツ管理機能を完成させる
+Members（購読者）の管理機能を実装し、Ghost Admin APIのメンバー管理機能を完成させる
 
 ### タスクリスト
 
-#### 1. Tags API実装
+#### 1. Members API実装
 
-- [ ] `internal/ghostapi/tags.go` を作成
-  - [ ] Tag型定義（ID、Name、Slug、Description、VisibilityなどGhost Admin APIのTag構造に準拠）
-  - [ ] TagListOptions型定義（Limit、Filter、Orderなど）
-  - [ ] テスト作成（`tags_test.go`）
-  - [ ] `ListTags(options TagListOptions) ([]Tag, error)` 実装
-  - [ ] `GetTag(idOrSlug string) (*Tag, error)` 実装
-  - [ ] `CreateTag(tag *Tag) (*Tag, error)` 実装
-  - [ ] `UpdateTag(id string, tag *Tag) (*Tag, error)` 実装
-  - [ ] `DeleteTag(id string) error` 実装
+- [ ] `internal/ghostapi/members.go` を作成
+  - [ ] Member型定義（ID、Email、Name、Status、CreatedAt、UpdatedAtなどGhost Admin APIのMember構造に準拠）
+  - [ ] MemberListOptions型定義（Limit、Filter、Orderなど）
+  - [ ] テスト作成（`members_test.go`）
+  - [ ] `ListMembers(options MemberListOptions) (*MemberListResponse, error)` 実装
+  - [ ] `GetMember(id string) (*Member, error)` 実装
+  - [ ] `CreateMember(member *Member) (*Member, error)` 実装
+  - [ ] `UpdateMember(id string, member *Member) (*Member, error)` 実装
+  - [ ] `DeleteMember(id string) error` 実装
 
-#### 2. Tagsコマンド実装
+#### 2. Membersコマンド実装
 
-- [ ] `internal/cmd/tags.go` を作成
-  - [ ] TagsCmd構造体定義
-  - [ ] TagsListCmd実装
+- [ ] `internal/cmd/members.go` を作成
+  - [ ] MembersCmd構造体定義
+  - [ ] MembersListCmd実装
     - [ ] `--limit` フラグ
     - [ ] `--filter` フラグ（オプション）
-  - [ ] TagsGetCmd実装
-  - [ ] TagsCreateCmd実装
-    - [ ] `--name` フラグ（必須）
-    - [ ] `--slug` フラグ（オプション、自動生成）
-    - [ ] `--description` フラグ（オプション）
-  - [ ] TagsUpdateCmd実装
-  - [ ] TagsDeleteCmd実装
+    - [ ] `--order` フラグ（オプション）
+  - [ ] MembersGetCmd実装
+  - [ ] MembersCreateCmd実装
+    - [ ] `--email` フラグ（必須）
+    - [ ] `--name` フラグ（オプション）
+    - [ ] `--note` フラグ（オプション）
+  - [ ] MembersUpdateCmd実装
+  - [ ] MembersDeleteCmd実装
 
-#### 3. Images API実装
+#### 3. CLIに統合
 
-- [ ] `internal/ghostapi/images.go` を作成
-  - [ ] Image型定義（URL、Refなど）
-  - [ ] テスト作成（`images_test.go`）
-  - [ ] `UploadImage(filePath string) (*Image, error)` 実装
-    - [ ] ファイル読み込み
-    - [ ] multipart/form-dataでアップロード
-    - [ ] アップロード後のURL取得
+- [ ] `internal/cmd/root.go` に MembersCmd を追加
 
-#### 4. Imagesコマンド実装
-
-- [ ] `internal/cmd/images.go` を作成
-  - [ ] ImagesCmd構造体定義
-  - [ ] ImagesUploadCmd実装
-    - [ ] ファイルパス引数（必須）
-    - [ ] ファイル存在確認
-    - [ ] 画像形式検証（jpg、png、gif、webpなど）
-
-#### 5. CLIに統合
-
-- [ ] `internal/cmd/root.go` に TagsCmd と ImagesCmd を追加
-
-#### 6. 品質チェック
+#### 4. 品質チェック
 
 - [ ] すべてのテストがパス（`make test`）
 - [ ] 型チェック成功（`make type-check`）
 - [ ] Lint成功（`make lint`）
 - [ ] ビルド成功（`make build`）
 
-#### 7. 動作確認
+#### 5. 動作確認
 
-- [ ] `./gho tags list` でTags一覧が表示される
-- [ ] `./gho tags get <slug>` でタグ詳細が表示される
-- [ ] `./gho tags create --name "Technology"` でタグが作成される
-- [ ] `./gho tags update <id> --name "Tech"` でタグが更新される
-- [ ] `./gho tags delete <id>` でタグが削除される
-- [ ] `./gho images upload path/to/image.jpg` で画像がアップロードされる
-- [ ] アップロード後にURLが表示される
+- [ ] `./gho members list` でMembers一覧が表示される
+- [ ] `./gho members get <id>` でメンバー詳細が表示される
+- [ ] `./gho members create --email "user@example.com" --name "山田太郎"` でメンバーが作成される
+- [ ] `./gho members update <id> --name "田中太郎"` でメンバーが更新される
+- [ ] `./gho members delete <id>` でメンバーが削除される
 
-#### 8. ドキュメント更新
+#### 6. ドキュメント更新
 
 - [ ] `docs/PROJECT_STATUS.md` を更新
-- [ ] `docs/NEXT_STEPS.md` を更新（Phase 4に移行）
-- [ ] `README.md` にTags/Imagesコマンドの使用例を追加
+- [ ] `docs/NEXT_STEPS.md` を更新（Phase 5に移行）
+- [ ] `docs/ARCHITECTURE.md` を更新
+- [ ] `README.md` にMembersコマンドの使用例を追加
 
-#### 9. コミット
+#### 7. コミット
 
-- [ ] Phase 3完了のコミットを作成
+- [ ] Phase 4完了のコミットを作成
 
 ### 実装の開始方法
 
 ```bash
 # featureブランチを作成
-git checkout -b feature/phase3-taxonomy-media
+git checkout -b feature/phase4-members
 
-# Tags APIのテストから開始（TDD）
-# internal/ghostapi/tags_test.go を作成
+# Members APIのテストから開始（TDD）
+# internal/ghostapi/members_test.go を作成
 ```
 
 ### 参考: Ghost Admin API仕様
 
-**Tags API**:
-- エンドポイント: `/ghost/api/admin/tags/`
+**Members API**:
+- エンドポイント: `/ghost/api/admin/members/`
 - メソッド: GET, POST, PUT, DELETE
 - パラメータ: `limit`, `filter`, `order`, `include`
-
-**Images API**:
-- エンドポイント: `/ghost/api/admin/images/upload/`
-- メソッド: POST (multipart/form-data)
-- フィールド: `file` (画像ファイル)
+- 主要フィールド: `email` (必須), `name`, `note`, `subscribed`, `labels`
 
 詳細: https://ghost.org/docs/admin-api/
 
@@ -153,16 +137,12 @@ git checkout -b feature/phase3-taxonomy-media
    - featureブランチで作業
    - コミット前に品質チェック
 
-6. **画像アップロード特有の注意点**
-   - ファイルサイズ制限（Ghost Admin APIの制限を確認）
-   - MIME type検証
-   - アップロード進捗表示（大きいファイルの場合）
+6. **Members特有の注意点**
+   - emailアドレスの検証（RFC 5322準拠）
+   - 重複emailチェック（Ghost APIがエラーを返す）
+   - subscribed、labels、newslettersなどのフィールド対応
 
-## Phase 4以降の予定
-
-### Phase 4: Members管理
-
-- Members API（list/get/create/update/delete）
+## Phase 5以降の予定
 
 ### Phase 5: Users管理
 

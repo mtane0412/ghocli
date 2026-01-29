@@ -111,6 +111,46 @@ gho pages update <id> --html "新しい本文"
 gho pages delete <id>
 ```
 
+### Tags（タグ）
+
+```bash
+# タグ一覧を取得
+gho tags list
+
+# 件数を制限
+gho tags list --limit 10
+
+# タグ詳細を取得（IDまたはSlugで指定）
+gho tags get <id-or-slug>
+gho tags get slug:technology
+
+# 新規タグを作成
+gho tags create --name "Technology" --description "技術関連の記事"
+
+# タグの可視性を指定
+gho tags create --name "Internal" --visibility internal
+
+# タグを更新
+gho tags update <id> --name "Tech" --description "新しい説明"
+
+# タグを削除
+gho tags delete <id>
+```
+
+### Images（画像）
+
+```bash
+# 画像をアップロード
+gho images upload path/to/image.jpg
+
+# 用途を指定してアップロード
+gho images upload avatar.png --purpose profile_image
+gho images upload icon.png --purpose icon
+
+# 参照IDを指定
+gho images upload banner.jpg --ref post-123
+```
+
 ## 開発
 
 ### テスト実行

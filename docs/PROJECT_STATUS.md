@@ -109,23 +109,48 @@
 - `016fe5c feat(ghostapi): Pages APIを実装`
 - `a84e3da feat(cmd): Posts/Pagesコマンドを実装`
 
-### 📋 Phase 3: タクソノミー + メディア（未実装）
+### ✅ Phase 3: タクソノミー + メディア（完了）
 
-**予定内容**:
+**完了日**: 2026-01-30
 
-1. **Tags API**
+**実装内容**:
+
+1. **Tags API** (`internal/ghostapi/tags.go`)
+   - Tag型定義（ID、Name、Slug、Description、Visibilityなど）
+   - TagListOptions型定義（pagination、filter対応）
+   - `ListTags(options TagListOptions) (*TagListResponse, error)` 実装
+   - `GetTag(idOrSlug string) (*Tag, error)` 実装（"slug:"プレフィックス対応）
+   - `CreateTag(tag *Tag) (*Tag, error)` 実装
+   - `UpdateTag(id string, tag *Tag) (*Tag, error)` 実装
+   - `DeleteTag(id string) error` 実装
+
+2. **Images API** (`internal/ghostapi/images.go`)
+   - Image型定義（URL、Ref）
+   - `UploadImage(file io.Reader, filename string, opts ImageUploadOptions) (*Image, error)` 実装
+   - multipart/form-dataでのアップロード対応
+   - Purpose（image/profile_image/icon）指定対応
+
+3. **Tagsコマンド** (`internal/cmd/tags.go`)
    ```
-   gho tags list
-   gho tags get <id-or-slug>
-   gho tags create --name "..."
-   gho tags update <id> --name "..."
+   gho tags list [--limit N] [--page N]
+   gho tags get <id-or-slug>        # "slug:tag-name" 形式でslugを指定可能
+   gho tags create --name "..." [--description "..."] [--visibility public|internal]
+   gho tags update <id> [--name "..."] [--description "..."]
    gho tags delete <id>
    ```
 
-2. **Images API**
+4. **Imagesコマンド** (`internal/cmd/images.go`)
    ```
-   gho images upload <file-path>
+   gho images upload <file-path> [--purpose image|profile_image|icon] [--ref <ref-id>]
    ```
+
+**品質チェック**:
+- ✅ すべてのテストがパス（Tags: 6テスト、Images: 2テスト）
+- ✅ 型チェック（`go vet`）成功
+- ✅ ビルド成功
+
+**コミット**:
+- `b5299e8 feat(api): Tags APIとImages APIを実装`
 
 ### 📋 Phase 4以降（未実装）
 
@@ -149,7 +174,9 @@ gho/
 │   │   ├── auth.go          # 認証コマンド
 │   │   ├── site.go          # サイト情報コマンド
 │   │   ├── posts.go         # Postsコマンド
-│   │   └── pages.go         # Pagesコマンド
+│   │   ├── pages.go         # Pagesコマンド
+│   │   ├── tags.go          # Tagsコマンド
+│   │   └── images.go        # Imagesコマンド
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -164,7 +191,11 @@ gho/
 │   │   ├── posts.go         # Posts API
 │   │   ├── posts_test.go
 │   │   ├── pages.go         # Pages API
-│   │   └── pages_test.go
+│   │   ├── pages_test.go
+│   │   ├── tags.go          # Tags API
+│   │   ├── tags_test.go
+│   │   ├── images.go        # Images API
+│   │   └── images_test.go
 │   └── outfmt/              # 出力フォーマット
 │       ├── outfmt.go
 │       └── outfmt_test.go
@@ -182,14 +213,16 @@ gho/
 すべてのコアコンポーネントはテスト済みです：
 
 - `internal/config/` - 設定ファイル管理（6テスト）
-- `internal/secrets/` - キーリング統合（5テスト）
-- `internal/ghostapi/` - APIクライアント（21テスト）
+- `internal/secrets/` - キーリング統合（8テスト）
+- `internal/ghostapi/` - APIクライアント（29テスト）
   - `client.go`, `jwt.go` - 9テスト
   - `posts.go` - 7テスト
   - `pages.go` - 5テスト
+  - `tags.go` - 6テスト
+  - `images.go` - 2テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 37テスト、すべてパス
+合計: 48テスト、すべてパス
 
 ## 依存関係
 
@@ -217,4 +250,4 @@ make build
 
 ## 次のステップ
 
-Phase 3（タクソノミー + メディア）の実装を開始します。詳細は `docs/NEXT_STEPS.md` を参照してください。
+Phase 4（Members管理）の実装を開始します。詳細は `docs/NEXT_STEPS.md` を参照してください。

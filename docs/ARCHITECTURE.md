@@ -16,7 +16,9 @@ gho/
 │   │   ├── auth.go          # 認証コマンド
 │   │   ├── site.go          # サイト情報コマンド
 │   │   ├── posts.go         # Postsコマンド（Phase 2）
-│   │   └── pages.go         # Pagesコマンド（Phase 2）
+│   │   ├── pages.go         # Pagesコマンド（Phase 2）
+│   │   ├── tags.go          # Tagsコマンド（Phase 3）
+│   │   └── images.go        # Imagesコマンド（Phase 3）
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -29,7 +31,13 @@ gho/
 │   │   ├── jwt.go           # JWT生成
 │   │   ├── jwt_test.go
 │   │   ├── posts.go         # Posts API（Phase 2）
-│   │   └── pages.go         # Pages API（Phase 2）
+│   │   ├── posts_test.go
+│   │   ├── pages.go         # Pages API（Phase 2）
+│   │   ├── pages_test.go
+│   │   ├── tags.go          # Tags API（Phase 3）
+│   │   ├── tags_test.go
+│   │   ├── images.go        # Images API（Phase 3）
+│   │   └── images_test.go
 │   ├── outfmt/              # 出力フォーマット
 │   │   ├── outfmt.go
 │   │   └── outfmt_test.go
@@ -97,6 +105,8 @@ gho/
       Site      SiteCmd
       Posts     PostsCmd
       Pages     PagesCmd
+      Tags      TagsCmd
+      Images    ImagesCmd
       // ...
   }
   ```
