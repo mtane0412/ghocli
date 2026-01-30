@@ -250,22 +250,16 @@ func (c *MembersDeleteCmd) Run(root *RootFlags) error {
 		return err
 	}
 
-	// 確認なしで削除する場合を除き、確認を求める
-	if !root.Force {
-		// メンバー情報を取得して確認
-		member, err := client.GetMember(c.ID)
-		if err != nil {
-			return fmt.Errorf("メンバーの取得に失敗: %w", err)
-		}
+	// メンバー情報を取得して確認メッセージを構築
+	member, err := client.GetMember(c.ID)
+	if err != nil {
+		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+	}
 
-		fmt.Printf("本当にメンバー「%s」(ID: %s)を削除しますか? [y/N]: ", member.Email, c.ID)
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
-			return fmt.Errorf("入力の読み取りに失敗: %w", err)
-		}
-		if response != "y" && response != "Y" {
-			return fmt.Errorf("削除がキャンセルされました")
-		}
+	// 破壊的操作の確認
+	action := fmt.Sprintf("delete member '%s' (ID: %s)", member.Email, c.ID)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
 	}
 
 	// メンバーを削除

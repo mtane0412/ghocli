@@ -249,20 +249,16 @@ func (c *PagesDeleteCmd) Run(root *RootFlags) error {
 		return err
 	}
 
-	// 確認なしで削除する場合を除き、確認を求める
-	if !root.Force {
-		// ページ情報を取得して確認
-		page, err := client.GetPage(c.ID)
-		if err != nil {
-			return fmt.Errorf("ページの取得に失敗: %w", err)
-		}
+	// ページ情報を取得して確認メッセージを構築
+	page, err := client.GetPage(c.ID)
+	if err != nil {
+		return fmt.Errorf("ページの取得に失敗: %w", err)
+	}
 
-		fmt.Printf("本当にページ「%s」(ID: %s)を削除しますか? [y/N]: ", page.Title, c.ID)
-		var response string
-		fmt.Scanln(&response)
-		if response != "y" && response != "Y" {
-			return fmt.Errorf("削除がキャンセルされました")
-		}
+	// 破壊的操作の確認
+	action := fmt.Sprintf("delete page '%s' (ID: %s)", page.Title, c.ID)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
 	}
 
 	// ページを削除

@@ -233,20 +233,16 @@ func (c *TagsDeleteCmd) Run(root *RootFlags) error {
 		return err
 	}
 
-	// 確認なしで削除する場合を除き、確認を求める
-	if !root.Force {
-		// タグ情報を取得して確認
-		tag, err := client.GetTag(c.ID)
-		if err != nil {
-			return fmt.Errorf("タグの取得に失敗: %w", err)
-		}
+	// タグ情報を取得して確認メッセージを構築
+	tag, err := client.GetTag(c.ID)
+	if err != nil {
+		return fmt.Errorf("タグの取得に失敗: %w", err)
+	}
 
-		fmt.Printf("本当にタグ「%s」(ID: %s)を削除しますか? [y/N]: ", tag.Name, c.ID)
-		var response string
-		fmt.Scanln(&response)
-		if response != "y" && response != "Y" {
-			return fmt.Errorf("削除がキャンセルされました")
-		}
+	// 破壊的操作の確認
+	action := fmt.Sprintf("delete tag '%s' (ID: %s)", tag.Name, c.ID)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
 	}
 
 	// タグを削除

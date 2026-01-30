@@ -250,20 +250,16 @@ func (c *PostsDeleteCmd) Run(root *RootFlags) error {
 		return err
 	}
 
-	// 確認なしで削除する場合を除き、確認を求める
-	if !root.Force {
-		// 投稿情報を取得して確認
-		post, err := client.GetPost(c.ID)
-		if err != nil {
-			return fmt.Errorf("投稿の取得に失敗: %w", err)
-		}
+	// 投稿情報を取得して確認メッセージを構築
+	post, err := client.GetPost(c.ID)
+	if err != nil {
+		return fmt.Errorf("投稿の取得に失敗: %w", err)
+	}
 
-		fmt.Printf("本当に投稿「%s」(ID: %s)を削除しますか? [y/N]: ", post.Title, c.ID)
-		var response string
-		fmt.Scanln(&response)
-		if response != "y" && response != "Y" {
-			return fmt.Errorf("削除がキャンセルされました")
-		}
+	// 破壊的操作の確認
+	action := fmt.Sprintf("delete post '%s' (ID: %s)", post.Title, c.ID)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
 	}
 
 	// 投稿を削除

@@ -17,6 +17,7 @@ type RootFlags struct {
 	JSON    bool   `help:"Output JSON" env:"GHO_JSON"`
 	Plain   bool   `help:"Output stable TSV"`
 	Force   bool   `help:"Skip confirmations" short:"f"`
+	NoInput bool   `help:"Never prompt; fail instead (useful for CI)" env:"GHO_NO_INPUT"`
 	Verbose bool   `help:"Enable verbose logging" short:"v"`
 }
 
