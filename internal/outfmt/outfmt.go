@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/mattn/go-runewidth"
 )
 
 // Formatter は出力フォーマッターです
@@ -95,15 +97,18 @@ func (f *Formatter) printJSONTable(headers []string, rows [][]string) error {
 
 // printTableFormat はテーブル形式で出力します（人間向け）。
 func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
-	// 各列の最大幅を計算
+	// 各列の最大表示幅を計算（全角文字も考慮）
 	colWidths := make([]int, len(headers))
 	for i, header := range headers {
-		colWidths[i] = len(header)
+		colWidths[i] = runewidth.StringWidth(header)
 	}
 	for _, row := range rows {
 		for i, cell := range row {
-			if i < len(colWidths) && len(cell) > colWidths[i] {
-				colWidths[i] = len(cell)
+			if i < len(colWidths) {
+				cellWidth := runewidth.StringWidth(cell)
+				if cellWidth > colWidths[i] {
+					colWidths[i] = cellWidth
+				}
 			}
 		}
 	}
@@ -113,7 +118,12 @@ func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
 		if i > 0 {
 			fmt.Fprint(f.writer, "  ")
 		}
-		fmt.Fprintf(f.writer, "%-*s", colWidths[i], header)
+		// 表示幅に基づいてパディングを追加
+		fmt.Fprint(f.writer, header)
+		padding := colWidths[i] - runewidth.StringWidth(header)
+		if padding > 0 {
+			fmt.Fprint(f.writer, strings.Repeat(" ", padding))
+		}
 	}
 	fmt.Fprintln(f.writer)
 
@@ -133,7 +143,12 @@ func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
 				fmt.Fprint(f.writer, "  ")
 			}
 			if i < len(colWidths) {
-				fmt.Fprintf(f.writer, "%-*s", colWidths[i], cell)
+				// 表示幅に基づいてパディングを追加
+				fmt.Fprint(f.writer, cell)
+				padding := colWidths[i] - runewidth.StringWidth(cell)
+				if padding > 0 {
+					fmt.Fprint(f.writer, strings.Repeat(" ", padding))
+				}
 			} else {
 				fmt.Fprint(f.writer, cell)
 			}
