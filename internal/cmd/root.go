@@ -32,6 +32,7 @@ type CLI struct {
 	Tags    TagsCmd    `cmd:"" help:"Tags management"`
 	Images  ImagesCmd  `cmd:"" help:"Images management"`
 	Members MembersCmd `cmd:"" help:"Members management"`
+	Users   UsersCmd   `cmd:"" help:"Users management"`
 }
 
 // GetOutputMode はRootFlagsから出力モードを決定します

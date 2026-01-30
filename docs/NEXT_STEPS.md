@@ -30,121 +30,84 @@
 - Members API（ListMembers、GetMember、CreateMember、UpdateMember、DeleteMember）
 - Membersコマンド（list、get、create、update、delete）
 
-## Phase 5: Users管理
+✅ **Phase 5: Users管理** - 完了（2026-01-30）
+
+- Users API（ListUsers、GetUser、UpdateUser）※ Create/Delete非サポート
+- Usersコマンド（list、get、update）
+
+## Phase 6: Newsletters/Tiers/Offers
 
 ### 目標
 
-Users（管理者・編集者）の管理機能を実装し、Ghost Admin APIのユーザー管理機能を完成させる
+Newsletters（ニュースレター）、Tiers（サブスクリプションプラン）、Offers（オファー）の管理機能を実装し、Ghost Admin APIのビジネス機能を強化する
 
 ### タスクリスト
 
-#### 1. Users API実装
+#### 1. Newsletters API実装
 
-- [ ] `internal/ghostapi/users.go` を作成
-  - [ ] User型定義（ID、Name、Slug、Email、Rolesなど）
-  - [ ] UserListOptions型定義（Limit、Filter、Includeなど）
-  - [ ] テスト作成（`users_test.go`）
-  - [ ] `ListUsers(options UserListOptions) (*UserListResponse, error)` 実装
-  - [ ] `GetUser(idOrSlug string) (*User, error)` 実装
-  - [ ] `UpdateUser(id string, user *User) (*User, error)` 実装（注: Ghost APIはユーザー作成・削除をサポートしていない）
+- [ ] `internal/ghostapi/newsletters.go` を作成
+  - [ ] Newsletter型定義（ID、Name、Slug、Statusなど）
+  - [ ] NewsletterListOptions型定義
+  - [ ] テスト作成（`newsletters_test.go`）
+  - [ ] `ListNewsletters(options NewsletterListOptions) (*NewsletterListResponse, error)` 実装
+  - [ ] `GetNewsletter(idOrSlug string) (*Newsletter, error)` 実装
 
-#### 2. Usersコマンド実装
+#### 2. Tiers API実装
 
-- [ ] `internal/cmd/users.go` を作成
-  - [ ] UsersCmd構造体定義
-  - [ ] UsersListCmd実装
-    - [ ] `--limit` フラグ
-    - [ ] `--include` フラグ（roles、count.postsなど）
-  - [ ] UsersGetCmd実装
-  - [ ] UsersUpdateCmd実装
-    - [ ] `--name` フラグ
-    - [ ] `--slug` フラグ
-    - [ ] `--bio` フラグ
+- [ ] `internal/ghostapi/tiers.go` を作成
+  - [ ] Tier型定義（ID、Name、Slug、Type、Priceなど）
+  - [ ] TierListOptions型定義
+  - [ ] テスト作成（`tiers_test.go`）
+  - [ ] `ListTiers(options TierListOptions) (*TierListResponse, error)` 実装
+  - [ ] `GetTier(idOrSlug string) (*Tier, error)` 実装
 
-#### 3. CLIに統合
+#### 3. Offers API実装
 
-- [ ] `internal/cmd/root.go` に UsersCmd を追加
+- [ ] `internal/ghostapi/offers.go` を作成
+  - [ ] Offer型定義（ID、Name、Code、Tier、Discountなど）
+  - [ ] OfferListOptions型定義
+  - [ ] テスト作成（`offers_test.go`）
+  - [ ] `ListOffers(options OfferListOptions) (*OfferListResponse, error)` 実装
+  - [ ] `GetOffer(id string) (*Offer, error)` 実装
 
-#### 4. 品質チェック
+#### 4. コマンド実装
+
+- [ ] `internal/cmd/newsletters.go` を作成
+- [ ] `internal/cmd/tiers.go` を作成
+- [ ] `internal/cmd/offers.go` を作成
+
+#### 5. CLIに統合
+
+- [ ] `internal/cmd/root.go` に各コマンドを追加
+
+#### 6. 品質チェック & ドキュメント更新
 
 - [ ] すべてのテストがパス（`make test`）
 - [ ] 型チェック成功（`make type-check`）
-- [ ] Lint成功（`make lint`）
 - [ ] ビルド成功（`make build`）
-
-#### 5. 動作確認
-
-- [ ] `./gho users list` でユーザー一覧が表示される
-- [ ] `./gho users get <id>` でユーザー詳細が表示される
-- [ ] `./gho users update <id> --name "新しい名前"` でユーザーが更新される
-
-#### 6. ドキュメント更新
-
 - [ ] `docs/PROJECT_STATUS.md` を更新
-- [ ] `docs/NEXT_STEPS.md` を更新（Phase 6に移行）
-
-#### 7. コミット
-
-- [ ] Phase 5完了のコミットを作成
-
-### 実装の開始方法
-
-```bash
-# featureブランチを作成
-git checkout -b feature/phase5-users
-
-# Users APIのテストから開始（TDD）
-# internal/ghostapi/users_test.go を作成
-```
+- [ ] Phase 6完了のコミットを作成
 
 ### 参考: Ghost Admin API仕様
 
-**Users API**:
-- エンドポイント: `/ghost/api/admin/users/`
-- メソッド: GET, PUT（注: POST/DELETEは利用不可）
-- パラメータ: `limit`, `filter`, `include` (roles, count.postsなど)
-- 主要フィールド: `id`, `name`, `slug`, `email`, `roles`, `bio`, `location`
-- スラッグ指定: `slug:user-slug` 形式でスラッグ検索が可能
+**Newsletters API**:
+- エンドポイント: `/ghost/api/admin/newsletters/`
+- メソッド: GET
+- 主要フィールド: `id`, `name`, `slug`, `status`, `subscribe_on_signup`
+
+**Tiers API**:
+- エンドポイント: `/ghost/api/admin/tiers/`
+- メソッド: GET
+- 主要フィールド: `id`, `name`, `slug`, `type`, `monthly_price`, `yearly_price`
+
+**Offers API**:
+- エンドポイント: `/ghost/api/admin/offers/`
+- メソッド: GET
+- 主要フィールド: `id`, `name`, `code`, `tier`, `discount_type`, `discount_amount`
 
 詳細: https://ghost.org/docs/admin-api/
 
-### 実装時の注意点
-
-1. **TDD原則を厳守**
-   - テストを先に書く（RED）
-   - 最小限の実装（GREEN）
-   - リファクタリング（REFACTOR）
-
-2. **エラーハンドリング**
-   - エラーメッセージは日本語で具体的に
-   - エラーのラップに `fmt.Errorf` と `%w` を使用
-
-3. **出力フォーマット**
-   - JSON/Table/Plain形式をサポート
-   - RootFlags.GetOutputMode() で形式を決定
-
-4. **コードコメント**
-   - ファイル冒頭にコメント
-   - 関数に詳細なコメント
-   - 複雑な処理には日本語コメント
-
-5. **Git ワークフロー**
-   - mainブランチへの直接コミット禁止
-   - featureブランチで作業
-   - コミット前に品質チェック
-
-6. **Users特有の注意点**
-   - Ghost APIはユーザーの作成・削除をサポートしていない（ダッシュボードからのみ）
-   - rolesフィールドは読み取り専用
-   - スラッグによる検索に対応（Tags APIと同じパターン）
-
-## Phase 6以降の予定
-
-### Phase 6: Newsletters/Tiers/Offers
-
-- Newsletters API（list/get）
-- Tiers API（list/get）
-- Offers API（list/get）
+## Phase 7以降の予定
 
 ### Phase 7: Themes/Webhooks
 

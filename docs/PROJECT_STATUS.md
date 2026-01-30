@@ -182,9 +182,38 @@
 - ✅ 型チェック（`go vet`）成功
 - ✅ ビルド成功
 
-### 📋 Phase 5以降（未実装）
+**コミット**:
+- `3a935e6 feat(api): Members APIを実装`
 
-- Users API
+### ✅ Phase 5: Users管理（完了）
+
+**完了日**: 2026-01-30
+
+**実装内容**:
+
+1. **Users API** (`internal/ghostapi/users.go`)
+   - User型定義（ID、Name、Slug、Email、Bio、Location、Website、ProfileImage、CoverImage、Rolesなど）
+   - Role型定義（ID、Name）
+   - UserListOptions型定義（pagination、include、filter対応）
+   - `ListUsers(options UserListOptions) (*UserListResponse, error)` 実装
+   - `GetUser(idOrSlug string) (*User, error)` 実装（"slug:"プレフィックス対応）
+   - `UpdateUser(id string, user *User) (*User, error)` 実装
+   - **注意**: Create/Delete操作は非サポート（Ghostダッシュボードの招待機能を利用）
+
+2. **Usersコマンド** (`internal/cmd/users.go`)
+   ```
+   gho users list [--limit N] [--page N] [--include roles,count.posts]
+   gho users get <id-or-slug>       # "slug:user-slug" 形式でslugを指定可能
+   gho users update <id> [--name "..."] [--slug "..."] [--bio "..."] [--location "..."] [--website "..."]
+   ```
+
+**品質チェック**:
+- ✅ すべてのテストがパス（Users: 7テスト）
+- ✅ 型チェック（`go vet`）成功
+- ✅ ビルド成功
+
+### 📋 Phase 6以降（未実装）
+
 - Newsletters API
 - Tiers API
 - Offers API
@@ -206,7 +235,8 @@ gho/
 │   │   ├── pages.go         # Pagesコマンド
 │   │   ├── tags.go          # Tagsコマンド
 │   │   ├── images.go        # Imagesコマンド
-│   │   └── members.go       # Membersコマンド
+│   │   ├── members.go       # Membersコマンド
+│   │   └── users.go         # Usersコマンド
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -227,7 +257,9 @@ gho/
 │   │   ├── images.go        # Images API
 │   │   ├── images_test.go
 │   │   ├── members.go       # Members API
-│   │   └── members_test.go
+│   │   ├── members_test.go
+│   │   ├── users.go         # Users API
+│   │   └── users_test.go
 │   └── outfmt/              # 出力フォーマット
 │       ├── outfmt.go
 │       └── outfmt_test.go
@@ -246,16 +278,17 @@ gho/
 
 - `internal/config/` - 設定ファイル管理（6テスト）
 - `internal/secrets/` - キーリング統合（8テスト）
-- `internal/ghostapi/` - APIクライアント（35テスト）
+- `internal/ghostapi/` - APIクライアント（42テスト）
   - `client.go`, `jwt.go` - 9テスト
   - `posts.go` - 7テスト
   - `pages.go` - 5テスト
   - `tags.go` - 6テスト
   - `images.go` - 2テスト
   - `members.go` - 6テスト
+  - `users.go` - 7テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 54テスト、すべてパス
+合計: 61テスト、すべてパス
 
 ## 依存関係
 
@@ -283,4 +316,4 @@ make build
 
 ## 次のステップ
 
-Phase 4（Members管理）の実装を開始します。詳細は `docs/NEXT_STEPS.md` を参照してください。
+Phase 6（Newsletters API、Tiers API など）の実装を検討します。詳細は `docs/NEXT_STEPS.md` を参照してください。
