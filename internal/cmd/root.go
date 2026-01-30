@@ -19,6 +19,7 @@ type RootFlags struct {
 	Force   bool   `help:"Skip confirmations" short:"f"`
 	NoInput bool   `help:"Never prompt; fail instead (useful for CI)" env:"GHO_NO_INPUT"`
 	Verbose bool   `help:"Enable verbose logging" short:"v" env:"GHO_VERBOSE"`
+	Color   string `help:"Color output (auto, always, never)" enum:"auto,always,never" default:"auto" env:"GHO_COLOR"`
 }
 
 // CLI はgho CLIのルート構造体です

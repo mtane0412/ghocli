@@ -85,3 +85,56 @@ func TestRootFlags_VerboseFlagOverridesEnv(t *testing.T) {
 	// フラグが環境変数より優先されるので、Verboseがtrueになるはず
 	assert.True(t, cli.Verbose, "-vフラグは環境変数より優先されるべき")
 }
+
+// TestRootFlags_ColorEnvVar はGHO_COLOR環境変数が正しく読み込まれることをテストします
+func TestRootFlags_ColorEnvVar(t *testing.T) {
+	// 環境変数を設定
+	os.Setenv("GHO_COLOR", "never")
+	defer os.Unsetenv("GHO_COLOR")
+
+	// CLIをパース（posts listコマンドを使用）
+	var cli CLI
+	parser, err := kong.New(&cli)
+	require.NoError(t, err)
+
+	_, err = parser.Parse([]string{"posts", "list"})
+	require.NoError(t, err)
+
+	// GHO_COLORが設定されているので、Colorが"never"になるはず
+	assert.Equal(t, "never", cli.Color, "GHO_COLOR環境変数が設定されている場合、Colorが正しく設定されるべき")
+}
+
+// TestRootFlags_ColorFlagOverridesEnv はフラグが環境変数より優先されることをテストします
+func TestRootFlags_ColorFlagOverridesEnv(t *testing.T) {
+	// 環境変数を設定
+	os.Setenv("GHO_COLOR", "never")
+	defer os.Unsetenv("GHO_COLOR")
+
+	// CLIをパース（--color=alwaysフラグを指定）
+	var cli CLI
+	parser, err := kong.New(&cli)
+	require.NoError(t, err)
+
+	_, err = parser.Parse([]string{"--color=always", "posts", "list"})
+	require.NoError(t, err)
+
+	// フラグが環境変数より優先されるので、Colorが"always"になるはず
+	assert.Equal(t, "always", cli.Color, "--colorフラグは環境変数より優先されるべき")
+}
+
+// TestRootFlags_ColorDefault はデフォルト値が"auto"であることをテストします
+func TestRootFlags_ColorDefault(t *testing.T) {
+	// 環境変数を削除
+	os.Unsetenv("GHO_COLOR")
+
+	// CLIをパース
+	var cli CLI
+	parser, err := kong.New(&cli)
+	require.NoError(t, err)
+
+	_, err = parser.Parse([]string{"posts", "list"})
+	require.NoError(t, err)
+
+	// デフォルト値は"auto"になるはず
+	assert.Equal(t, "auto", cli.Color, "デフォルト値は'auto'であるべき")
+}
