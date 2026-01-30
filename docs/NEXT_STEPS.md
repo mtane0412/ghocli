@@ -44,70 +44,48 @@
 - Tiersコマンド（list、get）
 - Offersコマンド（list、get）
 
-## Phase 7: Themes/Webhooks
+✅ **Phase 7: Themes/Webhooks** - 完了（2026-01-30）
 
-### 目標
-
-Themes（テーマ）とWebhooks（Webhook）の管理機能を実装し、Ghost Admin APIの開発者向け機能を強化する
-
-### タスクリスト
-
-#### 1. Themes API実装
-
-- [ ] `internal/ghostapi/themes.go` を作成
-  - [ ] Theme型定義（Name、Package、Active、Templatesなど）
-  - [ ] ThemeListOptions型定義
-  - [ ] テスト作成（`themes_test.go`）
-  - [ ] `ListThemes() ([]Theme, error)` 実装
-  - [ ] `UploadTheme(file io.Reader, filename string) (*Theme, error)` 実装
-  - [ ] `ActivateTheme(name string) (*Theme, error)` 実装
-  - [ ] `DeleteTheme(name string) error` 実装
-
-#### 2. Webhooks API実装
-
-- [ ] `internal/ghostapi/webhooks.go` を作成
-  - [ ] Webhook型定義（ID、Event、TargetURL、Secretなど）
-  - [ ] WebhookListOptions型定義
-  - [ ] テスト作成（`webhooks_test.go`）
-  - [ ] `ListWebhooks() ([]Webhook, error)` 実装
-  - [ ] `CreateWebhook(webhook *Webhook) (*Webhook, error)` 実装
-  - [ ] `UpdateWebhook(id string, webhook *Webhook) (*Webhook, error)` 実装
-  - [ ] `DeleteWebhook(id string) error` 実装
-
-#### 3. コマンド実装
-
-- [ ] `internal/cmd/themes.go` を作成
-- [ ] `internal/cmd/webhooks.go` を作成
-
-#### 4. CLIに統合
-
-- [ ] `internal/cmd/root.go` に各コマンドを追加
-
-#### 5. 品質チェック & ドキュメント更新
-
-- [ ] すべてのテストがパス（`make test`）
-- [ ] 型チェック成功（`make type-check`）
-- [ ] ビルド成功（`make build`）
-- [ ] `docs/PROJECT_STATUS.md` を更新
-- [ ] Phase 7完了のコミットを作成
-
-### 参考: Ghost Admin API仕様
-
-**Themes API**:
-- エンドポイント: `/ghost/api/admin/themes/`
-- メソッド: GET, POST, PUT, DELETE
-- 主要フィールド: `name`, `package`, `active`, `templates`
-
-**Webhooks API**:
-- エンドポイント: `/ghost/api/admin/webhooks/`
-- メソッド: GET, POST, PUT, DELETE
-- 主要フィールド: `id`, `event`, `target_url`, `secret`, `name`, `api_version`
-
-詳細: https://ghost.org/docs/admin-api/
+- Themes API（ListThemes、UploadTheme、ActivateTheme）
+- Webhooks API（CreateWebhook、UpdateWebhook、DeleteWebhook）※ List/Get非サポート
+- Themesコマンド（list、upload、activate）
+- Webhooksコマンド（create、update、delete）
 
 ## Phase 8以降の予定
 
-Phase 7完了後に検討します。
+現時点で主要なGhost Admin API機能の実装が完了しました。今後、以下の拡張機能を検討できます：
+
+### 考えられる拡張機能
+
+1. **データエクスポート/インポート機能**
+   - コンテンツのバックアップ/リストア機能
+   - 他のブログプラットフォームからの移行支援
+
+2. **バッチ操作機能**
+   - 複数の投稿/ページの一括更新
+   - タグの一括割り当て
+   - メンバーの一括インポート
+
+3. **検索・フィルタリングの拡張**
+   - 高度な検索クエリビルダー
+   - カスタムフィルタのプリセット保存
+
+4. **レポート機能**
+   - サイト統計の表示
+   - メンバーレポート
+   - コンテンツレポート
+
+5. **対話的UIモード**
+   - インタラクティブな投稿エディタ
+   - TUIベースのブラウザ
+
+6. **CI/CD統合**
+   - GitHub Actionsワークフロー例
+   - 自動デプロイスクリプト
+
+### 次のアクション
+
+実装優先度や必要性に応じて、上記の拡張機能から選択するか、ユーザーフィードバックに基づいて新機能を検討します。
 
 ## 質問・相談
 

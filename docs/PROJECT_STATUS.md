@@ -265,10 +265,49 @@
 **コミット**:
 - `4545035 feat(api): Newsletters, Tiers, Offers APIを実装`
 
-### 📋 Phase 7以降（未実装）
+### ✅ Phase 7: Themes/Webhooks API（完了）
 
-- Themes API
-- Webhooks API
+**完了日**: 2026-01-30
+
+**実装内容**:
+
+1. **Themes API** (`internal/ghostapi/themes.go`)
+   - Theme型定義（Name、Package、Active、Templatesなど）
+   - ThemePackage型定義（Name、Description、Version）
+   - ThemeTemplate型定義（Filename）
+   - `ListThemes() (*ThemeListResponse, error)` 実装
+   - `UploadTheme(file io.Reader, filename string) (*Theme, error)` 実装（multipartアップロード）
+   - `ActivateTheme(name string) (*Theme, error)` 実装
+
+2. **Webhooks API** (`internal/ghostapi/webhooks.go`)
+   - Webhook型定義（ID、Event、TargetURL、Name、Secret、APIVersion、IntegrationID、Status、LastTriggeredAt、CreatedAt、UpdatedAtなど）
+   - `CreateWebhook(webhook *Webhook) (*Webhook, error)` 実装
+   - `UpdateWebhook(id string, webhook *Webhook) (*Webhook, error)` 実装
+   - `DeleteWebhook(id string) error` 実装
+   - **注意**: Ghost APIはWebhookのList/Getをサポートしていません
+
+3. **Themesコマンド** (`internal/cmd/themes.go`)
+   ```
+   gho themes list                    # テーマ一覧
+   gho themes upload <file.zip>       # テーマアップロード
+   gho themes activate <name>         # テーマ有効化
+   ```
+
+4. **Webhooksコマンド** (`internal/cmd/webhooks.go`)
+   ```
+   gho webhooks create --event <event> --target-url <url> [--name <name>]
+   gho webhooks update <id> [--event <event>] [--target-url <url>] [--name <name>]
+   gho webhooks delete <id>
+   ```
+
+**品質チェック**:
+- ✅ すべてのテストがパス（Themes: 3テスト、Webhooks: 3テスト）
+- ✅ 型チェック（`go vet`）成功
+- ✅ Lint（golangci-lint）成功
+- ✅ ビルド成功
+
+**コミット**:
+- （未コミット）
 
 ## 現在の構造
 
@@ -289,7 +328,9 @@ gho/
 │   │   ├── users.go         # Usersコマンド
 │   │   ├── newsletters.go   # Newslettersコマンド
 │   │   ├── tiers.go         # Tiersコマンド
-│   │   └── offers.go        # Offersコマンド
+│   │   ├── offers.go        # Offersコマンド
+│   │   ├── themes.go        # Themesコマンド
+│   │   └── webhooks.go      # Webhooksコマンド
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -318,7 +359,11 @@ gho/
 │   │   ├── tiers.go         # Tiers API
 │   │   ├── tiers_test.go
 │   │   ├── offers.go        # Offers API
-│   │   └── offers_test.go
+│   │   ├── offers_test.go
+│   │   ├── themes.go        # Themes API
+│   │   ├── themes_test.go
+│   │   ├── webhooks.go      # Webhooks API
+│   │   └── webhooks_test.go
 │   └── outfmt/              # 出力フォーマット
 │       ├── outfmt.go
 │       └── outfmt_test.go
@@ -337,7 +382,7 @@ gho/
 
 - `internal/config/` - 設定ファイル管理（6テスト）
 - `internal/secrets/` - キーリング統合（8テスト）
-- `internal/ghostapi/` - APIクライアント（53テスト）
+- `internal/ghostapi/` - APIクライアント（59テスト）
   - `client.go`, `jwt.go` - 11テスト
   - `posts.go` - 7テスト
   - `pages.go` - 5テスト
@@ -348,9 +393,11 @@ gho/
   - `newsletters.go` - 4テスト
   - `tiers.go` - 4テスト
   - `offers.go` - 3テスト
+  - `themes.go` - 3テスト
+  - `webhooks.go` - 3テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 72テスト、すべてパス
+合計: 78テスト、すべてパス
 
 ## 依存関係
 
