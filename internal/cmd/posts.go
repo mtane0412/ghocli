@@ -10,7 +10,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
@@ -199,7 +198,7 @@ func (c *PostsUpdateCmd) Run(root *RootFlags) error {
 		HTML:      existingPost.HTML,
 		Lexical:   existingPost.Lexical,
 		Status:    existingPost.Status,
-		UpdatedAt: time.Now(), // 更新時刻を設定
+		UpdatedAt: existingPost.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
 	}
 
 	if c.Title != "" {
@@ -307,7 +306,7 @@ func (c *PostsPublishCmd) Run(root *RootFlags) error {
 		HTML:      existingPost.HTML,
 		Lexical:   existingPost.Lexical,
 		Status:    "published",
-		UpdatedAt: time.Now(),
+		UpdatedAt: existingPost.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
 	}
 
 	// 投稿を更新

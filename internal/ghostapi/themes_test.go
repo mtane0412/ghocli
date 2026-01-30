@@ -65,7 +65,7 @@ func TestListThemes_テーマ一覧の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -154,7 +154,7 @@ func TestUploadTheme_テーマのアップロード(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -218,7 +218,7 @@ func TestActivateTheme_テーマの有効化(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}

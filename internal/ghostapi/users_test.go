@@ -55,7 +55,7 @@ func TestListUsers_ユーザー一覧の取得(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}
@@ -121,7 +121,7 @@ func TestListUsers_オプション付き(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}
@@ -185,7 +185,7 @@ func TestGetUser_IDでユーザーを取得(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}
@@ -241,7 +241,7 @@ func TestGetUser_スラッグでユーザーを取得(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}
@@ -310,7 +310,7 @@ func TestUpdateUser_ユーザーの更新(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}
@@ -355,7 +355,7 @@ func TestGetUser_ユーザーが見つからない(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}
@@ -377,7 +377,7 @@ func TestListUsers_APIエラー(t *testing.T) {
 	defer ts.Close()
 
 	// テスト用のクライアントを作成
-	client, err := NewClient(ts.URL, "test-key", "test-secret")
+	client, err := NewClient(ts.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗しました: %v", err)
 	}

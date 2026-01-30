@@ -69,7 +69,7 @@ func TestCreateWebhook_Webhookの作成(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestUpdateWebhook_Webhookの更新(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -190,7 +190,7 @@ func TestDeleteWebhook_Webhookの削除(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}

@@ -6,6 +6,7 @@
 package ghostapi
 
 import (
+	"encoding/hex"
 	"strings"
 	"testing"
 	"time"
@@ -54,7 +55,12 @@ func TestGenerateJWT_トークンの検証(t *testing.T) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			t.Errorf("予期しない署名アルゴリズム: %v", token.Header["alg"])
 		}
-		return []byte(secret), nil
+		// シークレットを16進数からバイナリにデコード
+		secretBytes, err := hex.DecodeString(secret)
+		if err != nil {
+			t.Fatalf("シークレットのデコードに失敗: %v", err)
+		}
+		return secretBytes, nil
 	})
 
 	if err != nil {

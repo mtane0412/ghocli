@@ -10,7 +10,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
@@ -198,7 +197,7 @@ func (c *PagesUpdateCmd) Run(root *RootFlags) error {
 		HTML:      existingPage.HTML,
 		Lexical:   existingPage.Lexical,
 		Status:    existingPage.Status,
-		UpdatedAt: time.Now(), // 更新時刻を設定
+		UpdatedAt: existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
 	}
 
 	if c.Title != "" {

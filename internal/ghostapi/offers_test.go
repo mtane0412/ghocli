@@ -91,7 +91,7 @@ func TestListOffers_オファー一覧の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestListOffers_filterパラメータ(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -234,7 +234,7 @@ func TestGetOffer_IDでオファーを取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -309,7 +309,7 @@ func TestCreateOffer_オファーの作成(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -401,7 +401,7 @@ func TestUpdateOffer_オファーの更新(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}

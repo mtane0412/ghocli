@@ -67,7 +67,7 @@ func TestListPosts_投稿一覧の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -133,7 +133,7 @@ func TestListPosts_ステータスフィルタ(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -186,7 +186,7 @@ func TestGetPost_IDで投稿を取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -242,7 +242,7 @@ func TestGetPost_スラッグで投稿を取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -305,7 +305,7 @@ func TestCreatePost_投稿の作成(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -377,7 +377,7 @@ func TestUpdatePost_投稿の更新(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -398,6 +398,77 @@ func TestUpdatePost_投稿の更新(t *testing.T) {
 	}
 	if updatedPost.Title != "更新後のタイトル" {
 		t.Errorf("Title = %q; want %q", updatedPost.Title, "更新後のタイトル")
+	}
+}
+
+// TestUpdatePost_updated_atを保持して更新
+func TestUpdatePost_updated_atを保持して更新(t *testing.T) {
+	postID := "64fac5417c4c6b0001234567"
+	originalUpdatedAt := "2024-01-15T10:00:00Z"
+
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		expectedPath := "/ghost/api/admin/posts/" + postID + "/"
+		if r.URL.Path != expectedPath {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+		}
+		if r.Method != "PUT" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+		}
+
+		// リクエストボディの検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+		}
+		posts := reqBody["posts"].([]interface{})
+		post := posts[0].(map[string]interface{})
+
+		// updated_atがリクエストに含まれていることを確認
+		if _, ok := post["updated_at"]; !ok {
+			t.Error("updated_atがリクエストに含まれていません")
+		}
+
+		// updated_atが元の値と一致することを確認
+		if post["updated_at"] != originalUpdatedAt {
+			t.Errorf("updated_at = %q; want %q", post["updated_at"], originalUpdatedAt)
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"posts": []map[string]interface{}{
+				{
+					"id":         postID,
+					"title":      "更新後のタイトル",
+					"slug":       "updated-post",
+					"status":     "published",
+					"created_at": "2024-01-15T10:00:00.000Z",
+					"updated_at": time.Now().Format(time.RFC3339),
+				},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// 元のupdated_atを持つ投稿を更新
+	parsedTime, _ := time.Parse(time.RFC3339, originalUpdatedAt)
+	updatePost := &Post{
+		Title:     "更新後のタイトル",
+		Status:    "published",
+		UpdatedAt: parsedTime,
+	}
+	_, err = client.UpdatePost(postID, updatePost)
+	if err != nil {
+		t.Fatalf("投稿の更新に失敗: %v", err)
 	}
 }
 
@@ -422,7 +493,7 @@ func TestDeletePost_投稿の削除(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}

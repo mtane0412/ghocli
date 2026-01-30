@@ -80,7 +80,7 @@ func TestListNewsletters_ニュースレター一覧の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -151,7 +151,7 @@ func TestListNewsletters_filterパラメータ(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -210,7 +210,7 @@ func TestGetNewsletter_IDでニュースレターを取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -270,7 +270,7 @@ func TestGetNewsletter_スラッグでニュースレターを取得(t *testing.
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -337,7 +337,7 @@ func TestCreateNewsletter_ニュースレターの作成(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -417,7 +417,7 @@ func TestUpdateNewsletter_ニュースレターの更新(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}

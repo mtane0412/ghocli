@@ -34,7 +34,7 @@ func TestNewClient_クライアントの作成(t *testing.T) {
 
 // TestNewClient_無効なURLでエラー
 func TestNewClient_無効なURLでエラー(t *testing.T) {
-	_, err := NewClient("", "keyid", "secret")
+	_, err := NewClient("", "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err == nil {
 		t.Error("空のURLでエラーが返されなかった")
 	}
@@ -73,7 +73,7 @@ func TestGetSite_サイト情報の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -117,7 +117,7 @@ func TestGetSite_APIエラー(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "invalid", "invalid")
+	client, err := NewClient(server.URL, "invalid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}

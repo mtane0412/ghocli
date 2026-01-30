@@ -9,6 +9,7 @@
 package ghostapi
 
 import (
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -42,8 +43,14 @@ func GenerateJWT(keyID, secret string) (string, error) {
 	// ヘッダーにキーIDを設定
 	token.Header["kid"] = keyID
 
-	// シークレットで署名
-	tokenString, err := token.SignedString([]byte(secret))
+	// シークレットを16進数からバイナリにデコード
+	secretBytes, err := hex.DecodeString(secret)
+	if err != nil {
+		return "", errors.New("シークレットの16進数デコードに失敗しました")
+	}
+
+	// デコードしたシークレットで署名
+	tokenString, err := token.SignedString(secretBytes)
 	if err != nil {
 		return "", err
 	}

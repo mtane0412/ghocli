@@ -77,7 +77,7 @@ func TestListTiers_ティア一覧の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -151,7 +151,7 @@ func TestListTiers_includeパラメータ(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -207,7 +207,7 @@ func TestGetTier_IDでティアを取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -264,7 +264,7 @@ func TestGetTier_スラッグでティアを取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -331,7 +331,7 @@ func TestCreateTier_ティアの作成(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -413,7 +413,7 @@ func TestUpdateTier_ティアの更新(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "test-key", "test-secret")
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアント作成エラー: %v", err)
 	}

@@ -66,7 +66,7 @@ func TestListPages_ページ一覧の取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -127,7 +127,7 @@ func TestGetPage_IDでページを取得(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -193,7 +193,7 @@ func TestCreatePage_ページの作成(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -265,7 +265,7 @@ func TestUpdatePage_ページの更新(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}
@@ -310,7 +310,7 @@ func TestDeletePage_ページの削除(t *testing.T) {
 	defer server.Close()
 
 	// クライアントを作成
-	client, err := NewClient(server.URL, "keyid", "secret")
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
 		t.Fatalf("クライアントの作成に失敗: %v", err)
 	}

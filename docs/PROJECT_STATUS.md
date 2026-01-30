@@ -443,6 +443,38 @@ make lint
 make build
 ```
 
+## バグ修正履歴
+
+### 2026-01-30: JWT署名エラーとPosts/Pages更新時の編集ロックエラーの修正
+
+**問題**:
+1. Ghost Admin APIとの通信時に`Invalid token: invalid signature`エラーが発生
+2. 投稿・ページの更新時に`Someone else is editing this post`エラーが発生
+
+**原因**:
+1. Ghost Admin APIのシークレットキーは16進数文字列として提供されるが、JWT署名時にバイナリにデコードせずに直接使用していた
+2. 投稿・ページの更新時に、サーバーから取得した元の`updated_at`タイムスタンプではなく、新しいタイムスタンプを生成して送信していた（Ghost APIの楽観的ロック機構に違反）
+
+**修正箇所**:
+- `internal/ghostapi/jwt.go:46-50` - シークレットを16進数からバイナリにデコードしてから署名
+- `internal/ghostapi/jwt_test.go:9,58-63` - テストコードも16進数デコードに対応
+- 全テストファイル - テスト用のシークレットを16進数形式に統一
+- `internal/cmd/posts.go:202` - `UpdatedAt: time.Now()`を`UpdatedAt: existingPost.UpdatedAt`に修正
+- `internal/cmd/posts.go:310` - publishコマンドでも同様の修正
+- `internal/cmd/pages.go:201` - ページ更新でも同様の修正
+
+**テスト追加**:
+- `TestUpdatePost_updated_atを保持して更新` - 更新時に元の`updated_at`を送信することを確認するテスト
+
+**動作確認**:
+- すべての読み取り操作（Posts、Tags、Users、Newsletters、Tiers、Pagesなど）が正常に動作
+- 書き込み操作（作成・更新・削除）が正常に動作
+- 81テストすべてがパス
+
+**参考**:
+- [Ghost Admin API Overview](https://docs.ghost.org/admin-api)
+- [Bash Example of Ghost JWT Auth](https://gist.github.com/ErisDS/6334f0e70ec7390ec08530d5ef9bd0d5)
+
 ## 次のステップ
 
 Phase 7が完了し、主要なGhost Admin API機能の実装がすべて完了しました。
