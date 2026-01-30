@@ -234,6 +234,16 @@ gho newsletters list --filter "status:active"
 # ニュースレター詳細を取得（IDまたはSlugで指定）
 gho newsletters get <id-or-slug>
 gho newsletters get slug:weekly-newsletter
+
+# 新規ニュースレターを作成
+gho newsletters create --name "週刊ニュースレター" --description "毎週金曜日配信"
+
+# 送信者情報を指定して作成
+gho newsletters create --name "月刊レター" --sender-name "編集部" --sender-email "editor@example.com"
+
+# ニュースレターを更新
+gho newsletters update <id> --name "新しい名前"
+gho newsletters update <id> --visibility paid --subscribe-on-signup=false
 ```
 
 ### Tiers（ティア）
@@ -248,6 +258,19 @@ gho tiers list --include monthly_price,yearly_price
 # ティア詳細を取得（IDまたはSlugで指定）
 gho tiers get <id-or-slug>
 gho tiers get slug:premium
+
+# 新規ティアを作成（無料プラン）
+gho tiers create --name "フリープラン" --type free
+
+# 有料ティアを作成
+gho tiers create --name "プレミアム" --type paid --monthly-price 1000 --yearly-price 10000 --currency JPY
+
+# 特典付きティアを作成
+gho tiers create --name "VIP" --type paid --monthly-price 3000 --benefits "優先サポート" --benefits "限定コンテンツ"
+
+# ティアを更新
+gho tiers update <id> --name "新プレミアム"
+gho tiers update <id> --monthly-price 1200 --yearly-price 12000
 ```
 
 ### Offers（オファー）
@@ -261,6 +284,19 @@ gho offers list --filter "status:active"
 
 # オファー詳細を取得
 gho offers get <id>
+
+# パーセント割引のオファーを作成
+gho offers create --name "新規会員割引" --code "WELCOME2024" --type percent --amount 20 --tier-id <tier-id>
+
+# 固定金額割引のオファーを作成
+gho offers create --name "500円オフ" --code "SAVE500" --type fixed --amount 500 --currency JPY --tier-id <tier-id>
+
+# 期間限定オファーを作成
+gho offers create --name "3ヶ月割引" --code "TRIAL3M" --type percent --amount 50 --duration repeating --duration-in-months 3 --tier-id <tier-id>
+
+# オファーを更新
+gho offers update <id> --name "新規登録キャンペーン"
+gho offers update <id> --amount 30
 ```
 
 ### Themes（テーマ）
@@ -306,8 +342,10 @@ gho posts list --plain
 # 特定のサイトを指定
 gho -s myblog posts list
 
-# 確認をスキップ（削除コマンドなど）
+# 確認をスキップ（作成/更新/削除コマンド）
 gho posts delete <id> --force
+gho newsletters create --name "Test" --force
+gho tiers update <id> --name "New Name" --force
 
 # 詳細ログを表示
 gho -v posts list

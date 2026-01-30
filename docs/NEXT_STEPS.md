@@ -37,12 +37,13 @@
 
 ✅ **Phase 6: Newsletters/Tiers/Offers** - 完了（2026-01-30）
 
-- Newsletters API（ListNewsletters、GetNewsletter）
-- Tiers API（ListTiers、GetTier）
-- Offers API（ListOffers、GetOffer）
-- Newslettersコマンド（list、get）
-- Tiersコマンド（list、get）
-- Offersコマンド（list、get）
+- Newsletters API（ListNewsletters、GetNewsletter、CreateNewsletter、UpdateNewsletter）
+- Tiers API（ListTiers、GetTier、CreateTier、UpdateTier）
+- Offers API（ListOffers、GetOffer、CreateOffer、UpdateOffer）
+- Newslettersコマンド（list、get、create、update）
+- Tiersコマンド（list、get、create、update）
+- Offersコマンド（list、get、create、update）
+- 破壊的操作の確認機構（`--force`フラグでスキップ可能）
 
 ✅ **Phase 7: Themes/Webhooks** - 完了（2026-01-30）
 

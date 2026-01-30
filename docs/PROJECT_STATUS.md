@@ -226,44 +226,64 @@
    - NewsletterListOptions型定義（pagination、filter対応）
    - `ListNewsletters(options NewsletterListOptions) (*NewsletterListResponse, error)` 実装
    - `GetNewsletter(idOrSlug string) (*Newsletter, error)` 実装（"slug:"プレフィックス対応）
+   - `CreateNewsletter(newsletter *Newsletter) (*Newsletter, error)` 実装
+   - `UpdateNewsletter(id string, newsletter *Newsletter) (*Newsletter, error)` 実装
 
 2. **Tiers API** (`internal/ghostapi/tiers.go`)
    - Tier型定義（ID、Name、Slug、Type、MonthlyPrice、YearlyPriceなど）
    - TierListOptions型定義（pagination、include対応）
    - `ListTiers(options TierListOptions) (*TierListResponse, error)` 実装
    - `GetTier(idOrSlug string) (*Tier, error)` 実装（"slug:"プレフィックス対応）
+   - `CreateTier(tier *Tier) (*Tier, error)` 実装
+   - `UpdateTier(id string, tier *Tier) (*Tier, error)` 実装
 
 3. **Offers API** (`internal/ghostapi/offers.go`)
    - Offer型定義（ID、Name、Code、Tier、DiscountType、DiscountAmountなど）
    - OfferListOptions型定義（pagination、filter対応）
    - `ListOffers(options OfferListOptions) (*OfferListResponse, error)` 実装
    - `GetOffer(id string) (*Offer, error)` 実装
+   - `CreateOffer(offer *Offer) (*Offer, error)` 実装
+   - `UpdateOffer(id string, offer *Offer) (*Offer, error)` 実装
 
 4. **Newslettersコマンド** (`internal/cmd/newsletters.go`)
    ```
    gho newsletters list [--limit N] [--page N] [--filter "..."]
    gho newsletters get <id-or-slug>    # "slug:newsletter-slug" 形式でslugを指定可能
+   gho newsletters create --name "..." [--description "..."] [--visibility members|paid]
+   gho newsletters update <id> [--name "..."] [--visibility "..."] [--sender-name "..."]
    ```
 
 5. **Tiersコマンド** (`internal/cmd/tiers.go`)
    ```
    gho tiers list [--limit N] [--page N] [--include monthly_price,yearly_price]
    gho tiers get <id-or-slug>          # "slug:tier-slug" 形式でslugを指定可能
+   gho tiers create --name "..." [--type free|paid] [--monthly-price N] [--yearly-price N]
+   gho tiers update <id> [--name "..."] [--monthly-price N] [--yearly-price N]
    ```
 
 6. **Offersコマンド** (`internal/cmd/offers.go`)
    ```
    gho offers list [--limit N] [--page N] [--filter "..."]
    gho offers get <id>
+   gho offers create --name "..." --code "..." --type percent|fixed --amount N --tier-id <tier-id>
+   gho offers update <id> [--name "..."] [--amount N]
    ```
 
+7. **破壊的操作の確認機構** (`internal/cmd/helpers.go`)
+   - Create/Update操作には確認プロンプトが表示される
+   - `--force`フラグで確認をスキップ可能
+
 **品質チェック**:
-- ✅ すべてのテストがパス（Newsletters: 4テスト、Tiers: 4テスト、Offers: 3テスト）
+- ✅ すべてのテストがパス（Newsletters: 6テスト、Tiers: 6テスト、Offers: 6テスト）
 - ✅ 型チェック（`go vet`）成功
 - ✅ ビルド成功
 
 **コミット**:
 - `4545035 feat(api): Newsletters, Tiers, Offers APIを実装`
+- `eed5ff2 feat(newsletters): Newsletters書き込み操作を実装`
+- `8b158df feat(tiers): Tiers書き込み操作を実装`
+- `2874e8d feat(offers): Offers書き込み操作を実装`
+- `013086c feat(cmd): 破壊的操作の確認機構を実装`
 
 ### ✅ Phase 7: Themes/Webhooks API（完了）
 
@@ -382,7 +402,7 @@ gho/
 
 - `internal/config/` - 設定ファイル管理（6テスト）
 - `internal/secrets/` - キーリング統合（8テスト）
-- `internal/ghostapi/` - APIクライアント（59テスト）
+- `internal/ghostapi/` - APIクライアント（47テスト）
   - `client.go`, `jwt.go` - 11テスト
   - `posts.go` - 7テスト
   - `pages.go` - 5テスト
@@ -390,14 +410,14 @@ gho/
   - `images.go` - 2テスト
   - `members.go` - 6テスト
   - `users.go` - 7テスト
-  - `newsletters.go` - 4テスト
-  - `tiers.go` - 4テスト
-  - `offers.go` - 3テスト
+  - `newsletters.go` - 6テスト（List、Get、Create、Update）
+  - `tiers.go` - 6テスト（List、Get、Create、Update）
+  - `offers.go` - 6テスト（List、Get、Create、Update）
   - `themes.go` - 3テスト
   - `webhooks.go` - 3テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 78テスト、すべてパス
+合計: 66テスト、すべてパス
 
 ## 依存関係
 
