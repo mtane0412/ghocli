@@ -11,6 +11,7 @@ package secrets
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/99designs/keyring"
@@ -33,6 +34,11 @@ func NewStore(backend, fileDir string) (*Store, error) {
 	var cfg keyring.Config
 	cfg.ServiceName = ServiceName
 
+	// 環境変数でバックエンドを上書き
+	if envBackend := os.Getenv("GHO_KEYRING_BACKEND"); envBackend != "" {
+		backend = envBackend
+	}
+
 	// バックエンドタイプを設定
 	switch backend {
 	case "auto":
@@ -46,7 +52,11 @@ func NewStore(backend, fileDir string) (*Store, error) {
 		cfg.AllowedBackends = []keyring.BackendType{keyring.FileBackend}
 		cfg.FileDir = fileDir
 		cfg.FilePasswordFunc = func(prompt string) (string, error) {
-			// ファイルバックエンドはパスワードなしで使用
+			// 環境変数からパスワードを取得
+			if pw := os.Getenv("GHO_KEYRING_PASSWORD"); pw != "" {
+				return pw, nil
+			}
+			// パスワードが設定されていない場合は空文字列を返す
 			return "", nil
 		}
 	case "keychain":
