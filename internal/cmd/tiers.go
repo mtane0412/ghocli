@@ -2,8 +2,8 @@
  * tiers.go
  * ティア管理コマンド
  *
- * Ghostティアの閲覧機能を提供します。
- * ビジネス設定の誤変更リスクを回避するため、読み取り操作（List, Get）のみ実装しています。
+ * Ghostティアの管理機能を提供します。
+ * Create/Update操作には確認機構が適用されます。
  */
 
 package cmd
@@ -19,8 +19,10 @@ import (
 
 // TiersCmd はティア管理コマンドです
 type TiersCmd struct {
-	List TiersListCmd `cmd:"" help:"List tiers"`
-	Get  TiersGetCmd  `cmd:"" help:"Get a tier"`
+	List   TiersListCmd   `cmd:"" help:"List tiers"`
+	Get    TiersGetCmd    `cmd:"" help:"Get a tier"`
+	Create TiersCreateCmd `cmd:"" help:"Create a tier"`
+	Update TiersUpdateCmd `cmd:"" help:"Update a tier"`
 }
 
 // TiersListCmd はティア一覧を取得するコマンドです
@@ -128,4 +130,159 @@ func (c *TiersGetCmd) Run(root *RootFlags) error {
 	}
 
 	return formatter.PrintTable(headers, rows)
+}
+
+// TiersCreateCmd はティアを作成するコマンドです
+type TiersCreateCmd struct {
+	Name           string   `help:"Tier name" short:"n" required:""`
+	Description    string   `help:"Tier description" short:"d"`
+	Type           string   `help:"Tier type (free, paid)" default:"paid"`
+	Visibility     string   `help:"Visibility (public, none)" default:"public"`
+	MonthlyPrice   int      `help:"Monthly price (in smallest currency unit)"`
+	YearlyPrice    int      `help:"Yearly price (in smallest currency unit)"`
+	Currency       string   `help:"Currency code (e.g., JPY, USD)" default:"JPY"`
+	WelcomePageURL string   `help:"Welcome page URL"`
+	Benefits       []string `help:"Benefits list" short:"b"`
+}
+
+// Run はtiersコマンドのcreateサブコマンドを実行します
+func (c *TiersCreateCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 破壊的操作の確認
+	priceInfo := ""
+	if c.Type == "paid" {
+		priceInfo = fmt.Sprintf(" (monthly: %d %s, yearly: %d %s)", c.MonthlyPrice, c.Currency, c.YearlyPrice, c.Currency)
+	}
+	action := fmt.Sprintf("create tier '%s'%s", c.Name, priceInfo)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
+	}
+
+	// 新規ティアを作成
+	newTier := &ghostapi.Tier{
+		Name:           c.Name,
+		Description:    c.Description,
+		Type:           c.Type,
+		Visibility:     c.Visibility,
+		MonthlyPrice:   c.MonthlyPrice,
+		YearlyPrice:    c.YearlyPrice,
+		Currency:       c.Currency,
+		WelcomePageURL: c.WelcomePageURL,
+		Benefits:       c.Benefits,
+	}
+
+	createdTier, err := client.CreateTier(newTier)
+	if err != nil {
+		return fmt.Errorf("ティアの作成に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("ティアを作成しました: %s (ID: %s)", createdTier.Name, createdTier.ID))
+	}
+
+	// JSON形式の場合はティア情報も出力
+	if root.JSON {
+		return formatter.Print(createdTier)
+	}
+
+	return nil
+}
+
+// TiersUpdateCmd はティアを更新するコマンドです
+type TiersUpdateCmd struct {
+	ID             string   `arg:"" help:"Tier ID"`
+	Name           string   `help:"Tier name" short:"n"`
+	Description    string   `help:"Tier description" short:"d"`
+	Visibility     string   `help:"Visibility (public, none)"`
+	MonthlyPrice   *int     `help:"Monthly price (in smallest currency unit)"`
+	YearlyPrice    *int     `help:"Yearly price (in smallest currency unit)"`
+	WelcomePageURL string   `help:"Welcome page URL"`
+	Benefits       []string `help:"Benefits list" short:"b"`
+}
+
+// Run はtiersコマンドのupdateサブコマンドを実行します
+func (c *TiersUpdateCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のティアを取得
+	existingTier, err := client.GetTier(c.ID)
+	if err != nil {
+		return fmt.Errorf("ティアの取得に失敗: %w", err)
+	}
+
+	// 破壊的操作の確認
+	action := fmt.Sprintf("update tier '%s' (ID: %s)", existingTier.Name, c.ID)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
+	}
+
+	// 更新内容を反映
+	updateTier := &ghostapi.Tier{
+		Name:           existingTier.Name,
+		Slug:           existingTier.Slug,
+		Description:    existingTier.Description,
+		Type:           existingTier.Type,
+		Visibility:     existingTier.Visibility,
+		MonthlyPrice:   existingTier.MonthlyPrice,
+		YearlyPrice:    existingTier.YearlyPrice,
+		Currency:       existingTier.Currency,
+		WelcomePageURL: existingTier.WelcomePageURL,
+		Benefits:       existingTier.Benefits,
+	}
+
+	if c.Name != "" {
+		updateTier.Name = c.Name
+	}
+	if c.Description != "" {
+		updateTier.Description = c.Description
+	}
+	if c.Visibility != "" {
+		updateTier.Visibility = c.Visibility
+	}
+	if c.MonthlyPrice != nil {
+		updateTier.MonthlyPrice = *c.MonthlyPrice
+	}
+	if c.YearlyPrice != nil {
+		updateTier.YearlyPrice = *c.YearlyPrice
+	}
+	if c.WelcomePageURL != "" {
+		updateTier.WelcomePageURL = c.WelcomePageURL
+	}
+	if len(c.Benefits) > 0 {
+		updateTier.Benefits = c.Benefits
+	}
+
+	// ティアを更新
+	updatedTier, err := client.UpdateTier(c.ID, updateTier)
+	if err != nil {
+		return fmt.Errorf("ティアの更新に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("ティアを更新しました: %s (ID: %s)", updatedTier.Name, updatedTier.ID))
+	}
+
+	// JSON形式の場合はティア情報も出力
+	if root.JSON {
+		return formatter.Print(updatedTier)
+	}
+
+	return nil
 }

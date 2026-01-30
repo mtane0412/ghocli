@@ -280,3 +280,163 @@ func TestGetTier_スラッグでティアを取得(t *testing.T) {
 		t.Errorf("スラッグ = %q; want %q", tier.Slug, "free")
 	}
 }
+
+// TestCreateTier_ティアの作成
+func TestCreateTier_ティアの作成(t *testing.T) {
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		if r.URL.Path != "/ghost/api/admin/tiers/" {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/tiers/")
+		}
+		if r.Method != "POST" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+		}
+
+		// リクエストボディを検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+		}
+
+		tiers, ok := reqBody["tiers"].([]interface{})
+		if !ok || len(tiers) == 0 {
+			t.Error("tiersフィールドが正しくない")
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"tiers": []map[string]interface{}{
+				{
+					"id":               "64fac5417c4c6b0001234569",
+					"name":             "新規プラン",
+					"description":      "テスト用プラン",
+					"slug":             "new-plan",
+					"active":           true,
+					"type":             "paid",
+					"visibility":       "public",
+					"monthly_price":    1000,
+					"yearly_price":     10000,
+					"currency":         "JPY",
+					"welcome_page_url": "/welcome",
+					"created_at":       "2024-01-20T10:00:00.000Z",
+					"updated_at":       "2024-01-20T10:00:00.000Z",
+				},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "test-key", "test-secret")
+	if err != nil {
+		t.Fatalf("クライアント作成エラー: %v", err)
+	}
+
+	// ティアを作成
+	newTier := &Tier{
+		Name:           "新規プラン",
+		Description:    "テスト用プラン",
+		Type:           "paid",
+		Visibility:     "public",
+		MonthlyPrice:   1000,
+		YearlyPrice:    10000,
+		Currency:       "JPY",
+		WelcomePageURL: "/welcome",
+	}
+
+	createdTier, err := client.CreateTier(newTier)
+	if err != nil {
+		t.Fatalf("ティア作成エラー: %v", err)
+	}
+
+	// レスポンスの検証
+	if createdTier.Name != "新規プラン" {
+		t.Errorf("ティア名 = %q; want %q", createdTier.Name, "新規プラン")
+	}
+	if createdTier.ID == "" {
+		t.Error("ティアIDが設定されていない")
+	}
+}
+
+// TestUpdateTier_ティアの更新
+func TestUpdateTier_ティアの更新(t *testing.T) {
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		expectedPath := "/ghost/api/admin/tiers/64fac5417c4c6b0001234567/"
+		if r.URL.Path != expectedPath {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+		}
+		if r.Method != "PUT" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+		}
+
+		// リクエストボディを検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+		}
+
+		tiers, ok := reqBody["tiers"].([]interface{})
+		if !ok || len(tiers) == 0 {
+			t.Error("tiersフィールドが正しくない")
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"tiers": []map[string]interface{}{
+				{
+					"id":               "64fac5417c4c6b0001234567",
+					"name":             "更新されたプラン",
+					"description":      "更新後の説明",
+					"slug":             "premium",
+					"active":           true,
+					"type":             "paid",
+					"visibility":       "public",
+					"monthly_price":    1500,
+					"yearly_price":     15000,
+					"currency":         "JPY",
+					"welcome_page_url": "/updated-welcome",
+					"created_at":       "2024-01-15T10:00:00.000Z",
+					"updated_at":       "2024-01-20T10:00:00.000Z",
+				},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "test-key", "test-secret")
+	if err != nil {
+		t.Fatalf("クライアント作成エラー: %v", err)
+	}
+
+	// ティアを更新
+	updateTier := &Tier{
+		Name:           "更新されたプラン",
+		Description:    "更新後の説明",
+		MonthlyPrice:   1500,
+		YearlyPrice:    15000,
+		WelcomePageURL: "/updated-welcome",
+	}
+
+	updatedTier, err := client.UpdateTier("64fac5417c4c6b0001234567", updateTier)
+	if err != nil {
+		t.Fatalf("ティア更新エラー: %v", err)
+	}
+
+	// レスポンスの検証
+	if updatedTier.Name != "更新されたプラン" {
+		t.Errorf("ティア名 = %q; want %q", updatedTier.Name, "更新されたプラン")
+	}
+	if updatedTier.Description != "更新後の説明" {
+		t.Errorf("説明 = %q; want %q", updatedTier.Description, "更新後の説明")
+	}
+}
