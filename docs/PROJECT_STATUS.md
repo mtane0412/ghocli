@@ -212,11 +212,61 @@
 - ✅ 型チェック（`go vet`）成功
 - ✅ ビルド成功
 
-### 📋 Phase 6以降（未実装）
+**コミット**:
+- `1884ff0 feat(api): Users APIを実装`
 
-- Newsletters API
-- Tiers API
-- Offers API
+### ✅ Phase 6: Newsletters/Tiers/Offers（完了）
+
+**完了日**: 2026-01-30
+
+**実装内容**:
+
+1. **Newsletters API** (`internal/ghostapi/newsletters.go`)
+   - Newsletter型定義（ID、Name、Slug、Description、Status、SubscribeOnSignupなど）
+   - NewsletterListOptions型定義（pagination、filter対応）
+   - `ListNewsletters(options NewsletterListOptions) (*NewsletterListResponse, error)` 実装
+   - `GetNewsletter(idOrSlug string) (*Newsletter, error)` 実装（"slug:"プレフィックス対応）
+
+2. **Tiers API** (`internal/ghostapi/tiers.go`)
+   - Tier型定義（ID、Name、Slug、Type、MonthlyPrice、YearlyPriceなど）
+   - TierListOptions型定義（pagination、include対応）
+   - `ListTiers(options TierListOptions) (*TierListResponse, error)` 実装
+   - `GetTier(idOrSlug string) (*Tier, error)` 実装（"slug:"プレフィックス対応）
+
+3. **Offers API** (`internal/ghostapi/offers.go`)
+   - Offer型定義（ID、Name、Code、Tier、DiscountType、DiscountAmountなど）
+   - OfferListOptions型定義（pagination、filter対応）
+   - `ListOffers(options OfferListOptions) (*OfferListResponse, error)` 実装
+   - `GetOffer(id string) (*Offer, error)` 実装
+
+4. **Newslettersコマンド** (`internal/cmd/newsletters.go`)
+   ```
+   gho newsletters list [--limit N] [--page N] [--filter "..."]
+   gho newsletters get <id-or-slug>    # "slug:newsletter-slug" 形式でslugを指定可能
+   ```
+
+5. **Tiersコマンド** (`internal/cmd/tiers.go`)
+   ```
+   gho tiers list [--limit N] [--page N] [--include monthly_price,yearly_price]
+   gho tiers get <id-or-slug>          # "slug:tier-slug" 形式でslugを指定可能
+   ```
+
+6. **Offersコマンド** (`internal/cmd/offers.go`)
+   ```
+   gho offers list [--limit N] [--page N] [--filter "..."]
+   gho offers get <id>
+   ```
+
+**品質チェック**:
+- ✅ すべてのテストがパス（Newsletters: 4テスト、Tiers: 4テスト、Offers: 3テスト）
+- ✅ 型チェック（`go vet`）成功
+- ✅ ビルド成功
+
+**コミット**:
+- `4545035 feat(api): Newsletters, Tiers, Offers APIを実装`
+
+### 📋 Phase 7以降（未実装）
+
 - Themes API
 - Webhooks API
 
@@ -236,7 +286,10 @@ gho/
 │   │   ├── tags.go          # Tagsコマンド
 │   │   ├── images.go        # Imagesコマンド
 │   │   ├── members.go       # Membersコマンド
-│   │   └── users.go         # Usersコマンド
+│   │   ├── users.go         # Usersコマンド
+│   │   ├── newsletters.go   # Newslettersコマンド
+│   │   ├── tiers.go         # Tiersコマンド
+│   │   └── offers.go        # Offersコマンド
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -259,7 +312,13 @@ gho/
 │   │   ├── members.go       # Members API
 │   │   ├── members_test.go
 │   │   ├── users.go         # Users API
-│   │   └── users_test.go
+│   │   ├── users_test.go
+│   │   ├── newsletters.go   # Newsletters API
+│   │   ├── newsletters_test.go
+│   │   ├── tiers.go         # Tiers API
+│   │   ├── tiers_test.go
+│   │   ├── offers.go        # Offers API
+│   │   └── offers_test.go
 │   └── outfmt/              # 出力フォーマット
 │       ├── outfmt.go
 │       └── outfmt_test.go
@@ -278,17 +337,20 @@ gho/
 
 - `internal/config/` - 設定ファイル管理（6テスト）
 - `internal/secrets/` - キーリング統合（8テスト）
-- `internal/ghostapi/` - APIクライアント（42テスト）
-  - `client.go`, `jwt.go` - 9テスト
+- `internal/ghostapi/` - APIクライアント（53テスト）
+  - `client.go`, `jwt.go` - 11テスト
   - `posts.go` - 7テスト
   - `pages.go` - 5テスト
-  - `tags.go` - 6テスト
+  - `tags.go` - 7テスト
   - `images.go` - 2テスト
   - `members.go` - 6テスト
   - `users.go` - 7テスト
+  - `newsletters.go` - 4テスト
+  - `tiers.go` - 4テスト
+  - `offers.go` - 3テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 61テスト、すべてパス
+合計: 72テスト、すべてパス
 
 ## 依存関係
 
@@ -316,4 +378,4 @@ make build
 
 ## 次のステップ
 
-Phase 6（Newsletters API、Tiers API など）の実装を検討します。詳細は `docs/NEXT_STEPS.md` を参照してください。
+Phase 7（Themes API、Webhooks API など）の実装を検討します。詳細は `docs/NEXT_STEPS.md` を参照してください。

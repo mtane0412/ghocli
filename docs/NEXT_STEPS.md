@@ -35,84 +35,79 @@
 - Users API（ListUsers、GetUser、UpdateUser）※ Create/Delete非サポート
 - Usersコマンド（list、get、update）
 
-## Phase 6: Newsletters/Tiers/Offers
+✅ **Phase 6: Newsletters/Tiers/Offers** - 完了（2026-01-30）
+
+- Newsletters API（ListNewsletters、GetNewsletter）
+- Tiers API（ListTiers、GetTier）
+- Offers API（ListOffers、GetOffer）
+- Newslettersコマンド（list、get）
+- Tiersコマンド（list、get）
+- Offersコマンド（list、get）
+
+## Phase 7: Themes/Webhooks
 
 ### 目標
 
-Newsletters（ニュースレター）、Tiers（サブスクリプションプラン）、Offers（オファー）の管理機能を実装し、Ghost Admin APIのビジネス機能を強化する
+Themes（テーマ）とWebhooks（Webhook）の管理機能を実装し、Ghost Admin APIの開発者向け機能を強化する
 
 ### タスクリスト
 
-#### 1. Newsletters API実装
+#### 1. Themes API実装
 
-- [ ] `internal/ghostapi/newsletters.go` を作成
-  - [ ] Newsletter型定義（ID、Name、Slug、Statusなど）
-  - [ ] NewsletterListOptions型定義
-  - [ ] テスト作成（`newsletters_test.go`）
-  - [ ] `ListNewsletters(options NewsletterListOptions) (*NewsletterListResponse, error)` 実装
-  - [ ] `GetNewsletter(idOrSlug string) (*Newsletter, error)` 実装
+- [ ] `internal/ghostapi/themes.go` を作成
+  - [ ] Theme型定義（Name、Package、Active、Templatesなど）
+  - [ ] ThemeListOptions型定義
+  - [ ] テスト作成（`themes_test.go`）
+  - [ ] `ListThemes() ([]Theme, error)` 実装
+  - [ ] `UploadTheme(file io.Reader, filename string) (*Theme, error)` 実装
+  - [ ] `ActivateTheme(name string) (*Theme, error)` 実装
+  - [ ] `DeleteTheme(name string) error` 実装
 
-#### 2. Tiers API実装
+#### 2. Webhooks API実装
 
-- [ ] `internal/ghostapi/tiers.go` を作成
-  - [ ] Tier型定義（ID、Name、Slug、Type、Priceなど）
-  - [ ] TierListOptions型定義
-  - [ ] テスト作成（`tiers_test.go`）
-  - [ ] `ListTiers(options TierListOptions) (*TierListResponse, error)` 実装
-  - [ ] `GetTier(idOrSlug string) (*Tier, error)` 実装
+- [ ] `internal/ghostapi/webhooks.go` を作成
+  - [ ] Webhook型定義（ID、Event、TargetURL、Secretなど）
+  - [ ] WebhookListOptions型定義
+  - [ ] テスト作成（`webhooks_test.go`）
+  - [ ] `ListWebhooks() ([]Webhook, error)` 実装
+  - [ ] `CreateWebhook(webhook *Webhook) (*Webhook, error)` 実装
+  - [ ] `UpdateWebhook(id string, webhook *Webhook) (*Webhook, error)` 実装
+  - [ ] `DeleteWebhook(id string) error` 実装
 
-#### 3. Offers API実装
+#### 3. コマンド実装
 
-- [ ] `internal/ghostapi/offers.go` を作成
-  - [ ] Offer型定義（ID、Name、Code、Tier、Discountなど）
-  - [ ] OfferListOptions型定義
-  - [ ] テスト作成（`offers_test.go`）
-  - [ ] `ListOffers(options OfferListOptions) (*OfferListResponse, error)` 実装
-  - [ ] `GetOffer(id string) (*Offer, error)` 実装
+- [ ] `internal/cmd/themes.go` を作成
+- [ ] `internal/cmd/webhooks.go` を作成
 
-#### 4. コマンド実装
-
-- [ ] `internal/cmd/newsletters.go` を作成
-- [ ] `internal/cmd/tiers.go` を作成
-- [ ] `internal/cmd/offers.go` を作成
-
-#### 5. CLIに統合
+#### 4. CLIに統合
 
 - [ ] `internal/cmd/root.go` に各コマンドを追加
 
-#### 6. 品質チェック & ドキュメント更新
+#### 5. 品質チェック & ドキュメント更新
 
 - [ ] すべてのテストがパス（`make test`）
 - [ ] 型チェック成功（`make type-check`）
 - [ ] ビルド成功（`make build`）
 - [ ] `docs/PROJECT_STATUS.md` を更新
-- [ ] Phase 6完了のコミットを作成
+- [ ] Phase 7完了のコミットを作成
 
 ### 参考: Ghost Admin API仕様
 
-**Newsletters API**:
-- エンドポイント: `/ghost/api/admin/newsletters/`
-- メソッド: GET
-- 主要フィールド: `id`, `name`, `slug`, `status`, `subscribe_on_signup`
+**Themes API**:
+- エンドポイント: `/ghost/api/admin/themes/`
+- メソッド: GET, POST, PUT, DELETE
+- 主要フィールド: `name`, `package`, `active`, `templates`
 
-**Tiers API**:
-- エンドポイント: `/ghost/api/admin/tiers/`
-- メソッド: GET
-- 主要フィールド: `id`, `name`, `slug`, `type`, `monthly_price`, `yearly_price`
-
-**Offers API**:
-- エンドポイント: `/ghost/api/admin/offers/`
-- メソッド: GET
-- 主要フィールド: `id`, `name`, `code`, `tier`, `discount_type`, `discount_amount`
+**Webhooks API**:
+- エンドポイント: `/ghost/api/admin/webhooks/`
+- メソッド: GET, POST, PUT, DELETE
+- 主要フィールド: `id`, `event`, `target_url`, `secret`, `name`, `api_version`
 
 詳細: https://ghost.org/docs/admin-api/
 
-## Phase 7以降の予定
+## Phase 8以降の予定
 
-### Phase 7: Themes/Webhooks
-
-- Themes API（list/upload/activate/delete）
-- Webhooks API（list/create/delete）
+Phase 7完了後に検討します。
 
 ## 質問・相談
 
@@ -128,5 +123,5 @@ Newsletters（ニュースレター）、Tiers（サブスクリプションプ�
 実装完了後：
 
 1. `docs/PROJECT_STATUS.md` を更新
-2. `docs/NEXT_STEPS.md` を更新（Phase 6に移行）
+2. `docs/NEXT_STEPS.md` を更新（Phase 7に移行）
 3. 学んだことや改善点を記録
