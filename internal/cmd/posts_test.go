@@ -70,3 +70,9 @@ func TestPostsSearchCmd_構造体が存在すること(t *testing.T) {
 	// PostsSearchCmdが定義されていることを確認
 	_ = &PostsSearchCmd{}
 }
+
+// TestPostsCatCmd_構造体が存在すること
+func TestPostsCatCmd_構造体が存在すること(t *testing.T) {
+	// PostsCatCmdが定義されていることを確認
+	_ = &PostsCatCmd{}
+}

@@ -23,6 +23,7 @@ type PostsCmd struct {
 	List    PostsListCmd    `cmd:"" help:"List posts"`
 	Info    PostsInfoCmd    `cmd:"" help:"投稿の情報を表示"`
 	Get     PostsInfoCmd    `cmd:"" hidden:"" help:"投稿を取得（非推奨: infoを使用してください）"`
+	Cat     PostsCatCmd     `cmd:"" help:"本文コンテンツを表示"`
 	Create  PostsCreateCmd  `cmd:"" help:"Create a post"`
 	Update  PostsUpdateCmd  `cmd:"" help:"Update a post"`
 	Delete  PostsDeleteCmd  `cmd:"" help:"Delete a post"`
@@ -895,4 +896,52 @@ func hasSubstringIgnoreCase(s, substr string) bool {
 		}
 	}
 	return false
+}
+
+// ========================================
+// Phase 2: catコマンド
+// ========================================
+
+// PostsCatCmd は投稿の本文コンテンツを表示するコマンドです
+type PostsCatCmd struct {
+	IDOrSlug string `arg:"" help:"Post ID or slug"`
+	Format   string `help:"Output format (html, text, lexical)" default:"html"`
+}
+
+// Run はpostsコマンドのcatサブコマンドを実行します
+func (c *PostsCatCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 投稿を取得
+	post, err := client.GetPost(c.IDOrSlug)
+	if err != nil {
+		return fmt.Errorf("投稿の取得に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// フォーマットに応じて出力
+	var content string
+	switch c.Format {
+	case "html":
+		content = post.HTML
+	case "text":
+		// TODO: HTMLからテキストへの変換を実装
+		// 現時点ではHTMLをそのまま出力
+		content = post.HTML
+	case "lexical":
+		content = post.Lexical
+	default:
+		return fmt.Errorf("未対応のフォーマット: %s (html, text, lexical のいずれかを指定してください)", c.Format)
+	}
+
+	// コンテンツを出力
+	formatter.PrintMessage(content)
+
+	return nil
 }

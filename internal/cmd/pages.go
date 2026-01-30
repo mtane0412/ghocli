@@ -20,6 +20,7 @@ type PagesCmd struct {
 	List   PagesListCmd   `cmd:"" help:"List pages"`
 	Info   PagesInfoCmd   `cmd:"" help:"ページの情報を表示"`
 	Get    PagesInfoCmd   `cmd:"" hidden:"" help:"ページを取得（非推奨: infoを使用してください）"`
+	Cat    PagesCatCmd    `cmd:"" help:"本文コンテンツを表示"`
 	Create PagesCreateCmd `cmd:"" help:"Create a page"`
 	Update PagesUpdateCmd `cmd:"" help:"Update a page"`
 	Delete PagesDeleteCmd `cmd:"" help:"Delete a page"`
@@ -451,6 +452,54 @@ func (c *PagesUnpublishCmd) Run(root *RootFlags) error {
 	if root.JSON {
 		return formatter.Print(unpublishedPage)
 	}
+
+	return nil
+}
+
+// ========================================
+// Phase 2: catコマンド
+// ========================================
+
+// PagesCatCmd はページの本文コンテンツを表示するコマンドです
+type PagesCatCmd struct {
+	IDOrSlug string `arg:"" help:"Page ID or slug"`
+	Format   string `help:"Output format (html, text, lexical)" default:"html"`
+}
+
+// Run はpagesコマンドのcatサブコマンドを実行します
+func (c *PagesCatCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// ページを取得
+	page, err := client.GetPage(c.IDOrSlug)
+	if err != nil {
+		return fmt.Errorf("ページの取得に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// フォーマットに応じて出力
+	var content string
+	switch c.Format {
+	case "html":
+		content = page.HTML
+	case "text":
+		// TODO: HTMLからテキストへの変換を実装
+		// 現時点ではHTMLをそのまま出力
+		content = page.HTML
+	case "lexical":
+		content = page.Lexical
+	default:
+		return fmt.Errorf("未対応のフォーマット: %s (html, text, lexical のいずれかを指定してください)", c.Format)
+	}
+
+	// コンテンツを出力
+	formatter.PrintMessage(content)
 
 	return nil
 }
