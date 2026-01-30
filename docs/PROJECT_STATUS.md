@@ -307,7 +307,7 @@
 - ✅ ビルド成功
 
 **コミット**:
-- （未コミット）
+- `3a6a9ed feat(api): Themes/Webhooks APIを実装`
 
 ## 現在の構造
 
@@ -425,4 +425,6 @@ make build
 
 ## 次のステップ
 
-Phase 7（Themes API、Webhooks API など）の実装を検討します。詳細は `docs/NEXT_STEPS.md` を参照してください。
+Phase 7が完了し、主要なGhost Admin API機能の実装がすべて完了しました。
+
+今後の拡張機能については `docs/NEXT_STEPS.md` を参照してください。
