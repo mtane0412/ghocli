@@ -28,6 +28,7 @@ type CLI struct {
 	Version   kong.VersionFlag `help:"Print version"`
 
 	Auth        AuthCmd        `cmd:"" help:"Authentication management"`
+	Config      ConfigCmd      `cmd:"" help:"Configuration management"`
 	Site        SiteCmd        `cmd:"" help:"Site information"`
 	Posts       PostsCmd       `cmd:"" help:"Posts management"`
 	Pages       PagesCmd       `cmd:"" help:"Pages management"`
