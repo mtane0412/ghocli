@@ -3,12 +3,13 @@
  * Offers API
  *
  * Ghost Admin APIのOffers機能を提供します。
- * ビジネス設定の誤変更リスクを回避するため、読み取り操作（List, Get）のみ実装しています。
+ * Create/Update操作には確認機構が適用されます。
  */
 
 package ghostapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -120,6 +121,72 @@ func (c *Client) GetOffer(id string) (*Offer, error) {
 
 	if len(resp.Offers) == 0 {
 		return nil, fmt.Errorf("オファーが見つかりません: %s", id)
+	}
+
+	return &resp.Offers[0], nil
+}
+
+// CreateOffer は新しいオファーを作成します
+func (c *Client) CreateOffer(offer *Offer) (*Offer, error) {
+	path := "/ghost/api/admin/offers/"
+
+	// リクエストボディを構築
+	reqBody := map[string]interface{}{
+		"offers": []interface{}{offer},
+	}
+
+	reqBodyJSON, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+	}
+
+	// リクエストを実行
+	respBody, err := c.doRequest("POST", path, bytes.NewReader(reqBodyJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスをパース
+	var resp OfferResponse
+	if err := json.Unmarshal(respBody, &resp); err != nil {
+		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+	}
+
+	if len(resp.Offers) == 0 {
+		return nil, fmt.Errorf("オファーの作成に失敗しました")
+	}
+
+	return &resp.Offers[0], nil
+}
+
+// UpdateOffer は既存のオファーを更新します
+func (c *Client) UpdateOffer(id string, offer *Offer) (*Offer, error) {
+	path := fmt.Sprintf("/ghost/api/admin/offers/%s/", id)
+
+	// リクエストボディを構築
+	reqBody := map[string]interface{}{
+		"offers": []interface{}{offer},
+	}
+
+	reqBodyJSON, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+	}
+
+	// リクエストを実行
+	respBody, err := c.doRequest("PUT", path, bytes.NewReader(reqBodyJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスをパース
+	var resp OfferResponse
+	if err := json.Unmarshal(respBody, &resp); err != nil {
+		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+	}
+
+	if len(resp.Offers) == 0 {
+		return nil, fmt.Errorf("オファーの更新に失敗しました")
 	}
 
 	return &resp.Offers[0], nil

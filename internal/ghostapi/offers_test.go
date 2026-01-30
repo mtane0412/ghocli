@@ -253,3 +253,178 @@ func TestGetOffer_IDでオファーを取得(t *testing.T) {
 		t.Errorf("オファーID = %q; want %q", offer.ID, "64fac5417c4c6b0001234567")
 	}
 }
+
+// TestCreateOffer_オファーの作成
+func TestCreateOffer_オファーの作成(t *testing.T) {
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		if r.URL.Path != "/ghost/api/admin/offers/" {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/offers/")
+		}
+		if r.Method != "POST" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+		}
+
+		// リクエストボディを検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+		}
+
+		offers, ok := reqBody["offers"].([]interface{})
+		if !ok || len(offers) == 0 {
+			t.Error("offersフィールドが正しくない")
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"offers": []map[string]interface{}{
+				{
+					"id":                  "64fac5417c4c6b0001234569",
+					"name":               "新規オファー",
+					"code":               "NEWCODE",
+					"display_title":       "テスト用オファー",
+					"display_description": "テスト説明",
+					"type":               "percent",
+					"cadence":            "month",
+					"amount":             30,
+					"duration":           "once",
+					"currency":           "JPY",
+					"status":             "active",
+					"redemption_count":   0,
+					"tier": map[string]interface{}{
+						"id":   "64fac5417c4c6b0001234999",
+						"name": "プレミアム会員",
+					},
+					"created_at": "2024-01-20T10:00:00.000Z",
+					"updated_at": "2024-01-20T10:00:00.000Z",
+				},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "test-key", "test-secret")
+	if err != nil {
+		t.Fatalf("クライアント作成エラー: %v", err)
+	}
+
+	// オファーを作成
+	newOffer := &Offer{
+		Name:               "新規オファー",
+		Code:               "NEWCODE",
+		DisplayTitle:       "テスト用オファー",
+		DisplayDescription: "テスト説明",
+		Type:               "percent",
+		Cadence:            "month",
+		Amount:             30,
+		Duration:           "once",
+		Currency:           "JPY",
+		Tier: OfferTier{
+			ID: "64fac5417c4c6b0001234999",
+		},
+	}
+
+	createdOffer, err := client.CreateOffer(newOffer)
+	if err != nil {
+		t.Fatalf("オファー作成エラー: %v", err)
+	}
+
+	// レスポンスの検証
+	if createdOffer.Name != "新規オファー" {
+		t.Errorf("オファー名 = %q; want %q", createdOffer.Name, "新規オファー")
+	}
+	if createdOffer.ID == "" {
+		t.Error("オファーIDが設定されていない")
+	}
+}
+
+// TestUpdateOffer_オファーの更新
+func TestUpdateOffer_オファーの更新(t *testing.T) {
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		expectedPath := "/ghost/api/admin/offers/64fac5417c4c6b0001234567/"
+		if r.URL.Path != expectedPath {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+		}
+		if r.Method != "PUT" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+		}
+
+		// リクエストボディを検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+		}
+
+		offers, ok := reqBody["offers"].([]interface{})
+		if !ok || len(offers) == 0 {
+			t.Error("offersフィールドが正しくない")
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"offers": []map[string]interface{}{
+				{
+					"id":                  "64fac5417c4c6b0001234567",
+					"name":               "更新されたオファー",
+					"code":               "SPRING2024",
+					"display_title":       "更新後タイトル",
+					"display_description": "更新後の説明",
+					"type":               "percent",
+					"cadence":            "month",
+					"amount":             60,
+					"duration":           "repeating",
+					"duration_in_months": 6,
+					"currency":           "JPY",
+					"status":             "active",
+					"redemption_count":   15,
+					"tier": map[string]interface{}{
+						"id":   "64fac5417c4c6b0001234999",
+						"name": "プレミアム会員",
+					},
+					"created_at": "2024-01-15T10:00:00.000Z",
+					"updated_at": "2024-01-20T10:00:00.000Z",
+				},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "test-key", "test-secret")
+	if err != nil {
+		t.Fatalf("クライアント作成エラー: %v", err)
+	}
+
+	// オファーを更新
+	updateOffer := &Offer{
+		Name:               "更新されたオファー",
+		DisplayTitle:       "更新後タイトル",
+		DisplayDescription: "更新後の説明",
+		Amount:             60,
+		DurationInMonths:   6,
+	}
+
+	updatedOffer, err := client.UpdateOffer("64fac5417c4c6b0001234567", updateOffer)
+	if err != nil {
+		t.Fatalf("オファー更新エラー: %v", err)
+	}
+
+	// レスポンスの検証
+	if updatedOffer.Name != "更新されたオファー" {
+		t.Errorf("オファー名 = %q; want %q", updatedOffer.Name, "更新されたオファー")
+	}
+	if updatedOffer.DisplayTitle != "更新後タイトル" {
+		t.Errorf("表示タイトル = %q; want %q", updatedOffer.DisplayTitle, "更新後タイトル")
+	}
+}

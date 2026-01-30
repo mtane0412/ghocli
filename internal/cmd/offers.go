@@ -2,8 +2,8 @@
  * offers.go
  * オファー管理コマンド
  *
- * Ghostオファーの閲覧機能を提供します。
- * ビジネス設定の誤変更リスクを回避するため、読み取り操作（List, Get）のみ実装しています。
+ * Ghostオファーの管理機能を提供します。
+ * Create/Update操作には確認機構が適用されます。
  */
 
 package cmd
@@ -18,8 +18,10 @@ import (
 
 // OffersCmd はオファー管理コマンドです
 type OffersCmd struct {
-	List OffersListCmd `cmd:"" help:"List offers"`
-	Get  OffersGetCmd  `cmd:"" help:"Get an offer"`
+	List   OffersListCmd   `cmd:"" help:"List offers"`
+	Get    OffersGetCmd    `cmd:"" help:"Get an offer"`
+	Create OffersCreateCmd `cmd:"" help:"Create an offer"`
+	Update OffersUpdateCmd `cmd:"" help:"Update an offer"`
 }
 
 // OffersListCmd はオファー一覧を取得するコマンドです
@@ -124,4 +126,160 @@ func (c *OffersGetCmd) Run(root *RootFlags) error {
 	}
 
 	return formatter.PrintTable(headers, rows)
+}
+
+// OffersCreateCmd はオファーを作成するコマンドです
+type OffersCreateCmd struct {
+	Name               string `help:"Offer name" short:"n" required:""`
+	Code               string `help:"Offer code" short:"c" required:""`
+	DisplayTitle       string `help:"Display title" short:"t"`
+	DisplayDescription string `help:"Display description" short:"d"`
+	Type               string `help:"Offer type (percent, fixed)" default:"percent"`
+	Cadence            string `help:"Cadence (month, year)" default:"month"`
+	Amount             int    `help:"Discount amount" required:""`
+	Duration           string `help:"Duration (once, forever, repeating)" default:"once"`
+	DurationInMonths   int    `help:"Duration in months (for repeating)"`
+	Currency           string `help:"Currency code (for fixed type)" default:"JPY"`
+	TierID             string `help:"Tier ID" required:""`
+}
+
+// Run はoffersコマンドのcreateサブコマンドを実行します
+func (c *OffersCreateCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 破壊的操作の確認
+	discountInfo := fmt.Sprintf("%d", c.Amount)
+	if c.Type == "percent" {
+		discountInfo += "%"
+	} else {
+		discountInfo += " " + c.Currency
+	}
+	action := fmt.Sprintf("create offer '%s' (code: %s, discount: %s)", c.Name, c.Code, discountInfo)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
+	}
+
+	// 新規オファーを作成
+	newOffer := &ghostapi.Offer{
+		Name:               c.Name,
+		Code:               c.Code,
+		DisplayTitle:       c.DisplayTitle,
+		DisplayDescription: c.DisplayDescription,
+		Type:               c.Type,
+		Cadence:            c.Cadence,
+		Amount:             c.Amount,
+		Duration:           c.Duration,
+		DurationInMonths:   c.DurationInMonths,
+		Currency:           c.Currency,
+		Tier: ghostapi.OfferTier{
+			ID: c.TierID,
+		},
+	}
+
+	createdOffer, err := client.CreateOffer(newOffer)
+	if err != nil {
+		return fmt.Errorf("オファーの作成に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("オファーを作成しました: %s (ID: %s)", createdOffer.Name, createdOffer.ID))
+	}
+
+	// JSON形式の場合はオファー情報も出力
+	if root.JSON {
+		return formatter.Print(createdOffer)
+	}
+
+	return nil
+}
+
+// OffersUpdateCmd はオファーを更新するコマンドです
+type OffersUpdateCmd struct {
+	ID                 string `arg:"" help:"Offer ID"`
+	Name               string `help:"Offer name" short:"n"`
+	DisplayTitle       string `help:"Display title" short:"t"`
+	DisplayDescription string `help:"Display description" short:"d"`
+	Amount             *int   `help:"Discount amount"`
+	DurationInMonths   *int   `help:"Duration in months (for repeating)"`
+}
+
+// Run はoffersコマンドのupdateサブコマンドを実行します
+func (c *OffersUpdateCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のオファーを取得
+	existingOffer, err := client.GetOffer(c.ID)
+	if err != nil {
+		return fmt.Errorf("オファーの取得に失敗: %w", err)
+	}
+
+	// 破壊的操作の確認
+	action := fmt.Sprintf("update offer '%s' (ID: %s)", existingOffer.Name, c.ID)
+	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+		return err
+	}
+
+	// 更新内容を反映
+	updateOffer := &ghostapi.Offer{
+		Name:               existingOffer.Name,
+		Code:               existingOffer.Code,
+		DisplayTitle:       existingOffer.DisplayTitle,
+		DisplayDescription: existingOffer.DisplayDescription,
+		Type:               existingOffer.Type,
+		Cadence:            existingOffer.Cadence,
+		Amount:             existingOffer.Amount,
+		Duration:           existingOffer.Duration,
+		DurationInMonths:   existingOffer.DurationInMonths,
+		Currency:           existingOffer.Currency,
+		Tier:               existingOffer.Tier,
+	}
+
+	if c.Name != "" {
+		updateOffer.Name = c.Name
+	}
+	if c.DisplayTitle != "" {
+		updateOffer.DisplayTitle = c.DisplayTitle
+	}
+	if c.DisplayDescription != "" {
+		updateOffer.DisplayDescription = c.DisplayDescription
+	}
+	if c.Amount != nil {
+		updateOffer.Amount = *c.Amount
+	}
+	if c.DurationInMonths != nil {
+		updateOffer.DurationInMonths = *c.DurationInMonths
+	}
+
+	// オファーを更新
+	updatedOffer, err := client.UpdateOffer(c.ID, updateOffer)
+	if err != nil {
+		return fmt.Errorf("オファーの更新に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("オファーを更新しました: %s (ID: %s)", updatedOffer.Name, updatedOffer.ID))
+	}
+
+	// JSON形式の場合はオファー情報も出力
+	if root.JSON {
+		return formatter.Print(updatedOffer)
+	}
+
+	return nil
 }
