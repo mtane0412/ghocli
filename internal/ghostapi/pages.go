@@ -18,11 +18,13 @@ import (
 // Page はGhostのページを表します
 type Page struct {
 	ID          string     `json:"id,omitempty"`
+	UUID        string     `json:"uuid,omitempty"`
 	Title       string     `json:"title"`
 	Slug        string     `json:"slug,omitempty"`
 	HTML        string     `json:"html,omitempty"`
 	Lexical     string     `json:"lexical,omitempty"`
 	Status      string     `json:"status"` // draft, published, scheduled
+	URL         string     `json:"url,omitempty"`
 	CreatedAt   time.Time  `json:"created_at,omitempty"`
 	UpdatedAt   time.Time  `json:"updated_at,omitempty"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`

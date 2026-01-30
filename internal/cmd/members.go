@@ -22,6 +22,15 @@ type MembersCmd struct {
 	Create MembersCreateCmd `cmd:"" help:"Create a member"`
 	Update MembersUpdateCmd `cmd:"" help:"Update a member"`
 	Delete MembersDeleteCmd `cmd:"" help:"Delete a member"`
+
+	// Phase 1: ステータス別一覧ショートカット
+	Paid MembersPaidCmd `cmd:"" help:"List paid members"`
+	Free MembersFreeCmd `cmd:"" help:"List free members"`
+
+	// Phase 3: ラベル操作
+	Label   MembersLabelCmd   `cmd:"" help:"Add label to member"`
+	Unlabel MembersUnlabelCmd `cmd:"" help:"Remove label from member"`
+	Recent  MembersRecentCmd  `cmd:"" help:"List recently created members"`
 }
 
 // MembersListCmd はメンバー一覧を取得するコマンドです
@@ -274,4 +283,285 @@ func (c *MembersDeleteCmd) Run(root *RootFlags) error {
 	formatter.PrintMessage(fmt.Sprintf("メンバーを削除しました (ID: %s)", c.ID))
 
 	return nil
+}
+
+// ========================================
+// Phase 1: ステータス別一覧ショートカット
+// ========================================
+
+// MembersPaidCmd は有料会員一覧を取得するコマンドです
+type MembersPaidCmd struct {
+	Limit int `help:"Number of members to retrieve" short:"l" default:"15"`
+	Page  int `help:"Page number" short:"p" default:"1"`
+}
+
+// Run はmembersコマンドのpaidサブコマンドを実行します
+func (c *MembersPaidCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 有料会員一覧を取得
+	response, err := client.ListMembers(ghostapi.MemberListOptions{
+		Limit:  c.Limit,
+		Page:   c.Page,
+		Filter: "status:paid",
+	})
+	if err != nil {
+		return fmt.Errorf("有料会員一覧の取得に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// JSON形式の場合はそのまま出力
+	if root.JSON {
+		return formatter.Print(response.Members)
+	}
+
+	// テーブル形式で出力
+	headers := []string{"ID", "Email", "Name", "Status", "Created"}
+	rows := make([][]string, len(response.Members))
+	for i, member := range response.Members {
+		rows[i] = []string{
+			member.ID,
+			member.Email,
+			member.Name,
+			member.Status,
+			member.CreatedAt.Format("2006-01-02"),
+		}
+	}
+
+	return formatter.PrintTable(headers, rows)
+}
+
+// MembersFreeCmd は無料会員一覧を取得するコマンドです
+type MembersFreeCmd struct {
+	Limit int `help:"Number of members to retrieve" short:"l" default:"15"`
+	Page  int `help:"Page number" short:"p" default:"1"`
+}
+
+// Run はmembersコマンドのfreeサブコマンドを実行します
+func (c *MembersFreeCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 無料会員一覧を取得
+	response, err := client.ListMembers(ghostapi.MemberListOptions{
+		Limit:  c.Limit,
+		Page:   c.Page,
+		Filter: "status:free",
+	})
+	if err != nil {
+		return fmt.Errorf("無料会員一覧の取得に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// JSON形式の場合はそのまま出力
+	if root.JSON {
+		return formatter.Print(response.Members)
+	}
+
+	// テーブル形式で出力
+	headers := []string{"ID", "Email", "Name", "Status", "Created"}
+	rows := make([][]string, len(response.Members))
+	for i, member := range response.Members {
+		rows[i] = []string{
+			member.ID,
+			member.Email,
+			member.Name,
+			member.Status,
+			member.CreatedAt.Format("2006-01-02"),
+		}
+	}
+
+	return formatter.PrintTable(headers, rows)
+}
+
+// ========================================
+// Phase 3: ラベル操作
+// ========================================
+
+// MembersLabelCmd はメンバーにラベルを追加するコマンドです
+type MembersLabelCmd struct {
+	ID    string `arg:"" help:"Member ID"`
+	Label string `arg:"" help:"Label name"`
+}
+
+// Run はmembersコマンドのlabelサブコマンドを実行します
+func (c *MembersLabelCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のメンバーを取得
+	existingMember, err := client.GetMember(c.ID)
+	if err != nil {
+		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+	}
+
+	// 既存のラベルにLabel名がある場合はスキップ
+	for _, label := range existingMember.Labels {
+		if label.Name == c.Label {
+			// 出力フォーマッターを作成
+			formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+			formatter.PrintMessage(fmt.Sprintf("メンバーはすでにラベル '%s' を持っています (ID: %s)", c.Label, c.ID))
+			return nil
+		}
+	}
+
+	// 既存のラベルに新しいラベルを追加
+	newLabels := append(existingMember.Labels, ghostapi.Label{Name: c.Label})
+
+	// メンバーを更新
+	updateMember := &ghostapi.Member{
+		Email:  existingMember.Email,
+		Name:   existingMember.Name,
+		Note:   existingMember.Note,
+		Labels: newLabels,
+	}
+
+	updatedMember, err := client.UpdateMember(c.ID, updateMember)
+	if err != nil {
+		return fmt.Errorf("メンバーの更新に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("メンバーにラベルを追加しました: %s (ID: %s, Label: %s)", updatedMember.Email, updatedMember.ID, c.Label))
+	}
+
+	// JSON形式の場合はメンバー情報も出力
+	if root.JSON {
+		return formatter.Print(updatedMember)
+	}
+
+	return nil
+}
+
+// MembersUnlabelCmd はメンバーからラベルを削除するコマンドです
+type MembersUnlabelCmd struct {
+	ID    string `arg:"" help:"Member ID"`
+	Label string `arg:"" help:"Label name"`
+}
+
+// Run はmembersコマンドのunlabelサブコマンドを実行します
+func (c *MembersUnlabelCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のメンバーを取得
+	existingMember, err := client.GetMember(c.ID)
+	if err != nil {
+		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+	}
+
+	// 既存のラベルから指定されたラベルを削除
+	var newLabels []ghostapi.Label
+	found := false
+	for _, label := range existingMember.Labels {
+		if label.Name != c.Label {
+			newLabels = append(newLabels, label)
+		} else {
+			found = true
+		}
+	}
+
+	// ラベルが見つからなかった場合
+	if !found {
+		// 出力フォーマッターを作成
+		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+		formatter.PrintMessage(fmt.Sprintf("メンバーはラベル '%s' を持っていません (ID: %s)", c.Label, c.ID))
+		return nil
+	}
+
+	// メンバーを更新
+	updateMember := &ghostapi.Member{
+		Email:  existingMember.Email,
+		Name:   existingMember.Name,
+		Note:   existingMember.Note,
+		Labels: newLabels,
+	}
+
+	updatedMember, err := client.UpdateMember(c.ID, updateMember)
+	if err != nil {
+		return fmt.Errorf("メンバーの更新に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("メンバーからラベルを削除しました: %s (ID: %s, Label: %s)", updatedMember.Email, updatedMember.ID, c.Label))
+	}
+
+	// JSON形式の場合はメンバー情報も出力
+	if root.JSON {
+		return formatter.Print(updatedMember)
+	}
+
+	return nil
+}
+
+// MembersRecentCmd は最近登録したメンバー一覧を取得するコマンドです
+type MembersRecentCmd struct {
+	Limit int `help:"Number of members to retrieve" short:"l" default:"15"`
+}
+
+// Run はmembersコマンドのrecentサブコマンドを実行します
+func (c *MembersRecentCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 最近登録したメンバー一覧を取得（created_atの降順でソート）
+	response, err := client.ListMembers(ghostapi.MemberListOptions{
+		Limit: c.Limit,
+		Page:  1,
+		Order: "created_at DESC",
+	})
+	if err != nil {
+		return fmt.Errorf("メンバー一覧の取得に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// JSON形式の場合はそのまま出力
+	if root.JSON {
+		return formatter.Print(response.Members)
+	}
+
+	// テーブル形式で出力
+	headers := []string{"ID", "Email", "Name", "Status", "Created"}
+	rows := make([][]string, len(response.Members))
+	for i, member := range response.Members {
+		rows[i] = []string{
+			member.ID,
+			member.Email,
+			member.Name,
+			member.Status,
+			member.CreatedAt.Format("2006-01-02 15:04"),
+		}
+	}
+
+	return formatter.PrintTable(headers, rows)
 }

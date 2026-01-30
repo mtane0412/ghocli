@@ -22,6 +22,13 @@ type PagesCmd struct {
 	Create PagesCreateCmd `cmd:"" help:"Create a page"`
 	Update PagesUpdateCmd `cmd:"" help:"Update a page"`
 	Delete PagesDeleteCmd `cmd:"" help:"Delete a page"`
+
+	// Phase 1: URL取得
+	URL PagesURLCmd `cmd:"" help:"Get page URL"`
+
+	// Phase 2: 状態変更
+	Publish   PagesPublishCmd   `cmd:"" help:"Publish a page"`
+	Unpublish PagesUnpublishCmd `cmd:"" help:"Unpublish a page"`
 }
 
 // PagesListCmd はページ一覧を取得するコマンドです
@@ -270,6 +277,179 @@ func (c *PagesDeleteCmd) Run(root *RootFlags) error {
 
 	// 成功メッセージを表示
 	formatter.PrintMessage(fmt.Sprintf("ページを削除しました (ID: %s)", c.ID))
+
+	return nil
+}
+
+// ========================================
+// Phase 1: URL取得
+// ========================================
+
+// PagesURLCmd はページのWeb URLを取得するコマンドです
+type PagesURLCmd struct {
+	IDOrSlug string `arg:"" help:"Page ID or slug"`
+	Open     bool   `help:"Open URL in browser" short:"o"`
+}
+
+// Run はpagesコマンドのurlサブコマンドを実行します
+func (c *PagesURLCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// ページを取得
+	page, err := client.GetPage(c.IDOrSlug)
+	if err != nil {
+		return fmt.Errorf("ページの取得に失敗: %w", err)
+	}
+
+	// URLを取得
+	url := page.URL
+	if url == "" {
+		return fmt.Errorf("ページのURLが取得できませんでした")
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// URLを出力
+	formatter.PrintMessage(url)
+
+	// --openフラグが指定されている場合はブラウザで開く
+	if c.Open {
+		// OSに応じたコマンドでブラウザを開く
+		var cmd string
+		switch {
+		case fileExists("/usr/bin/open"): // macOS
+			cmd = "open"
+		case fileExists("/usr/bin/xdg-open"): // Linux
+			cmd = "xdg-open"
+		default: // Windows
+			cmd = "start"
+		}
+
+		if err := runCommand(cmd, url); err != nil {
+			return fmt.Errorf("ブラウザでURLを開くことに失敗: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// ========================================
+// Phase 2: 状態変更
+// ========================================
+
+// PagesPublishCmd はページを公開するコマンドです
+type PagesPublishCmd struct {
+	ID string `arg:"" help:"Page ID"`
+}
+
+// Run はpagesコマンドのpublishサブコマンドを実行します
+func (c *PagesPublishCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のページを取得
+	existingPage, err := client.GetPage(c.ID)
+	if err != nil {
+		return fmt.Errorf("ページの取得に失敗: %w", err)
+	}
+
+	// すでに公開済みの場合はエラー
+	if existingPage.Status == "published" {
+		return fmt.Errorf("このページはすでに公開されています")
+	}
+
+	// ステータスをpublishedに変更
+	updatePage := &ghostapi.Page{
+		Title:     existingPage.Title,
+		Slug:      existingPage.Slug,
+		HTML:      existingPage.HTML,
+		Lexical:   existingPage.Lexical,
+		Status:    "published",
+		UpdatedAt: existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+	}
+
+	// ページを更新
+	publishedPage, err := client.UpdatePage(c.ID, updatePage)
+	if err != nil {
+		return fmt.Errorf("ページの公開に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("ページを公開しました: %s (ID: %s)", publishedPage.Title, publishedPage.ID))
+	}
+
+	// JSON形式の場合はページ情報も出力
+	if root.JSON {
+		return formatter.Print(publishedPage)
+	}
+
+	return nil
+}
+
+// PagesUnpublishCmd はページを下書きに戻すコマンドです
+type PagesUnpublishCmd struct {
+	ID string `arg:"" help:"Page ID"`
+}
+
+// Run はpagesコマンドのunpublishサブコマンドを実行します
+func (c *PagesUnpublishCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のページを取得
+	existingPage, err := client.GetPage(c.ID)
+	if err != nil {
+		return fmt.Errorf("ページの取得に失敗: %w", err)
+	}
+
+	// すでに下書きの場合はエラー
+	if existingPage.Status == "draft" {
+		return fmt.Errorf("このページはすでに下書きです")
+	}
+
+	// ステータスをdraftに変更
+	updatePage := &ghostapi.Page{
+		Title:     existingPage.Title,
+		Slug:      existingPage.Slug,
+		HTML:      existingPage.HTML,
+		Lexical:   existingPage.Lexical,
+		Status:    "draft",
+		UpdatedAt: existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+	}
+
+	// ページを更新
+	unpublishedPage, err := client.UpdatePage(c.ID, updatePage)
+	if err != nil {
+		return fmt.Errorf("ページの非公開化に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("ページを下書きに戻しました: %s (ID: %s)", unpublishedPage.Title, unpublishedPage.ID))
+	}
+
+	// JSON形式の場合はページ情報も出力
+	if root.JSON {
+		return formatter.Print(unpublishedPage)
+	}
 
 	return nil
 }

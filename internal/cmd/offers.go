@@ -22,6 +22,9 @@ type OffersCmd struct {
 	Get    OffersGetCmd    `cmd:"" help:"Get an offer"`
 	Create OffersCreateCmd `cmd:"" help:"Create an offer"`
 	Update OffersUpdateCmd `cmd:"" help:"Update an offer"`
+
+	// Phase 2: 状態変更
+	Archive OffersArchiveCmd `cmd:"" help:"Archive an offer"`
 }
 
 // OffersListCmd はオファー一覧を取得するコマンドです
@@ -279,6 +282,72 @@ func (c *OffersUpdateCmd) Run(root *RootFlags) error {
 	// JSON形式の場合はオファー情報も出力
 	if root.JSON {
 		return formatter.Print(updatedOffer)
+	}
+
+	return nil
+}
+
+// ========================================
+// Phase 2: 状態変更
+// ========================================
+
+// OffersArchiveCmd はオファーをアーカイブするコマンドです
+type OffersArchiveCmd struct {
+	ID string `arg:"" help:"Offer ID"`
+}
+
+// Run はoffersコマンドのarchiveサブコマンドを実行します
+func (c *OffersArchiveCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 既存のオファーを取得
+	existingOffer, err := client.GetOffer(c.ID)
+	if err != nil {
+		return fmt.Errorf("オファーの取得に失敗: %w", err)
+	}
+
+	// すでにアーカイブ済みの場合はエラー
+	if existingOffer.Status == "archived" {
+		return fmt.Errorf("このオファーはすでにアーカイブされています")
+	}
+
+	// ステータスをarchivedに変更
+	updateOffer := &ghostapi.Offer{
+		Name:               existingOffer.Name,
+		Code:               existingOffer.Code,
+		DisplayTitle:       existingOffer.DisplayTitle,
+		DisplayDescription: existingOffer.DisplayDescription,
+		Type:               existingOffer.Type,
+		Cadence:            existingOffer.Cadence,
+		Amount:             existingOffer.Amount,
+		Duration:           existingOffer.Duration,
+		DurationInMonths:   existingOffer.DurationInMonths,
+		Currency:           existingOffer.Currency,
+		Status:             "archived",
+		Tier:               existingOffer.Tier,
+	}
+
+	// オファーを更新
+	archivedOffer, err := client.UpdateOffer(c.ID, updateOffer)
+	if err != nil {
+		return fmt.Errorf("オファーのアーカイブに失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("オファーをアーカイブしました: %s (ID: %s)", archivedOffer.Name, archivedOffer.ID))
+	}
+
+	// JSON形式の場合はオファー情報も出力
+	if root.JSON {
+		return formatter.Print(archivedOffer)
 	}
 
 	return nil

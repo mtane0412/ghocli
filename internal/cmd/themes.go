@@ -10,6 +10,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/mtane0412/gho/internal/outfmt"
 )
@@ -19,6 +20,9 @@ type ThemesCmd struct {
 	List     ThemesListCmd     `cmd:"" help:"List themes"`
 	Upload   ThemesUploadCmd   `cmd:"" help:"Upload a theme"`
 	Activate ThemesActivateCmd `cmd:"" help:"Activate a theme"`
+
+	// Phase 3: 複合操作
+	Install ThemesInstallCmd `cmd:"" help:"Upload and activate a theme"`
 }
 
 // ThemesListCmd はテーマ一覧を取得するコマンドです
@@ -154,6 +158,65 @@ func (c *ThemesActivateCmd) Run(root *RootFlags) error {
 	// JSON形式の場合はテーマ情報も出力
 	if root.JSON {
 		return formatter.Print(theme)
+	}
+
+	return nil
+}
+
+// ========================================
+// Phase 3: 複合操作
+// ========================================
+
+// ThemesInstallCmd はテーマをアップロードして有効化するコマンドです
+type ThemesInstallCmd struct {
+	File string `arg:"" help:"Path to theme zip file" type:"existingfile"`
+}
+
+// Run はthemesコマンドのinstallサブコマンドを実行します
+func (c *ThemesInstallCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// ファイルを開く
+	file, err := os.Open(c.File)
+	if err != nil {
+		return fmt.Errorf("ファイルを開くことに失敗: %w", err)
+	}
+	defer file.Close()
+
+	// ファイル名を取得
+	filename := filepath.Base(c.File)
+
+	// テーマをアップロード
+	formatter.PrintMessage(fmt.Sprintf("テーマをアップロード中: %s", c.File))
+	uploadedTheme, err := client.UploadTheme(file, filename)
+	if err != nil {
+		return fmt.Errorf("テーマのアップロードに失敗: %w", err)
+	}
+
+	formatter.PrintMessage(fmt.Sprintf("テーマをアップロードしました: %s", uploadedTheme.Name))
+
+	// テーマを有効化
+	formatter.PrintMessage(fmt.Sprintf("テーマを有効化中: %s", uploadedTheme.Name))
+	activatedTheme, err := client.ActivateTheme(uploadedTheme.Name)
+	if err != nil {
+		return fmt.Errorf("テーマの有効化に失敗: %w", err)
+	}
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("テーマをインストールして有効化しました: %s", activatedTheme.Name))
+	}
+
+	// JSON形式の場合はテーマ情報も出力
+	if root.JSON {
+		return formatter.Print(activatedTheme)
 	}
 
 	return nil
