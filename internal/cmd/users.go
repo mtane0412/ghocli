@@ -19,7 +19,8 @@ import (
 // UsersCmd はユーザー管理コマンドです
 type UsersCmd struct {
 	List   UsersListCmd   `cmd:"" help:"List users"`
-	Get    UsersGetCmd    `cmd:"" help:"Get a user"`
+	Info   UsersInfoCmd   `cmd:"" help:"ユーザーの情報を表示"`
+	Get    UsersInfoCmd   `cmd:"" hidden:"" help:"ユーザーを取得（非推奨: infoを使用してください）"`
 	Update UsersUpdateCmd `cmd:"" help:"Update a user"`
 }
 
@@ -74,13 +75,13 @@ func (c *UsersListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// UsersGetCmd はユーザーを取得するコマンドです
-type UsersGetCmd struct {
+// UsersInfoCmd はユーザー情報を表示するコマンドです
+type UsersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"User ID or slug (use 'slug:user-slug' format for slug)"`
 }
 
-// Run はusersコマンドのgetサブコマンドを実行します
-func (c *UsersGetCmd) Run(root *RootFlags) error {
+// Run はusersコマンドのinfoサブコマンドを実行します
+func (c *UsersInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

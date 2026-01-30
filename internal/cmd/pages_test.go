@@ -11,6 +11,12 @@ import (
 	"testing"
 )
 
+// TestPagesInfoCmd_構造体が存在すること
+func TestPagesInfoCmd_構造体が存在すること(t *testing.T) {
+	// PagesInfoCmdが定義されていることを確認
+	_ = &PagesInfoCmd{}
+}
+
 // TestPagesURLCmd_構造体が存在すること
 func TestPagesURLCmd_構造体が存在すること(t *testing.T) {
 	// PagesURLCmdが定義されていることを確認

@@ -19,7 +19,8 @@ import (
 // OffersCmd はオファー管理コマンドです
 type OffersCmd struct {
 	List   OffersListCmd   `cmd:"" help:"List offers"`
-	Get    OffersGetCmd    `cmd:"" help:"Get an offer"`
+	Info   OffersInfoCmd   `cmd:"" help:"オファーの情報を表示"`
+	Get    OffersInfoCmd   `cmd:"" hidden:"" help:"オファーを取得（非推奨: infoを使用してください）"`
 	Create OffersCreateCmd `cmd:"" help:"Create an offer"`
 	Update OffersUpdateCmd `cmd:"" help:"Update an offer"`
 
@@ -79,13 +80,13 @@ func (c *OffersListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// OffersGetCmd はオファーを取得するコマンドです
-type OffersGetCmd struct {
+// OffersInfoCmd はオファー情報を表示するコマンドです
+type OffersInfoCmd struct {
 	ID string `arg:"" help:"Offer ID"`
 }
 
-// Run はoffersコマンドのgetサブコマンドを実行します
-func (c *OffersGetCmd) Run(root *RootFlags) error {
+// Run はoffersコマンドのinfoサブコマンドを実行します
+func (c *OffersInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

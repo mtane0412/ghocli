@@ -18,7 +18,8 @@ import (
 // TagsCmd はタグ管理コマンドです
 type TagsCmd struct {
 	List   TagsListCmd   `cmd:"" help:"List tags"`
-	Get    TagsGetCmd    `cmd:"" help:"Get a tag"`
+	Info   TagsInfoCmd   `cmd:"" help:"タグの情報を表示"`
+	Get    TagsInfoCmd   `cmd:"" hidden:"" help:"タグを取得（非推奨: infoを使用してください）"`
 	Create TagsCreateCmd `cmd:"" help:"Create a tag"`
 	Update TagsUpdateCmd `cmd:"" help:"Update a tag"`
 	Delete TagsDeleteCmd `cmd:"" help:"Delete a tag"`
@@ -73,13 +74,13 @@ func (c *TagsListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TagsGetCmd はタグを取得するコマンドです
-type TagsGetCmd struct {
+// TagsInfoCmd はタグ情報を表示するコマンドです
+type TagsInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Tag ID or slug (use 'slug:tag-name' format for slug)"`
 }
 
-// Run はtagsコマンドのgetサブコマンドを実行します
-func (c *TagsGetCmd) Run(root *RootFlags) error {
+// Run はtagsコマンドのinfoサブコマンドを実行します
+func (c *TagsInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

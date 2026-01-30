@@ -19,7 +19,8 @@ import (
 // NewslettersCmd はニュースレター管理コマンドです
 type NewslettersCmd struct {
 	List   NewslettersListCmd   `cmd:"" help:"List newsletters"`
-	Get    NewslettersGetCmd    `cmd:"" help:"Get a newsletter"`
+	Info   NewslettersInfoCmd   `cmd:"" help:"ニュースレターの情報を表示"`
+	Get    NewslettersInfoCmd   `cmd:"" hidden:"" help:"ニュースレターを取得（非推奨: infoを使用してください）"`
 	Create NewslettersCreateCmd `cmd:"" help:"Create a newsletter"`
 	Update NewslettersUpdateCmd `cmd:"" help:"Update a newsletter"`
 }
@@ -74,13 +75,13 @@ func (c *NewslettersListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// NewslettersGetCmd はニュースレターを取得するコマンドです
-type NewslettersGetCmd struct {
+// NewslettersInfoCmd はニュースレター情報を表示するコマンドです
+type NewslettersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Newsletter ID or slug (use 'slug:newsletter-name' format for slug)"`
 }
 
-// Run はnewslettersコマンドのgetサブコマンドを実行します
-func (c *NewslettersGetCmd) Run(root *RootFlags) error {
+// Run はnewslettersコマンドのinfoサブコマンドを実行します
+func (c *NewslettersInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

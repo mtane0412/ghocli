@@ -11,6 +11,12 @@ import (
 	"testing"
 )
 
+// TestPostsInfoCmd_構造体が存在すること
+func TestPostsInfoCmd_構造体が存在すること(t *testing.T) {
+	// PostsInfoCmdが定義されていることを確認
+	_ = &PostsInfoCmd{}
+}
+
 // TestPostsDraftsCmd_構造体が存在すること
 func TestPostsDraftsCmd_構造体が存在すること(t *testing.T) {
 	// PostsDraftsCmdが定義されていることを確認

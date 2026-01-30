@@ -11,6 +11,12 @@ import (
 	"testing"
 )
 
+// TestMembersInfoCmd_構造体が存在すること
+func TestMembersInfoCmd_構造体が存在すること(t *testing.T) {
+	// MembersInfoCmdが定義されていることを確認
+	_ = &MembersInfoCmd{}
+}
+
 // TestMembersPaidCmd_構造体が存在すること
 func TestMembersPaidCmd_構造体が存在すること(t *testing.T) {
 	// MembersPaidCmdが定義されていることを確認

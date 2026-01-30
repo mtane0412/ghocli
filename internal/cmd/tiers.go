@@ -20,7 +20,8 @@ import (
 // TiersCmd はティア管理コマンドです
 type TiersCmd struct {
 	List   TiersListCmd   `cmd:"" help:"List tiers"`
-	Get    TiersGetCmd    `cmd:"" help:"Get a tier"`
+	Info   TiersInfoCmd   `cmd:"" help:"ティアの情報を表示"`
+	Get    TiersInfoCmd   `cmd:"" hidden:"" help:"ティアを取得（非推奨: infoを使用してください）"`
 	Create TiersCreateCmd `cmd:"" help:"Create a tier"`
 	Update TiersUpdateCmd `cmd:"" help:"Update a tier"`
 }
@@ -82,14 +83,14 @@ func (c *TiersListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TiersGetCmd はティアを取得するコマンドです
-type TiersGetCmd struct {
+// TiersInfoCmd はティア情報を表示するコマンドです
+type TiersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Tier ID or slug (use 'slug:tier-name' format for slug)"`
 	Include  string `help:"Include additional data (monthly_price,yearly_price,benefits)" short:"i"`
 }
 
-// Run はtiersコマンドのgetサブコマンドを実行します
-func (c *TiersGetCmd) Run(root *RootFlags) error {
+// Run はtiersコマンドのinfoサブコマンドを実行します
+func (c *TiersInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

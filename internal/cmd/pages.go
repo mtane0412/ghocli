@@ -18,7 +18,8 @@ import (
 // PagesCmd はページ管理コマンドです
 type PagesCmd struct {
 	List   PagesListCmd   `cmd:"" help:"List pages"`
-	Get    PagesGetCmd    `cmd:"" help:"Get a page"`
+	Info   PagesInfoCmd   `cmd:"" help:"ページの情報を表示"`
+	Get    PagesInfoCmd   `cmd:"" hidden:"" help:"ページを取得（非推奨: infoを使用してください）"`
 	Create PagesCreateCmd `cmd:"" help:"Create a page"`
 	Update PagesUpdateCmd `cmd:"" help:"Update a page"`
 	Delete PagesDeleteCmd `cmd:"" help:"Delete a page"`
@@ -84,13 +85,13 @@ func (c *PagesListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesGetCmd はページを取得するコマンドです
-type PagesGetCmd struct {
+// PagesInfoCmd はページ情報を表示するコマンドです
+type PagesInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 }
 
-// Run はpagesコマンドのgetサブコマンドを実行します
-func (c *PagesGetCmd) Run(root *RootFlags) error {
+// Run はpagesコマンドのinfoサブコマンドを実行します
+func (c *PagesInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

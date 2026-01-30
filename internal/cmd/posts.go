@@ -21,7 +21,8 @@ import (
 // PostsCmd は投稿管理コマンドです
 type PostsCmd struct {
 	List    PostsListCmd    `cmd:"" help:"List posts"`
-	Get     PostsGetCmd     `cmd:"" help:"Get a post"`
+	Info    PostsInfoCmd    `cmd:"" help:"投稿の情報を表示"`
+	Get     PostsInfoCmd    `cmd:"" hidden:"" help:"投稿を取得（非推奨: infoを使用してください）"`
 	Create  PostsCreateCmd  `cmd:"" help:"Create a post"`
 	Update  PostsUpdateCmd  `cmd:"" help:"Update a post"`
 	Delete  PostsDeleteCmd  `cmd:"" help:"Delete a post"`
@@ -99,13 +100,13 @@ func (c *PostsListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsGetCmd は投稿を取得するコマンドです
-type PostsGetCmd struct {
+// PostsInfoCmd は投稿情報を表示するコマンドです
+type PostsInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 }
 
-// Run はpostsコマンドのgetサブコマンドを実行します
-func (c *PostsGetCmd) Run(root *RootFlags) error {
+// Run はpostsコマンドのinfoサブコマンドを実行します
+func (c *PostsInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

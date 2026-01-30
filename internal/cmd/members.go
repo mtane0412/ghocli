@@ -18,7 +18,8 @@ import (
 // MembersCmd はメンバー管理コマンドです
 type MembersCmd struct {
 	List   MembersListCmd   `cmd:"" help:"List members"`
-	Get    MembersGetCmd    `cmd:"" help:"Get a member"`
+	Info   MembersInfoCmd   `cmd:"" help:"メンバーの情報を表示"`
+	Get    MembersInfoCmd   `cmd:"" hidden:"" help:"メンバーを取得（非推奨: infoを使用してください）"`
 	Create MembersCreateCmd `cmd:"" help:"Create a member"`
 	Update MembersUpdateCmd `cmd:"" help:"Update a member"`
 	Delete MembersDeleteCmd `cmd:"" help:"Delete a member"`
@@ -84,13 +85,13 @@ func (c *MembersListCmd) Run(root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// MembersGetCmd はメンバーを取得するコマンドです
-type MembersGetCmd struct {
+// MembersInfoCmd はメンバー情報を表示するコマンドです
+type MembersInfoCmd struct {
 	ID string `arg:"" help:"Member ID"`
 }
 
-// Run はmembersコマンドのgetサブコマンドを実行します
-func (c *MembersGetCmd) Run(root *RootFlags) error {
+// Run はmembersコマンドのinfoサブコマンドを実行します
+func (c *MembersInfoCmd) Run(root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
