@@ -3,12 +3,13 @@
  * Newsletters API
  *
  * Ghost Admin APIのNewsletters機能を提供します。
- * ビジネス設定の誤変更リスクを回避するため、読み取り操作（List, Get）のみ実装しています。
+ * Create/Update操作には確認機構が適用されます。
  */
 
 package ghostapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -119,6 +120,72 @@ func (c *Client) GetNewsletter(idOrSlug string) (*Newsletter, error) {
 
 	if len(resp.Newsletters) == 0 {
 		return nil, fmt.Errorf("ニュースレターが見つかりません: %s", idOrSlug)
+	}
+
+	return &resp.Newsletters[0], nil
+}
+
+// CreateNewsletter は新しいニュースレターを作成します
+func (c *Client) CreateNewsletter(newsletter *Newsletter) (*Newsletter, error) {
+	path := "/ghost/api/admin/newsletters/"
+
+	// リクエストボディを構築
+	reqBody := map[string]interface{}{
+		"newsletters": []interface{}{newsletter},
+	}
+
+	reqBodyJSON, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+	}
+
+	// リクエストを実行
+	respBody, err := c.doRequest("POST", path, bytes.NewReader(reqBodyJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスをパース
+	var resp NewsletterResponse
+	if err := json.Unmarshal(respBody, &resp); err != nil {
+		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+	}
+
+	if len(resp.Newsletters) == 0 {
+		return nil, fmt.Errorf("ニュースレターの作成に失敗しました")
+	}
+
+	return &resp.Newsletters[0], nil
+}
+
+// UpdateNewsletter は既存のニュースレターを更新します
+func (c *Client) UpdateNewsletter(id string, newsletter *Newsletter) (*Newsletter, error) {
+	path := fmt.Sprintf("/ghost/api/admin/newsletters/%s/", id)
+
+	// リクエストボディを構築
+	reqBody := map[string]interface{}{
+		"newsletters": []interface{}{newsletter},
+	}
+
+	reqBodyJSON, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+	}
+
+	// リクエストを実行
+	respBody, err := c.doRequest("PUT", path, bytes.NewReader(reqBodyJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスをパース
+	var resp NewsletterResponse
+	if err := json.Unmarshal(respBody, &resp); err != nil {
+		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+	}
+
+	if len(resp.Newsletters) == 0 {
+		return nil, fmt.Errorf("ニュースレターの更新に失敗しました")
 	}
 
 	return &resp.Newsletters[0], nil
