@@ -25,12 +25,13 @@ type CLI struct {
 	RootFlags `embed:""`
 	Version   kong.VersionFlag `help:"Print version"`
 
-	Auth   AuthCmd   `cmd:"" help:"Authentication management"`
-	Site   SiteCmd   `cmd:"" help:"Site information"`
-	Posts  PostsCmd  `cmd:"" help:"Posts management"`
-	Pages  PagesCmd  `cmd:"" help:"Pages management"`
-	Tags   TagsCmd   `cmd:"" help:"Tags management"`
-	Images ImagesCmd `cmd:"" help:"Images management"`
+	Auth    AuthCmd    `cmd:"" help:"Authentication management"`
+	Site    SiteCmd    `cmd:"" help:"Site information"`
+	Posts   PostsCmd   `cmd:"" help:"Posts management"`
+	Pages   PagesCmd   `cmd:"" help:"Pages management"`
+	Tags    TagsCmd    `cmd:"" help:"Tags management"`
+	Images  ImagesCmd  `cmd:"" help:"Images management"`
+	Members MembersCmd `cmd:"" help:"Members management"`
 }
 
 // GetOutputMode はRootFlagsから出力モードを決定します

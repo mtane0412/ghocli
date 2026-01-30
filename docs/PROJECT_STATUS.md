@@ -152,9 +152,38 @@
 **コミット**:
 - `b5299e8 feat(api): Tags APIとImages APIを実装`
 
-### 📋 Phase 4以降（未実装）
+### ✅ Phase 4: Members管理（完了）
 
-- Members API
+**完了日**: 2026-01-30
+
+**実装内容**:
+
+1. **Members API** (`internal/ghostapi/members.go`)
+   - Member型定義（ID、UUID、Email、Name、Note、Status、Labelsなど）
+   - Label型定義（ID、Name、Slug）
+   - MemberListOptions型定義（pagination、filter、order対応）
+   - `ListMembers(options MemberListOptions) (*MemberListResponse, error)` 実装
+   - `GetMember(id string) (*Member, error)` 実装
+   - `CreateMember(member *Member) (*Member, error)` 実装
+   - `UpdateMember(id string, member *Member) (*Member, error)` 実装
+   - `DeleteMember(id string) error` 実装
+
+2. **Membersコマンド** (`internal/cmd/members.go`)
+   ```
+   gho members list [--limit N] [--page N] [--filter "..."] [--order "..."]
+   gho members get <id>
+   gho members create --email "..." [--name "..."] [--note "..."] [--labels "..."]
+   gho members update <id> [--name "..."] [--note "..."] [--labels "..."]
+   gho members delete <id>
+   ```
+
+**品質チェック**:
+- ✅ すべてのテストがパス（Members: 6テスト）
+- ✅ 型チェック（`go vet`）成功
+- ✅ ビルド成功
+
+### 📋 Phase 5以降（未実装）
+
 - Users API
 - Newsletters API
 - Tiers API
@@ -176,7 +205,8 @@ gho/
 │   │   ├── posts.go         # Postsコマンド
 │   │   ├── pages.go         # Pagesコマンド
 │   │   ├── tags.go          # Tagsコマンド
-│   │   └── images.go        # Imagesコマンド
+│   │   ├── images.go        # Imagesコマンド
+│   │   └── members.go       # Membersコマンド
 │   ├── config/              # 設定ファイル管理
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -195,7 +225,9 @@ gho/
 │   │   ├── tags.go          # Tags API
 │   │   ├── tags_test.go
 │   │   ├── images.go        # Images API
-│   │   └── images_test.go
+│   │   ├── images_test.go
+│   │   ├── members.go       # Members API
+│   │   └── members_test.go
 │   └── outfmt/              # 出力フォーマット
 │       ├── outfmt.go
 │       └── outfmt_test.go
@@ -214,15 +246,16 @@ gho/
 
 - `internal/config/` - 設定ファイル管理（6テスト）
 - `internal/secrets/` - キーリング統合（8テスト）
-- `internal/ghostapi/` - APIクライアント（29テスト）
+- `internal/ghostapi/` - APIクライアント（35テスト）
   - `client.go`, `jwt.go` - 9テスト
   - `posts.go` - 7テスト
   - `pages.go` - 5テスト
   - `tags.go` - 6テスト
   - `images.go` - 2テスト
+  - `members.go` - 6テスト
 - `internal/outfmt/` - 出力フォーマット（5テスト）
 
-合計: 48テスト、すべてパス
+合計: 54テスト、すべてパス
 
 ## 依存関係
 

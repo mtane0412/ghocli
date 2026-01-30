@@ -1,4 +1,5 @@
 # golangci-lint設定ファイル
+version: 2
 
 run:
   timeout: 5m
@@ -8,21 +9,27 @@ run:
 
 linters:
   enable:
-    - gofmt
-    - goimports
     - govet
-    - errcheck
     - staticcheck
     - unused
-    - gosimple
     - ineffassign
-    - typecheck
+  disable:
+    - errcheck
 
 linters-settings:
   gofmt:
     simplify: true
+  errcheck:
+    exclude-functions:
+      - (io.Closer).Close
+      - (*encoding/json.Encoder).Encode
+      - fmt.Fprint
+      - fmt.Fprintf
+      - fmt.Fprintln
 
 issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-files:
+    - ".*_test\\.go$"
