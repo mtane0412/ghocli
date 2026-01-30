@@ -6,6 +6,7 @@
 package secrets
 
 import (
+	"os"
 	"testing"
 )
 
@@ -168,5 +169,62 @@ func TestStore_ParseAdminAPIKeyでキーをパース(t *testing.T) {
 				t.Errorf("secret = %q; want %q", secret, tc.wantSecret)
 			}
 		})
+	}
+}
+
+// TestNewStore_GHO_KEYRING_BACKEND はGHO_KEYRING_BACKEND環境変数がバックエンドを上書きすることをテストします
+func TestNewStore_GHO_KEYRING_BACKEND(t *testing.T) {
+	// 環境変数を設定
+	os.Setenv("GHO_KEYRING_BACKEND", "file")
+	defer os.Unsetenv("GHO_KEYRING_BACKEND")
+
+	// backend引数に"auto"を渡しても、環境変数でfileが使用されるはず
+	store, err := NewStore("auto", t.TempDir())
+	if err != nil {
+		t.Fatalf("ストアの作成に失敗: %v", err)
+	}
+
+	// ストアが正しく作成されていることを確認（基本的な操作が可能）
+	testKey := "test:key"
+	if err := store.Set("test", testKey); err != nil {
+		t.Fatalf("APIキーの保存に失敗: %v", err)
+	}
+
+	retrieved, err := store.Get("test")
+	if err != nil {
+		t.Fatalf("APIキーの取得に失敗: %v", err)
+	}
+
+	if retrieved != testKey {
+		t.Errorf("取得したキー = %q; want %q", retrieved, testKey)
+	}
+}
+
+// TestNewStore_GHO_KEYRING_PASSWORD はGHO_KEYRING_PASSWORD環境変数がパスワードを提供することをテストします
+func TestNewStore_GHO_KEYRING_PASSWORD(t *testing.T) {
+	// パスワード環境変数を設定
+	testPassword := "test-password"
+	os.Setenv("GHO_KEYRING_PASSWORD", testPassword)
+	defer os.Unsetenv("GHO_KEYRING_PASSWORD")
+
+	// fileバックエンドを使用してストアを作成
+	store, err := NewStore("file", t.TempDir())
+	if err != nil {
+		t.Fatalf("ストアの作成に失敗: %v", err)
+	}
+
+	// ストアが正しく作成されていることを確認（基本的な操作が可能）
+	testKey := "test:key"
+	if err := store.Set("test", testKey); err != nil {
+		t.Fatalf("APIキーの保存に失敗: %v", err)
+	}
+
+	retrieved, err := store.Get("test")
+	if err != nil {
+		t.Fatalf("APIキーの取得に失敗: %v", err)
+	}
+
+	if retrieved != testKey {
+		t.Errorf("取得したキー = %q; want %q", retrieved, testKey)
 	}
 }

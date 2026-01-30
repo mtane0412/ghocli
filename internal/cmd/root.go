@@ -15,10 +15,11 @@ import (
 type RootFlags struct {
 	Site    string `help:"Site alias or URL" short:"s" env:"GHO_SITE"`
 	JSON    bool   `help:"Output JSON" env:"GHO_JSON"`
-	Plain   bool   `help:"Output stable TSV"`
+	Plain   bool   `help:"Output stable TSV" env:"GHO_PLAIN"`
 	Force   bool   `help:"Skip confirmations" short:"f"`
 	NoInput bool   `help:"Never prompt; fail instead (useful for CI)" env:"GHO_NO_INPUT"`
-	Verbose bool   `help:"Enable verbose logging" short:"v"`
+	Verbose bool   `help:"Enable verbose logging" short:"v" env:"GHO_VERBOSE"`
+	Color   string `help:"Color output (auto, always, never)" enum:"auto,always,never" default:"auto" env:"GHO_COLOR"`
 }
 
 // CLI はgho CLIのルート構造体です
@@ -27,6 +28,7 @@ type CLI struct {
 	Version   kong.VersionFlag `help:"Print version"`
 
 	Auth        AuthCmd        `cmd:"" help:"Authentication management"`
+	Config      ConfigCmd      `cmd:"" help:"Configuration management"`
 	Site        SiteCmd        `cmd:"" help:"Site information"`
 	Posts       PostsCmd       `cmd:"" help:"Posts management"`
 	Pages       PagesCmd       `cmd:"" help:"Pages management"`
