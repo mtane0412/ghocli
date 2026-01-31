@@ -40,3 +40,9 @@ func TestPagesCatCmd_構造体が存在すること(t *testing.T) {
 	// PagesCatCmdが定義されていることを確認
 	_ = &PagesCatCmd{}
 }
+
+// TestPagesCopyCmd_構造体が存在すること
+func TestPagesCopyCmd_構造体が存在すること(t *testing.T) {
+	// PagesCopyCmdが定義されていることを確認
+	_ = &PagesCopyCmd{}
+}

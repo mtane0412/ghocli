@@ -511,14 +511,18 @@ gho posts cat <id> --format lexical     # Lexical JSON形式で出力
 gho pages cat <slug> --format html      # ページの本文をHTML形式で出力
 ```
 
-#### 8.3: copyコマンドの追加（予定）
-- posts/pagesをコピーする`copy`コマンド
-- ID/UUID/URL/日時を除外して新規作成
-- ステータスは`draft`で作成
+#### 8.3: copyコマンドの追加（完了）
+- posts/pagesをコピーする`copy`コマンドを追加
+- ID/UUID/Slug/URL/日時を除外して新規作成
+- ステータスは常に`draft`で作成
+- `--title`オプションで新しいタイトルを指定（省略時は「元タイトル (Copy)」）
 
+**使用例**:
 ```bash
-gho posts copy <id> [--title "新しいタイトル"]
-gho pages copy <slug> [--title "新しいタイトル"]
+gho posts copy <id-or-slug>                      # 投稿をコピー（タイトルは「元タイトル (Copy)」）
+gho posts copy <id-or-slug> --title "新タイトル" # カスタムタイトルでコピー
+gho pages copy <slug>                            # ページをコピー
+gho pages copy <slug> --title "新タイトル"       # カスタムタイトルでコピー
 ```
 
 #### 8.4: exportコマンドの追加（予定）

@@ -108,6 +108,10 @@ gho posts delete <id>
 
 # 投稿を公開
 gho posts publish <id>
+
+# 投稿をコピー（新しい下書きとして作成）
+gho posts copy <id-or-slug>
+gho posts copy <id-or-slug> --title "新しいタイトル"
 ```
 
 ### Pages（固定ページ）
@@ -141,6 +145,10 @@ gho pages update <id> --html "新しい本文"
 
 # ページを削除
 gho pages delete <id>
+
+# ページをコピー（新しい下書きとして作成）
+gho pages copy <id-or-slug>
+gho pages copy <id-or-slug> --title "新しいタイトル"
 ```
 
 ### Tags（タグ）

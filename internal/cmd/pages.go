@@ -31,6 +31,9 @@ type PagesCmd struct {
 	// Phase 2: 状態変更
 	Publish   PagesPublishCmd   `cmd:"" help:"Publish a page"`
 	Unpublish PagesUnpublishCmd `cmd:"" help:"Unpublish a page"`
+
+	// Phase 8.3: コピー
+	Copy PagesCopyCmd `cmd:"" help:"ページをコピー"`
 }
 
 // PagesListCmd はページ一覧を取得するコマンドです
@@ -500,6 +503,66 @@ func (c *PagesCatCmd) Run(root *RootFlags) error {
 
 	// コンテンツを出力
 	formatter.PrintMessage(content)
+
+	return nil
+}
+
+// ========================================
+// Phase 8.3: copyコマンド
+// ========================================
+
+// PagesCopyCmd はページをコピーするコマンドです
+type PagesCopyCmd struct {
+	IDOrSlug string `arg:"" help:"コピー元のページID またはスラッグ"`
+	Title    string `help:"新しいタイトル（省略時は '元タイトル (Copy)'）" short:"t"`
+}
+
+// Run はpagesコマンドのcopyサブコマンドを実行します
+func (c *PagesCopyCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 元のページを取得
+	original, err := client.GetPage(c.IDOrSlug)
+	if err != nil {
+		return fmt.Errorf("ページの取得に失敗: %w", err)
+	}
+
+	// 新しいタイトルを決定
+	newTitle := c.Title
+	if newTitle == "" {
+		newTitle = original.Title + " (Copy)"
+	}
+
+	// 新しいページを作成（ID/UUID/Slug/URL/日時は除外、Statusはdraft固定）
+	newPage := &ghostapi.Page{
+		Title:   newTitle,
+		HTML:    original.HTML,
+		Lexical: original.Lexical,
+		Status:  "draft",
+	}
+
+	// ページを作成
+	createdPage, err := client.CreatePage(newPage)
+	if err != nil {
+		return fmt.Errorf("ページのコピーに失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("ページをコピーしました: %s (ID: %s)", createdPage.Title, createdPage.ID))
+	}
+
+	// JSON形式の場合はページ情報も出力
+	if root.JSON {
+		return formatter.Print(createdPage)
+	}
 
 	return nil
 }

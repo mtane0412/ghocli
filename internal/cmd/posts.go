@@ -46,6 +46,9 @@ type PostsCmd struct {
 	// Phase 4: バッチ操作
 	Batch  PostsBatchCmd  `cmd:"" help:"Batch operations"`
 	Search PostsSearchCmd `cmd:"" help:"Search posts"`
+
+	// Phase 8.3: コピー
+	Copy PostsCopyCmd `cmd:"" help:"投稿をコピー"`
 }
 
 // PostsListCmd は投稿一覧を取得するコマンドです
@@ -942,6 +945,66 @@ func (c *PostsCatCmd) Run(root *RootFlags) error {
 
 	// コンテンツを出力
 	formatter.PrintMessage(content)
+
+	return nil
+}
+
+// ========================================
+// Phase 8.3: copyコマンド
+// ========================================
+
+// PostsCopyCmd は投稿をコピーするコマンドです
+type PostsCopyCmd struct {
+	IDOrSlug string `arg:"" help:"コピー元の投稿ID またはスラッグ"`
+	Title    string `help:"新しいタイトル（省略時は '元タイトル (Copy)'）" short:"t"`
+}
+
+// Run はpostsコマンドのcopyサブコマンドを実行します
+func (c *PostsCopyCmd) Run(root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// 元の投稿を取得
+	original, err := client.GetPost(c.IDOrSlug)
+	if err != nil {
+		return fmt.Errorf("投稿の取得に失敗: %w", err)
+	}
+
+	// 新しいタイトルを決定
+	newTitle := c.Title
+	if newTitle == "" {
+		newTitle = original.Title + " (Copy)"
+	}
+
+	// 新しい投稿を作成（ID/UUID/Slug/URL/日時は除外、Statusはdraft固定）
+	newPost := &ghostapi.Post{
+		Title:   newTitle,
+		HTML:    original.HTML,
+		Lexical: original.Lexical,
+		Status:  "draft",
+	}
+
+	// 投稿を作成
+	createdPost, err := client.CreatePost(newPost)
+	if err != nil {
+		return fmt.Errorf("投稿のコピーに失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	if !root.JSON {
+		formatter.PrintMessage(fmt.Sprintf("投稿をコピーしました: %s (ID: %s)", createdPost.Title, createdPost.ID))
+	}
+
+	// JSON形式の場合は投稿情報も出力
+	if root.JSON {
+		return formatter.Print(createdPost)
+	}
 
 	return nil
 }
