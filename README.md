@@ -346,6 +346,64 @@ gho webhooks update <id> --target-url https://new-example.com/webhook
 gho webhooks delete <id>
 ```
 
+## 出力形式
+
+ghoは3つの出力形式をサポートしています：
+
+### テーブル形式（デフォルト）
+
+人間が読みやすい形式で出力します。
+
+**info系コマンド（単一アイテム）**:
+```bash
+$ gho site
+title        はなしのタネ
+description  技術・学問・ゲーム・田舎暮らしを中心に...
+url          https://hanatane.net/
+version      6.8
+```
+
+**list系コマンド（複数アイテム）**:
+```bash
+$ gho posts list --limit 3
+ID                        TITLE                               STATUS     CREATED     PUBLISHED
+697b61d44921c40001f01aa3  CLIを使えない/使わない              draft      2026-01-29
+696ce7244921c40001f017ed  非エンジニアおじさんの開発環境2026  published  2026-01-18  2026-01-28
+```
+
+### Plain形式（TSV）
+
+スクリプトやパイプラインでの処理に適したタブ区切り形式です。
+
+```bash
+$ gho site --plain
+title	はなしのタネ
+description	技術・学問・ゲーム・田舎暮らしを中心に...
+url	https://hanatane.net/
+version	6.8
+
+$ gho posts list --plain --limit 2
+ID	TITLE	STATUS	CREATED	PUBLISHED
+697b61d44921c40001f01aa3	CLIを使えない/使わない	draft	2026-01-29
+696ce7244921c40001f017ed	非エンジニアおじさんの開発環境2026	published	2026-01-18	2026-01-28
+```
+
+### JSON形式
+
+プログラムからの処理やAPI連携に適した形式です。
+
+```bash
+$ gho site --json
+{
+  "site": {
+    "title": "はなしのタネ",
+    "description": "技術・学問・ゲーム・田舎暮らしを中心に...",
+    "url": "https://hanatane.net/",
+    "version": "6.8"
+  }
+}
+```
+
 ## グローバルオプション
 
 すべてのコマンドで以下のオプションが使用できます：

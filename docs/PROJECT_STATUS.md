@@ -33,8 +33,8 @@
 
 5. **出力フォーマット** (`internal/outfmt/`)
    - JSON形式
-   - テーブル形式（人間向け）
-   - TSV形式（プログラム連携向け）
+   - テーブル形式（人間向け、gogcliスタイル）
+   - Plain形式（TSV、プログラム連携向け）
 
 6. **認証コマンド** (`internal/cmd/auth.go`)
    ```
@@ -527,6 +527,40 @@ gho pages copy <slug>                            # ページをコピー
 gho pages copy <slug> --title "新タイトル"       # カスタムタイトルでコピー
 ```
 
+#### 8.5: 出力形式のgogcliスタイル完全移行（完了）
+- info系コマンドのキー名をsnake_case（小文字）に変更
+- list系コマンドのセパレーター行を削除
+- テーブル形式とplain形式の統一（tabwriterによる自動整列）
+- すべてのinfo系コマンドでPrintKeyValueを使用
+
+**変更内容**:
+- info系コマンド: ヘッダーなし、キー名小文字、タブ区切り
+- list系コマンド: ヘッダー大文字、セパレーターなし、タブ区切り
+- members/users/tags infoコマンドをPrintTableからPrintKeyValueに変更
+
+**出力例**:
+```bash
+# info系（テーブル形式）
+$ gho site
+title        はなしのタネ
+description  技術・学問・ゲーム・田舎暮らしを中心に...
+url          https://hanatane.net/
+version      6.8
+
+# info系（plain形式）
+$ gho site --plain
+title	はなしのタネ
+description	技術・学問・ゲーム...
+url	https://hanatane.net/
+version	6.8
+
+# list系（テーブル形式）
+$ gho posts list --limit 2
+ID                        TITLE                               STATUS     CREATED     PUBLISHED
+697b61d44921c40001f01aa3  CLIを使えない/使わない              draft      2026-01-29
+696ce7244921c40001f017ed  非エンジニアおじさんの開発環境2026  published  2026-01-18  2026-01-28
+```
+
 #### 8.4: catコマンドのtextフォーマット実装（完了）
 - posts/pagesの`cat`コマンドで`--format text`が正しく動作するように実装
 - k3a/html2textライブラリを使用してHTMLからプレーンテキストに変換
@@ -537,16 +571,19 @@ gho pages copy <slug> --title "新タイトル"       # カスタムタイトル
 - `internal/cmd/pages.go:497` - 同上
 - `go.mod` - k3a/html2text v1.3.0を追加
 
-**品質チェック**:
-- ✅ すべてのテストがパス
+**品質チェック（Phase 8.5完了時点）**:
+- ✅ すべてのテストがパス（164テスト）
 - ✅ 型チェック（`go vet`）成功
-- ✅ Lint（golangci-lint）成功
+- ✅ Lint（golangci-lint）成功（0 issues）
 - ✅ ビルド成功
 
 **コミット**:
-- `dec99de feat(cmd): Phase 1 - get → info リネーム（全リソース）`
-- `a1d6f61 feat(cmd): Phase 2 - catコマンドの追加（posts, pages）`
+- `dec99de feat(cmd): Phase 8.1 - get → info リネーム（全リソース）`
+- `a1d6f61 feat(cmd): Phase 8.2 - catコマンドの追加（posts, pages）`
 - `18ab842 feat(cmd): Phase 8.3 - copyコマンドの追加（posts, pages）`
+- `bf260b7 feat(cmd): Phase 8.4 - catコマンドのtextフォーマット実装`
+- `6f1a8b5 feat(outfmt): info系コマンドのヘッダー削除とgogcliスタイル採用`
+- `043ac98 feat(outfmt): gogcliスタイルに完全移行`
 
 **参考**: gogcliのコマンド設計パターン（`gog docs info/cat/copy/export`）
 
