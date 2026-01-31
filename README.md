@@ -427,6 +427,30 @@ gho tiers update <id> --name "New Name" --force
 gho -v posts list
 ```
 
+## アーキテクチャ
+
+ghoはgogcliの設計パターンに基づいて実装されており、以下の特徴を持ちます：
+
+### 設計原則
+
+- **Context伝搬**: すべてのコマンドでcontextを使用し、出力モードやUIインスタンスを安全に伝搬
+- **終了コード管理**: ExitError型による適切な終了コード制御
+- **TDD**: テスト駆動開発による堅牢な実装
+- **型安全性**: Goの型システムを最大限活用
+
+### 主要コンポーネント
+
+- **internal/cmd**: コマンド実装（全コマンドが`Run(ctx context.Context, root *RootFlags) error`シグネチャ）
+- **internal/outfmt**: 出力フォーマット管理（JSON/Table/Plain）
+- **internal/ui**: UI出力管理（stdout/stderr分離）
+- **internal/ghostapi**: Ghost Admin API クライアント
+- **internal/secrets**: OSキーリング統合
+- **internal/config**: 設定ファイル管理
+
+詳細は以下のドキュメントを参照してください：
+- [設計統一の進捗状況](./docs/gogcli-alignment-status.md)
+- [残りタスクの実装ガイド](./docs/remaining-tasks-guide.md)
+
 ## 開発
 
 ### テスト実行
