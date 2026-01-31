@@ -9,6 +9,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -36,7 +37,7 @@ type OffersListCmd struct {
 }
 
 // Run はoffersコマンドのlistサブコマンドを実行します
-func (c *OffersListCmd) Run(root *RootFlags) error {
+func (c *OffersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -86,7 +87,7 @@ type OffersInfoCmd struct {
 }
 
 // Run はoffersコマンドのinfoサブコマンドを実行します
-func (c *OffersInfoCmd) Run(root *RootFlags) error {
+func (c *OffersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -148,7 +149,7 @@ type OffersCreateCmd struct {
 }
 
 // Run はoffersコマンドのcreateサブコマンドを実行します
-func (c *OffersCreateCmd) Run(root *RootFlags) error {
+func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -216,7 +217,7 @@ type OffersUpdateCmd struct {
 }
 
 // Run はoffersコマンドのupdateサブコマンドを実行します
-func (c *OffersUpdateCmd) Run(root *RootFlags) error {
+func (c *OffersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -298,7 +299,7 @@ type OffersArchiveCmd struct {
 }
 
 // Run はoffersコマンドのarchiveサブコマンドを実行します
-func (c *OffersArchiveCmd) Run(root *RootFlags) error {
+func (c *OffersArchiveCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

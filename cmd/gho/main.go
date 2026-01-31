@@ -8,7 +8,8 @@
 package main
 
 import (
-	"github.com/alecthomas/kong"
+	"os"
+
 	"github.com/mtane0412/gho/internal/cmd"
 )
 
@@ -20,22 +21,15 @@ var (
 )
 
 func main() {
-	// CLIを初期化
-	cli := &cmd.CLI{}
+	// Execute関数を呼び出してコマンドを実行
+	err := cmd.Execute(os.Args, cmd.ExecuteOptions{
+		Version: buildVersion(),
+	})
 
-	// Kongでパース
-	ctx := kong.Parse(cli,
-		kong.Name("gho"),
-		kong.Description("Ghost Admin API CLI"),
-		kong.UsageOnError(),
-		kong.Vars{
-			"version": buildVersion(),
-		},
-	)
-
-	// コマンドを実行
-	err := ctx.Run(&cli.RootFlags)
-	ctx.FatalIfErrorf(err)
+	// エラーがあれば終了コードを設定して終了
+	if err != nil {
+		os.Exit(cmd.ExitCode(err))
+	}
 }
 
 // buildVersion はバージョン文字列を構築します

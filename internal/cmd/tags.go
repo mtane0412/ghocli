@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -33,7 +34,7 @@ type TagsListCmd struct {
 }
 
 // Run はtagsコマンドのlistサブコマンドを実行します
-func (c *TagsListCmd) Run(root *RootFlags) error {
+func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -80,7 +81,7 @@ type TagsInfoCmd struct {
 }
 
 // Run はtagsコマンドのinfoサブコマンドを実行します
-func (c *TagsInfoCmd) Run(root *RootFlags) error {
+func (c *TagsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -127,7 +128,7 @@ type TagsCreateCmd struct {
 }
 
 // Run はtagsコマンドのcreateサブコマンドを実行します
-func (c *TagsCreateCmd) Run(root *RootFlags) error {
+func (c *TagsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -171,7 +172,7 @@ type TagsUpdateCmd struct {
 }
 
 // Run はtagsコマンドのupdateサブコマンドを実行します
-func (c *TagsUpdateCmd) Run(root *RootFlags) error {
+func (c *TagsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -230,7 +231,7 @@ type TagsDeleteCmd struct {
 }
 
 // Run はtagsコマンドのdeleteサブコマンドを実行します
-func (c *TagsDeleteCmd) Run(root *RootFlags) error {
+func (c *TagsDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

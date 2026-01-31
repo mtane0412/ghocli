@@ -7,6 +7,7 @@ package outfmt
 
 import (
 	"bytes"
+	"context"
 	"strings"
 	"testing"
 
@@ -283,5 +284,116 @@ func TestPrintKeyValue_テーブル形式で出力(t *testing.T) {
 	// タブ文字は含まれていないこと（tabwriterでスペースに変換される）
 	if strings.Contains(lines[0], "\t") {
 		t.Error("タブ文字が含まれている（tabwriterで整列されるべき）")
+	}
+}
+
+// TestWithMode_contextにModeを埋め込む
+func TestWithMode_contextにModeを埋め込む(t *testing.T) {
+	tests := []struct {
+		name      string
+		mode      Mode
+		wantJSON  bool
+		wantPlain bool
+	}{
+		{
+			name:      "JSON モード",
+			mode:      Mode{JSON: true, Plain: false},
+			wantJSON:  true,
+			wantPlain: false,
+		},
+		{
+			name:      "Plain モード",
+			mode:      Mode{JSON: false, Plain: true},
+			wantJSON:  false,
+			wantPlain: true,
+		},
+		{
+			name:      "Table モード（デフォルト）",
+			mode:      Mode{JSON: false, Plain: false},
+			wantJSON:  false,
+			wantPlain: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			ctx = WithMode(ctx, tt.mode)
+
+			if got := IsJSON(ctx); got != tt.wantJSON {
+				t.Errorf("IsJSON() = %v, want %v", got, tt.wantJSON)
+			}
+			if got := IsPlain(ctx); got != tt.wantPlain {
+				t.Errorf("IsPlain() = %v, want %v", got, tt.wantPlain)
+			}
+		})
+	}
+}
+
+// TestIsJSON_Modeが設定されていない場合
+func TestIsJSON_Modeが設定されていない場合(t *testing.T) {
+	ctx := context.Background()
+	if IsJSON(ctx) {
+		t.Error("IsJSON() = true, want false (Modeが設定されていない)")
+	}
+}
+
+// TestIsPlain_Modeが設定されていない場合
+func TestIsPlain_Modeが設定されていない場合(t *testing.T) {
+	ctx := context.Background()
+	if IsPlain(ctx) {
+		t.Error("IsPlain() = true, want false (Modeが設定されていない)")
+	}
+}
+
+// TestTableWriter_テーブルモードでtabwriterを返す
+func TestTableWriter_テーブルモードでtabwriterを返す(t *testing.T) {
+	var buf bytes.Buffer
+	ctx := context.Background()
+	// Tableモード（JSON=false, Plain=false）
+	ctx = WithMode(ctx, Mode{JSON: false, Plain: false})
+
+	w := tableWriter(ctx, &buf)
+
+	// tabwriterが返されることを確認
+	// テーブルモードの場合、writerはbufと異なるはず（tabwriterでラップされる）
+	if w == &buf {
+		t.Error("tableWriter() returned original writer, want tabwriter wrapper")
+	}
+
+	// 書き込みとFlushのテスト
+	_, err := w.Write([]byte("test\tdata\n"))
+	if err != nil {
+		t.Errorf("Write() error = %v", err)
+	}
+}
+
+// TestTableWriter_JSONモードで元のwriterを返す
+func TestTableWriter_JSONモードで元のwriterを返す(t *testing.T) {
+	var buf bytes.Buffer
+	ctx := context.Background()
+	// JSONモード
+	ctx = WithMode(ctx, Mode{JSON: true, Plain: false})
+
+	w := tableWriter(ctx, &buf)
+
+	// 元のwriterが返されることを確認
+	if w != &buf {
+		t.Error("tableWriter() in JSON mode should return original writer")
+	}
+}
+
+// TestTableWriter_Plainモードで元のwriterを返す
+func TestTableWriter_Plainモードで元のwriterを返す(t *testing.T) {
+	var buf bytes.Buffer
+	ctx := context.Background()
+	// Plainモード
+	ctx = WithMode(ctx, Mode{JSON: false, Plain: true})
+
+	w := tableWriter(ctx, &buf)
+
+	// 元のwriterが返されることを確認
+	if w != &buf {
+		t.Error("tableWriter() in Plain mode should return original writer")
 	}
 }

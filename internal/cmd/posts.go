@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -60,7 +61,7 @@ type PostsListCmd struct {
 }
 
 // Run はpostsコマンドのlistサブコマンドを実行します
-func (c *PostsListCmd) Run(root *RootFlags) error {
+func (c *PostsListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -111,7 +112,7 @@ type PostsInfoCmd struct {
 }
 
 // Run はpostsコマンドのinfoサブコマンドを実行します
-func (c *PostsInfoCmd) Run(root *RootFlags) error {
+func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -162,7 +163,7 @@ type PostsCreateCmd struct {
 }
 
 // Run はpostsコマンドのcreateサブコマンドを実行します
-func (c *PostsCreateCmd) Run(root *RootFlags) error {
+func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -208,7 +209,7 @@ type PostsUpdateCmd struct {
 }
 
 // Run はpostsコマンドのupdateサブコマンドを実行します
-func (c *PostsUpdateCmd) Run(root *RootFlags) error {
+func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -272,7 +273,7 @@ type PostsDeleteCmd struct {
 }
 
 // Run はpostsコマンドのdeleteサブコマンドを実行します
-func (c *PostsDeleteCmd) Run(root *RootFlags) error {
+func (c *PostsDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -311,7 +312,7 @@ type PostsPublishCmd struct {
 }
 
 // Run はpostsコマンドのpublishサブコマンドを実行します
-func (c *PostsPublishCmd) Run(root *RootFlags) error {
+func (c *PostsPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -372,7 +373,7 @@ type PostsDraftsCmd struct {
 }
 
 // Run はpostsコマンドのdraftsサブコマンドを実行します
-func (c *PostsDraftsCmd) Run(root *RootFlags) error {
+func (c *PostsDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -420,7 +421,7 @@ type PostsPublishedCmd struct {
 }
 
 // Run はpostsコマンドのpublishedサブコマンドを実行します
-func (c *PostsPublishedCmd) Run(root *RootFlags) error {
+func (c *PostsPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -472,7 +473,7 @@ type PostsScheduledCmd struct {
 }
 
 // Run はpostsコマンドのscheduledサブコマンドを実行します
-func (c *PostsScheduledCmd) Run(root *RootFlags) error {
+func (c *PostsScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -528,7 +529,7 @@ type PostsURLCmd struct {
 }
 
 // Run はpostsコマンドのurlサブコマンドを実行します
-func (c *PostsURLCmd) Run(root *RootFlags) error {
+func (c *PostsURLCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -584,7 +585,7 @@ type PostsUnpublishCmd struct {
 }
 
 // Run はpostsコマンドのunpublishサブコマンドを実行します
-func (c *PostsUnpublishCmd) Run(root *RootFlags) error {
+func (c *PostsUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -645,7 +646,7 @@ type PostsScheduleCmd struct {
 }
 
 // Run はpostsコマンドのscheduleサブコマンドを実行します
-func (c *PostsScheduleCmd) Run(root *RootFlags) error {
+func (c *PostsScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -714,7 +715,7 @@ type PostsBatchPublishCmd struct {
 }
 
 // Run はposts batch publishサブコマンドを実行します
-func (c *PostsBatchPublishCmd) Run(root *RootFlags) error {
+func (c *PostsBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -772,7 +773,7 @@ type PostsBatchDeleteCmd struct {
 }
 
 // Run はposts batch deleteサブコマンドを実行します
-func (c *PostsBatchDeleteCmd) Run(root *RootFlags) error {
+func (c *PostsBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -817,7 +818,7 @@ type PostsSearchCmd struct {
 }
 
 // Run はpostsコマンドのsearchサブコマンドを実行します
-func (c *PostsSearchCmd) Run(root *RootFlags) error {
+func (c *PostsSearchCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -916,7 +917,7 @@ type PostsCatCmd struct {
 }
 
 // Run はpostsコマンドのcatサブコマンドを実行します
-func (c *PostsCatCmd) Run(root *RootFlags) error {
+func (c *PostsCatCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -963,7 +964,7 @@ type PostsCopyCmd struct {
 }
 
 // Run はpostsコマンドのcopyサブコマンドを実行します
-func (c *PostsCopyCmd) Run(root *RootFlags) error {
+func (c *PostsCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

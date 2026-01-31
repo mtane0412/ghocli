@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -45,7 +46,7 @@ type PagesListCmd struct {
 }
 
 // Run はpagesコマンドのlistサブコマンドを実行します
-func (c *PagesListCmd) Run(root *RootFlags) error {
+func (c *PagesListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -96,7 +97,7 @@ type PagesInfoCmd struct {
 }
 
 // Run はpagesコマンドのinfoサブコマンドを実行します
-func (c *PagesInfoCmd) Run(root *RootFlags) error {
+func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -147,7 +148,7 @@ type PagesCreateCmd struct {
 }
 
 // Run はpagesコマンドのcreateサブコマンドを実行します
-func (c *PagesCreateCmd) Run(root *RootFlags) error {
+func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -193,7 +194,7 @@ type PagesUpdateCmd struct {
 }
 
 // Run はpagesコマンドのupdateサブコマンドを実行します
-func (c *PagesUpdateCmd) Run(root *RootFlags) error {
+func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -257,7 +258,7 @@ type PagesDeleteCmd struct {
 }
 
 // Run はpagesコマンドのdeleteサブコマンドを実行します
-func (c *PagesDeleteCmd) Run(root *RootFlags) error {
+func (c *PagesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -301,7 +302,7 @@ type PagesURLCmd struct {
 }
 
 // Run はpagesコマンドのurlサブコマンドを実行します
-func (c *PagesURLCmd) Run(root *RootFlags) error {
+func (c *PagesURLCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -357,7 +358,7 @@ type PagesPublishCmd struct {
 }
 
 // Run はpagesコマンドのpublishサブコマンドを実行します
-func (c *PagesPublishCmd) Run(root *RootFlags) error {
+func (c *PagesPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -413,7 +414,7 @@ type PagesUnpublishCmd struct {
 }
 
 // Run はpagesコマンドのunpublishサブコマンドを実行します
-func (c *PagesUnpublishCmd) Run(root *RootFlags) error {
+func (c *PagesUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -474,7 +475,7 @@ type PagesCatCmd struct {
 }
 
 // Run はpagesコマンドのcatサブコマンドを実行します
-func (c *PagesCatCmd) Run(root *RootFlags) error {
+func (c *PagesCatCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -521,7 +522,7 @@ type PagesCopyCmd struct {
 }
 
 // Run はpagesコマンドのcopyサブコマンドを実行します
-func (c *PagesCopyCmd) Run(root *RootFlags) error {
+func (c *PagesCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

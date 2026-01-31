@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mtane0412/gho/internal/config"
@@ -29,7 +30,7 @@ type ConfigGetCmd struct {
 }
 
 // Run はconfig getコマンドを実行します
-func (c *ConfigGetCmd) Run(root *RootFlags) error {
+func (c *ConfigGetCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -65,7 +66,7 @@ type ConfigSetCmd struct {
 }
 
 // Run はconfig setコマンドを実行します
-func (c *ConfigSetCmd) Run(root *RootFlags) error {
+func (c *ConfigSetCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -103,7 +104,7 @@ type ConfigUnsetCmd struct {
 }
 
 // Run はconfig unsetコマンドを実行します
-func (c *ConfigUnsetCmd) Run(root *RootFlags) error {
+func (c *ConfigUnsetCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -139,7 +140,7 @@ func (c *ConfigUnsetCmd) Run(root *RootFlags) error {
 type ConfigListCmd struct{}
 
 // Run はconfig listコマンドを実行します
-func (c *ConfigListCmd) Run(root *RootFlags) error {
+func (c *ConfigListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -163,7 +164,7 @@ func (c *ConfigListCmd) Run(root *RootFlags) error {
 type ConfigPathCmd struct{}
 
 // Run はconfig pathコマンドを実行します
-func (c *ConfigPathCmd) Run(root *RootFlags) error {
+func (c *ConfigPathCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -178,7 +179,7 @@ func (c *ConfigPathCmd) Run(root *RootFlags) error {
 type ConfigKeysCmd struct{}
 
 // Run はconfig keysコマンドを実行します
-func (c *ConfigKeysCmd) Run(root *RootFlags) error {
+func (c *ConfigKeysCmd) Run(ctx context.Context, root *RootFlags) error {
 	fmt.Println("default_site")
 	fmt.Println("keyring_backend")
 	return nil

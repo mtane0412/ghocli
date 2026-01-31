@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -43,7 +44,7 @@ type MembersListCmd struct {
 }
 
 // Run はmembersコマンドのlistサブコマンドを実行します
-func (c *MembersListCmd) Run(root *RootFlags) error {
+func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -91,7 +92,7 @@ type MembersInfoCmd struct {
 }
 
 // Run はmembersコマンドのinfoサブコマンドを実行します
-func (c *MembersInfoCmd) Run(root *RootFlags) error {
+func (c *MembersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -140,7 +141,7 @@ type MembersCreateCmd struct {
 }
 
 // Run はmembersコマンドのcreateサブコマンドを実行します
-func (c *MembersCreateCmd) Run(root *RootFlags) error {
+func (c *MembersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -193,7 +194,7 @@ type MembersUpdateCmd struct {
 }
 
 // Run はmembersコマンドのupdateサブコマンドを実行します
-func (c *MembersUpdateCmd) Run(root *RootFlags) error {
+func (c *MembersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -256,7 +257,7 @@ type MembersDeleteCmd struct {
 }
 
 // Run はmembersコマンドのdeleteサブコマンドを実行します
-func (c *MembersDeleteCmd) Run(root *RootFlags) error {
+func (c *MembersDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -300,7 +301,7 @@ type MembersPaidCmd struct {
 }
 
 // Run はmembersコマンドのpaidサブコマンドを実行します
-func (c *MembersPaidCmd) Run(root *RootFlags) error {
+func (c *MembersPaidCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -348,7 +349,7 @@ type MembersFreeCmd struct {
 }
 
 // Run はmembersコマンドのfreeサブコマンドを実行します
-func (c *MembersFreeCmd) Run(root *RootFlags) error {
+func (c *MembersFreeCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -400,7 +401,7 @@ type MembersLabelCmd struct {
 }
 
 // Run はmembersコマンドのlabelサブコマンドを実行します
-func (c *MembersLabelCmd) Run(root *RootFlags) error {
+func (c *MembersLabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -462,7 +463,7 @@ type MembersUnlabelCmd struct {
 }
 
 // Run はmembersコマンドのunlabelサブコマンドを実行します
-func (c *MembersUnlabelCmd) Run(root *RootFlags) error {
+func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -529,7 +530,7 @@ type MembersRecentCmd struct {
 }
 
 // Run はmembersコマンドのrecentサブコマンドを実行します
-func (c *MembersRecentCmd) Run(root *RootFlags) error {
+func (c *MembersRecentCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

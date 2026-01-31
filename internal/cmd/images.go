@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -28,7 +29,7 @@ type ImagesUploadCmd struct {
 }
 
 // Run はimagesコマンドのuploadサブコマンドを実行します
-func (c *ImagesUploadCmd) Run(root *RootFlags) error {
+func (c *ImagesUploadCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

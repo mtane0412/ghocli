@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -21,7 +22,7 @@ import (
 type SiteCmd struct{}
 
 // Run はsiteコマンドを実行します
-func (c *SiteCmd) Run(root *RootFlags) error {
+func (c *SiteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

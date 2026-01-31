@@ -138,3 +138,33 @@ func TestRootFlags_ColorDefault(t *testing.T) {
 	// デフォルト値は"auto"になるはず
 	assert.Equal(t, "auto", cli.Color, "デフォルト値は'auto'であるべき")
 }
+
+// TestExecute_ヘルプメッセージが表示される
+// Kongは--helpでos.Exit(0)を呼び出すため、このテストはスキップする
+func TestExecute_ヘルプメッセージが表示される(t *testing.T) {
+	t.Skip("Kongは--helpでos.Exit(0)を呼び出すため、テストできない")
+}
+
+// TestExecute_バージョン表示
+// Kongは--versionでos.Exit(0)を呼び出すため、このテストはスキップする
+func TestExecute_バージョン表示(t *testing.T) {
+	t.Skip("Kongは--versionでos.Exit(0)を呼び出すため、テストできない")
+}
+
+// TestExecute_不正なコマンド
+func TestExecute_不正なコマンド(t *testing.T) {
+	// 存在しないコマンドを渡す
+	args := []string{"gho", "invalid-command"}
+
+	// エラーを返すべき
+	err := Execute(args)
+	if err == nil {
+		t.Error("Execute(invalid-command) returned nil, want error")
+	}
+
+	// 終了コードは0以外
+	code := ExitCode(err)
+	if code == 0 {
+		t.Error("Execute(invalid-command) exit code = 0, want non-zero")
+	}
+}

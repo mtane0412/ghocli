@@ -8,6 +8,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,7 +30,7 @@ type ThemesCmd struct {
 type ThemesListCmd struct{}
 
 // Run はthemesコマンドのlistサブコマンドを実行します
-func (c *ThemesListCmd) Run(root *RootFlags) error {
+func (c *ThemesListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -83,7 +84,7 @@ type ThemesUploadCmd struct {
 }
 
 // Run はthemesコマンドのuploadサブコマンドを実行します
-func (c *ThemesUploadCmd) Run(root *RootFlags) error {
+func (c *ThemesUploadCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -134,7 +135,7 @@ type ThemesActivateCmd struct {
 }
 
 // Run はthemesコマンドのactivateサブコマンドを実行します
-func (c *ThemesActivateCmd) Run(root *RootFlags) error {
+func (c *ThemesActivateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -173,7 +174,7 @@ type ThemesInstallCmd struct {
 }
 
 // Run はthemesコマンドのinstallサブコマンドを実行します
-func (c *ThemesInstallCmd) Run(root *RootFlags) error {
+func (c *ThemesInstallCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

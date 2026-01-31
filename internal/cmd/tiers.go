@@ -9,6 +9,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -35,7 +36,7 @@ type TiersListCmd struct {
 }
 
 // Run はtiersコマンドのlistサブコマンドを実行します
-func (c *TiersListCmd) Run(root *RootFlags) error {
+func (c *TiersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -90,7 +91,7 @@ type TiersInfoCmd struct {
 }
 
 // Run はtiersコマンドのinfoサブコマンドを実行します
-func (c *TiersInfoCmd) Run(root *RootFlags) error {
+func (c *TiersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -147,7 +148,7 @@ type TiersCreateCmd struct {
 }
 
 // Run はtiersコマンドのcreateサブコマンドを実行します
-func (c *TiersCreateCmd) Run(root *RootFlags) error {
+func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -211,7 +212,7 @@ type TiersUpdateCmd struct {
 }
 
 // Run はtiersコマンドのupdateサブコマンドを実行します
-func (c *TiersUpdateCmd) Run(root *RootFlags) error {
+func (c *TiersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

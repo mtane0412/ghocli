@@ -9,6 +9,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -38,7 +39,7 @@ type AuthAddCmd struct {
 }
 
 // Run はauth addコマンドを実行します
-func (c *AuthAddCmd) Run(root *RootFlags) error {
+func (c *AuthAddCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -113,7 +114,7 @@ func (c *AuthAddCmd) Run(root *RootFlags) error {
 type AuthListCmd struct{}
 
 // Run はauth listコマンドを実行します
-func (c *AuthListCmd) Run(root *RootFlags) error {
+func (c *AuthListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -155,7 +156,7 @@ type AuthRemoveCmd struct {
 }
 
 // Run はauth removeコマンドを実行します
-func (c *AuthRemoveCmd) Run(root *RootFlags) error {
+func (c *AuthRemoveCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -217,7 +218,7 @@ func (c *AuthRemoveCmd) Run(root *RootFlags) error {
 type AuthStatusCmd struct{}
 
 // Run はauth statusコマンドを実行します
-func (c *AuthStatusCmd) Run(root *RootFlags) error {
+func (c *AuthStatusCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -280,7 +281,7 @@ type AuthTokensCmd struct {
 type AuthTokensListCmd struct{}
 
 // Run はauth tokens listコマンドを実行します
-func (c *AuthTokensListCmd) Run(root *RootFlags) error {
+func (c *AuthTokensListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -364,7 +365,7 @@ type AuthTokensDeleteCmd struct {
 }
 
 // Run はauth tokens deleteコマンドを実行します
-func (c *AuthTokensDeleteCmd) Run(root *RootFlags) error {
+func (c *AuthTokensDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 設定ファイルパスを取得
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -398,7 +399,7 @@ type AuthCredentialsCmd struct {
 }
 
 // Run はauth credentialsコマンドを実行します
-func (c *AuthCredentialsCmd) Run(root *RootFlags) error {
+func (c *AuthCredentialsCmd) Run(ctx context.Context, root *RootFlags) error {
 	// 認証情報ファイルを読み込む
 	type credentialsFile struct {
 		SiteURL string `json:"site_url"`

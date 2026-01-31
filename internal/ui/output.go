@@ -11,6 +11,7 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"io"
 )
@@ -19,6 +20,27 @@ import (
 type Output struct {
 	stdout io.Writer
 	stderr io.Writer
+}
+
+// contextのキー型
+type contextKey int
+
+const (
+	uiKey contextKey = iota
+)
+
+// WithUI はcontextにUI出力を設定する
+func WithUI(ctx context.Context, ui *Output) context.Context {
+	return context.WithValue(ctx, uiKey, ui)
+}
+
+// FromContext はcontextからUI出力を取得する
+// UIが設定されていない場合はnilを返す
+func FromContext(ctx context.Context) *Output {
+	if ui, ok := ctx.Value(uiKey).(*Output); ok {
+		return ui
+	}
+	return nil
 }
 
 // NewOutput は新しいOutputを作成します

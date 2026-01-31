@@ -8,6 +8,7 @@
 package outfmt
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,6 +23,56 @@ type Formatter struct {
 	writer    io.Writer
 	tabwriter *tabwriter.Writer
 	mode      string // "json", "table", "plain"
+}
+
+// Mode は出力フォーマットのモードを表す
+type Mode struct {
+	// JSON はJSON形式で出力するかどうか
+	JSON bool
+	// Plain はプレーン形式（TSV）で出力するかどうか
+	Plain bool
+}
+
+// contextのキー型
+type contextKey int
+
+const (
+	modeKey contextKey = iota
+)
+
+// WithMode はcontextに出力モードを設定する
+func WithMode(ctx context.Context, mode Mode) context.Context {
+	return context.WithValue(ctx, modeKey, mode)
+}
+
+// getMode はcontextから出力モードを取得する
+func getMode(ctx context.Context) Mode {
+	if mode, ok := ctx.Value(modeKey).(Mode); ok {
+		return mode
+	}
+	// デフォルトはテーブルモード
+	return Mode{JSON: false, Plain: false}
+}
+
+// IsJSON はJSON形式で出力するかどうかを返す
+func IsJSON(ctx context.Context) bool {
+	return getMode(ctx).JSON
+}
+
+// IsPlain はプレーン形式（TSV）で出力するかどうかを返す
+func IsPlain(ctx context.Context) bool {
+	return getMode(ctx).Plain
+}
+
+// tableWriter はテーブルモードの場合はtabwriterでラップし、それ以外はそのまま返す
+func tableWriter(ctx context.Context, w io.Writer) io.Writer {
+	mode := getMode(ctx)
+	// JSON または Plain モードの場合はそのまま返す
+	if mode.JSON || mode.Plain {
+		return w
+	}
+	// テーブルモードの場合はtabwriterでラップ
+	return tabwriter.NewWriter(w, 0, 4, 2, ' ', 0)
 }
 
 // NewFormatter は新しい出力フォーマッターを作成します。

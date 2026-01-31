@@ -9,6 +9,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -31,7 +32,7 @@ type WebhooksCreateCmd struct {
 }
 
 // Run はwebhooksコマンドのcreateサブコマンドを実行します
-func (c *WebhooksCreateCmd) Run(root *RootFlags) error {
+func (c *WebhooksCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -80,7 +81,7 @@ type WebhooksUpdateCmd struct {
 }
 
 // Run はwebhooksコマンドのupdateサブコマンドを実行します
-func (c *WebhooksUpdateCmd) Run(root *RootFlags) error {
+func (c *WebhooksUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -130,7 +131,7 @@ type WebhooksDeleteCmd struct {
 }
 
 // Run はwebhooksコマンドのdeleteサブコマンドを実行します
-func (c *WebhooksDeleteCmd) Run(root *RootFlags) error {
+func (c *WebhooksDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

@@ -9,6 +9,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -33,7 +34,7 @@ type UsersListCmd struct {
 }
 
 // Run はusersコマンドのlistサブコマンドを実行します
-func (c *UsersListCmd) Run(root *RootFlags) error {
+func (c *UsersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -81,7 +82,7 @@ type UsersInfoCmd struct {
 }
 
 // Run はusersコマンドのinfoサブコマンドを実行します
-func (c *UsersInfoCmd) Run(root *RootFlags) error {
+func (c *UsersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -147,7 +148,7 @@ type UsersUpdateCmd struct {
 }
 
 // Run はusersコマンドのupdateサブコマンドを実行します
-func (c *UsersUpdateCmd) Run(root *RootFlags) error {
+func (c *UsersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {

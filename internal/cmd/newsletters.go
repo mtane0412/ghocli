@@ -9,6 +9,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -33,7 +34,7 @@ type NewslettersListCmd struct {
 }
 
 // Run はnewslettersコマンドのlistサブコマンドを実行します
-func (c *NewslettersListCmd) Run(root *RootFlags) error {
+func (c *NewslettersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -81,7 +82,7 @@ type NewslettersInfoCmd struct {
 }
 
 // Run はnewslettersコマンドのinfoサブコマンドを実行します
-func (c *NewslettersInfoCmd) Run(root *RootFlags) error {
+func (c *NewslettersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -134,7 +135,7 @@ type NewslettersCreateCmd struct {
 }
 
 // Run はnewslettersコマンドのcreateサブコマンドを実行します
-func (c *NewslettersCreateCmd) Run(root *RootFlags) error {
+func (c *NewslettersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -190,7 +191,7 @@ type NewslettersUpdateCmd struct {
 }
 
 // Run はnewslettersコマンドのupdateサブコマンドを実行します
-func (c *NewslettersUpdateCmd) Run(root *RootFlags) error {
+func (c *NewslettersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
