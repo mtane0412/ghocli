@@ -119,16 +119,16 @@ func (c *PagesInfoCmd) Run(root *RootFlags) error {
 
 	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
-		{"ID", page.ID},
-		{"Title", page.Title},
-		{"Slug", page.Slug},
-		{"Status", page.Status},
-		{"Created", page.CreatedAt.Format("2006-01-02 15:04:05")},
-		{"Updated", page.UpdatedAt.Format("2006-01-02 15:04:05")},
+		{"id", page.ID},
+		{"title", page.Title},
+		{"slug", page.Slug},
+		{"status", page.Status},
+		{"created", page.CreatedAt.Format("2006-01-02 15:04:05")},
+		{"updated", page.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
 
 	if page.PublishedAt != nil {
-		rows = append(rows, []string{"Published", page.PublishedAt.Format("2006-01-02 15:04:05")})
+		rows = append(rows, []string{"published", page.PublishedAt.Format("2006-01-02 15:04:05")})
 	}
 
 	if err := formatter.PrintKeyValue(rows); err != nil {

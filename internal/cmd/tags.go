@@ -101,19 +101,22 @@ func (c *TagsInfoCmd) Run(root *RootFlags) error {
 		return formatter.Print(tag)
 	}
 
-	// テーブル形式で出力
-	headers := []string{"Field", "Value"}
+	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
-		{"ID", tag.ID},
-		{"Name", tag.Name},
-		{"Slug", tag.Slug},
-		{"Description", tag.Description},
-		{"Visibility", tag.Visibility},
-		{"Created", tag.CreatedAt.Format("2006-01-02 15:04:05")},
-		{"Updated", tag.UpdatedAt.Format("2006-01-02 15:04:05")},
+		{"id", tag.ID},
+		{"name", tag.Name},
+		{"slug", tag.Slug},
+		{"description", tag.Description},
+		{"visibility", tag.Visibility},
+		{"created", tag.CreatedAt.Format("2006-01-02 15:04:05")},
+		{"updated", tag.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
 
-	return formatter.PrintTable(headers, rows)
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		return err
+	}
+
+	return formatter.Flush()
 }
 
 // TagsCreateCmd はタグを作成するコマンドです

@@ -102,20 +102,19 @@ func (c *UsersInfoCmd) Run(root *RootFlags) error {
 		return formatter.Print(user)
 	}
 
-	// テーブル形式で出力
-	headers := []string{"Field", "Value"}
+	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
-		{"ID", user.ID},
-		{"Name", user.Name},
-		{"Slug", user.Slug},
-		{"Email", user.Email},
-		{"Bio", user.Bio},
-		{"Location", user.Location},
-		{"Website", user.Website},
-		{"Profile Image", user.ProfileImage},
-		{"Cover Image", user.CoverImage},
-		{"Created", user.CreatedAt.Format("2006-01-02 15:04:05")},
-		{"Updated", user.UpdatedAt.Format("2006-01-02 15:04:05")},
+		{"id", user.ID},
+		{"name", user.Name},
+		{"slug", user.Slug},
+		{"email", user.Email},
+		{"bio", user.Bio},
+		{"location", user.Location},
+		{"website", user.Website},
+		{"profile_image", user.ProfileImage},
+		{"cover_image", user.CoverImage},
+		{"created", user.CreatedAt.Format("2006-01-02 15:04:05")},
+		{"updated", user.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
 
 	// ロール情報を追加
@@ -127,10 +126,14 @@ func (c *UsersInfoCmd) Run(root *RootFlags) error {
 			}
 			roleNames += role.Name
 		}
-		rows = append(rows, []string{"Roles", roleNames})
+		rows = append(rows, []string{"roles", roleNames})
 	}
 
-	return formatter.PrintTable(headers, rows)
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		return err
+	}
+
+	return formatter.Flush()
 }
 
 // UsersUpdateCmd はユーザーを更新するコマンドです

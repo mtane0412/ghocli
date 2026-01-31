@@ -134,16 +134,16 @@ func (c *PostsInfoCmd) Run(root *RootFlags) error {
 
 	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
-		{"ID", post.ID},
-		{"Title", post.Title},
-		{"Slug", post.Slug},
-		{"Status", post.Status},
-		{"Created", post.CreatedAt.Format("2006-01-02 15:04:05")},
-		{"Updated", post.UpdatedAt.Format("2006-01-02 15:04:05")},
+		{"id", post.ID},
+		{"title", post.Title},
+		{"slug", post.Slug},
+		{"status", post.Status},
+		{"created", post.CreatedAt.Format("2006-01-02 15:04:05")},
+		{"updated", post.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
 
 	if post.PublishedAt != nil {
-		rows = append(rows, []string{"Published", post.PublishedAt.Format("2006-01-02 15:04:05")})
+		rows = append(rows, []string{"published", post.PublishedAt.Format("2006-01-02 15:04:05")})
 	}
 
 	if err := formatter.PrintKeyValue(rows); err != nil {

@@ -112,20 +112,23 @@ func (c *MembersInfoCmd) Run(root *RootFlags) error {
 		return formatter.Print(member)
 	}
 
-	// テーブル形式で出力
-	headers := []string{"Field", "Value"}
+	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
-		{"ID", member.ID},
-		{"UUID", member.UUID},
-		{"Email", member.Email},
-		{"Name", member.Name},
-		{"Note", member.Note},
-		{"Status", member.Status},
-		{"Created", member.CreatedAt.Format("2006-01-02 15:04:05")},
-		{"Updated", member.UpdatedAt.Format("2006-01-02 15:04:05")},
+		{"id", member.ID},
+		{"uuid", member.UUID},
+		{"email", member.Email},
+		{"name", member.Name},
+		{"note", member.Note},
+		{"status", member.Status},
+		{"created", member.CreatedAt.Format("2006-01-02 15:04:05")},
+		{"updated", member.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
 
-	return formatter.PrintTable(headers, rows)
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		return err
+	}
+
+	return formatter.Flush()
 }
 
 // MembersCreateCmd はメンバーを作成するコマンドです

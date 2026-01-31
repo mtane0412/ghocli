@@ -44,10 +44,10 @@ func (c *SiteCmd) Run(root *RootFlags) error {
 
 	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
-		{"Title", site.Title},
-		{"Description", site.Description},
-		{"URL", site.URL},
-		{"Version", site.Version},
+		{"title", site.Title},
+		{"description", site.Description},
+		{"url", site.URL},
+		{"version", site.Version},
 	}
 
 	if err := formatter.PrintKeyValue(rows); err != nil {

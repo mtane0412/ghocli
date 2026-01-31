@@ -146,27 +146,16 @@ func TestPrintTable_日本語文字列を含むテーブル表示(t *testing.T) 
 	output := buf.String()
 	lines := strings.Split(output, "\n")
 
-	// ヘッダー行、セパレーター行、データ3行、最後の空行 = 6行
-	if len(lines) != 6 {
-		t.Errorf("行数 = %d; want 6", len(lines))
+	// ヘッダー行、データ3行、最後の空行 = 5行
+	if len(lines) != 5 {
+		t.Errorf("行数 = %d; want 5", len(lines))
 	}
-
-	// 各行の列が正しく揃っていることを確認
-	// セパレーターの位置を基準に、各データ行の列位置が揃っているかチェック
-	separatorLine := lines[1]
-	if separatorLine == "" {
-		t.Fatal("セパレーター行が空")
-	}
-
-	// セパレーター行から各列の開始位置を特定
-	// (この実装は、列が2つスペースで区切られている前提)
-	// 実際には、表示幅が正しく計算されていれば、セパレーターの長さが適切になる
 
 	// すべての行の表示幅が揃っていることを確認
 	headerLine := lines[0]
 	headerWidth := runewidth.StringWidth(headerLine)
 	for i := range rows {
-		dataLine := lines[i+2] // ヘッダー、セパレーターの後
+		dataLine := lines[i+1] // ヘッダーの後
 		// データ行の表示幅が、ヘッダー行と同じであることを確認
 		dataWidth := runewidth.StringWidth(dataLine)
 		if headerWidth != dataWidth {

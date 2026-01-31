@@ -153,15 +153,6 @@ func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
 	}
 	fmt.Fprintln(f.writer)
 
-	// セパレーター行を出力
-	for i, width := range colWidths {
-		if i > 0 {
-			fmt.Fprint(f.writer, "  ")
-		}
-		fmt.Fprint(f.writer, strings.Repeat("-", width))
-	}
-	fmt.Fprintln(f.writer)
-
 	// データ行を出力
 	for _, row := range rows {
 		for i, cell := range row {
