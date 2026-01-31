@@ -89,7 +89,12 @@ gho posts list --status scheduled
 gho posts list --limit 10
 
 # 投稿詳細を取得（IDまたはSlugで指定）
-gho posts get <id-or-slug>
+gho posts info <id-or-slug>
+
+# 投稿の本文コンテンツを表示
+gho posts cat <id-or-slug>
+gho posts cat <id-or-slug> --format text    # テキスト形式で表示
+gho posts cat <id-or-slug> --format lexical # Lexical JSON形式で表示
 
 # 新規投稿を作成
 gho posts create --title "タイトル" --html "本文" --status draft
@@ -120,7 +125,12 @@ gho pages list --status scheduled
 gho pages list --limit 10
 
 # ページ詳細を取得（IDまたはSlugで指定）
-gho pages get <id-or-slug>
+gho pages info <id-or-slug>
+
+# ページの本文コンテンツを表示
+gho pages cat <id-or-slug>
+gho pages cat <id-or-slug> --format text    # テキスト形式で表示
+gho pages cat <id-or-slug> --format lexical # Lexical JSON形式で表示
 
 # 新規ページを作成
 gho pages create --title "タイトル" --html "本文"
@@ -143,8 +153,8 @@ gho tags list
 gho tags list --limit 10
 
 # タグ詳細を取得（IDまたはSlugで指定）
-gho tags get <id-or-slug>
-gho tags get slug:technology
+gho tags info <id-or-slug>
+gho tags info slug:technology
 
 # 新規タグを作成
 gho tags create --name "Technology" --description "技術関連の記事"
@@ -186,7 +196,7 @@ gho members list --limit 10
 gho members list --filter "status:paid"
 
 # メンバー詳細を取得
-gho members get <id>
+gho members info <id>
 
 # 新規メンバーを作成
 gho members create --email "user@example.com" --name "山田太郎"
@@ -214,8 +224,8 @@ gho users list --include roles
 gho users list --include count.posts
 
 # ユーザー詳細を取得（IDまたはSlugで指定）
-gho users get <id-or-slug>
-gho users get slug:john-doe
+gho users info <id-or-slug>
+gho users info slug:john-doe
 
 # ユーザー情報を更新
 gho users update <id> --name "新しい名前" --bio "新しい自己紹介"
@@ -232,8 +242,8 @@ gho newsletters list
 gho newsletters list --filter "status:active"
 
 # ニュースレター詳細を取得（IDまたはSlugで指定）
-gho newsletters get <id-or-slug>
-gho newsletters get slug:weekly-newsletter
+gho newsletters info <id-or-slug>
+gho newsletters info slug:weekly-newsletter
 
 # 新規ニュースレターを作成
 gho newsletters create --name "週刊ニュースレター" --description "毎週金曜日配信"
@@ -256,8 +266,8 @@ gho tiers list
 gho tiers list --include monthly_price,yearly_price
 
 # ティア詳細を取得（IDまたはSlugで指定）
-gho tiers get <id-or-slug>
-gho tiers get slug:premium
+gho tiers info <id-or-slug>
+gho tiers info slug:premium
 
 # 新規ティアを作成（無料プラン）
 gho tiers create --name "フリープラン" --type free
@@ -283,7 +293,7 @@ gho offers list
 gho offers list --filter "status:active"
 
 # オファー詳細を取得
-gho offers get <id>
+gho offers info <id>
 
 # パーセント割引のオファーを作成
 gho offers create --name "新規会員割引" --code "WELCOME2024" --type percent --amount 20 --tier-id <tier-id>

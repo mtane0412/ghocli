@@ -83,7 +83,7 @@
 3. **Postsコマンド** (`internal/cmd/posts.go`)
    ```
    gho posts list [--status draft|published|scheduled] [--limit N]
-   gho posts get <id-or-slug>
+   gho posts info <id-or-slug>   # 旧: gho posts get（後方互換あり）
    gho posts create --title "..." [--html "..."] [--status draft|published]
    gho posts update <id> [--title "..."] [--html "..."]
    gho posts delete <id>
@@ -93,7 +93,7 @@
 4. **Pagesコマンド** (`internal/cmd/pages.go`)
    ```
    gho pages list [--status draft|published|scheduled] [--limit N]
-   gho pages get <id-or-slug>
+   gho pages info <id-or-slug>   # 旧: gho pages get（後方互換あり）
    gho pages create --title "..." [--html "..."]
    gho pages update <id> [--title "..."] [--html "..."]
    gho pages delete <id>
@@ -133,7 +133,7 @@
 3. **Tagsコマンド** (`internal/cmd/tags.go`)
    ```
    gho tags list [--limit N] [--page N]
-   gho tags get <id-or-slug>        # "slug:tag-name" 形式でslugを指定可能
+   gho tags info <id-or-slug>       # 旧: gho tags get（後方互換あり）
    gho tags create --name "..." [--description "..."] [--visibility public|internal]
    gho tags update <id> [--name "..."] [--description "..."]
    gho tags delete <id>
@@ -171,7 +171,7 @@
 2. **Membersコマンド** (`internal/cmd/members.go`)
    ```
    gho members list [--limit N] [--page N] [--filter "..."] [--order "..."]
-   gho members get <id>
+   gho members info <id>            # 旧: gho members get（後方互換あり）
    gho members create --email "..." [--name "..."] [--note "..."] [--labels "..."]
    gho members update <id> [--name "..."] [--note "..."] [--labels "..."]
    gho members delete <id>
@@ -203,7 +203,7 @@
 2. **Usersコマンド** (`internal/cmd/users.go`)
    ```
    gho users list [--limit N] [--page N] [--include roles,count.posts]
-   gho users get <id-or-slug>       # "slug:user-slug" 形式でslugを指定可能
+   gho users info <id-or-slug>      # 旧: gho users get（後方互換あり）
    gho users update <id> [--name "..."] [--slug "..."] [--bio "..."] [--location "..."] [--website "..."]
    ```
 
@@ -248,7 +248,7 @@
 4. **Newslettersコマンド** (`internal/cmd/newsletters.go`)
    ```
    gho newsletters list [--limit N] [--page N] [--filter "..."]
-   gho newsletters get <id-or-slug>    # "slug:newsletter-slug" 形式でslugを指定可能
+   gho newsletters info <id-or-slug>   # 旧: gho newsletters get（後方互換あり）
    gho newsletters create --name "..." [--description "..."] [--visibility members|paid]
    gho newsletters update <id> [--name "..."] [--visibility "..."] [--sender-name "..."]
    ```
@@ -256,7 +256,7 @@
 5. **Tiersコマンド** (`internal/cmd/tiers.go`)
    ```
    gho tiers list [--limit N] [--page N] [--include monthly_price,yearly_price]
-   gho tiers get <id-or-slug>          # "slug:tier-slug" 形式でslugを指定可能
+   gho tiers info <id-or-slug>         # 旧: gho tiers get（後方互換あり）
    gho tiers create --name "..." [--type free|paid] [--monthly-price N] [--yearly-price N]
    gho tiers update <id> [--name "..."] [--monthly-price N] [--yearly-price N]
    ```
@@ -264,7 +264,7 @@
 6. **Offersコマンド** (`internal/cmd/offers.go`)
    ```
    gho offers list [--limit N] [--page N] [--filter "..."]
-   gho offers get <id>
+   gho offers info <id>                # 旧: gho offers get（後方互換あり）
    gho offers create --name "..." --code "..." --type percent|fixed --amount N --tier-id <tier-id>
    gho offers update <id> [--name "..."] [--amount N]
    ```
@@ -475,8 +475,77 @@ make build
 - [Ghost Admin API Overview](https://docs.ghost.org/admin-api)
 - [Bash Example of Ghost JWT Auth](https://gist.github.com/ErisDS/6334f0e70ec7390ec08530d5ef9bd0d5)
 
+### ✅ Phase 8: コマンド設計改善（進行中）
+
+**開始日**: 2026-01-31
+
+**目的**: gogcliのコマンド設計パターンを参考に、ghoのコマンド体系を改善
+
+**実装内容**:
+
+#### 8.1: get → info リネーム（完了）
+- すべてのリソース（posts, pages, members, tags, users, newsletters, tiers, offers）で`get`コマンドを`info`にリネーム
+- 後方互換性のため`get`はエイリアス（非推奨）として維持
+- 非推奨メッセージをヘルプに追加
+
+**変更例**:
+```bash
+# 新しいコマンド
+gho posts info <id>
+gho pages info <slug>
+gho members info <id>
+
+# 旧コマンド（非推奨警告付きで動作）
+gho posts get <id>
+```
+
+#### 8.2: catコマンドの追加（完了）
+- posts/pagesに本文コンテンツを標準出力に表示する`cat`コマンドを追加
+- `--format`オプションでhtml/text/lexical形式を選択可能
+
+**使用例**:
+```bash
+gho posts cat <id>                      # HTML形式で出力
+gho posts cat <id> --format text        # テキスト形式で出力
+gho posts cat <id> --format lexical     # Lexical JSON形式で出力
+gho pages cat <slug> --format html      # ページの本文をHTML形式で出力
+```
+
+#### 8.3: copyコマンドの追加（予定）
+- posts/pagesをコピーする`copy`コマンド
+- ID/UUID/URL/日時を除外して新規作成
+- ステータスは`draft`で作成
+
+```bash
+gho posts copy <id> [--title "新しいタイトル"]
+gho pages copy <slug> [--title "新しいタイトル"]
+```
+
+#### 8.4: exportコマンドの追加（予定）
+- posts/pagesをファイルにエクスポートする`export`コマンド
+- HTML/JSONフォーマット対応
+
+```bash
+gho posts export <id> --format html --out ./output.html
+gho posts export <id> --format json --out ./output.json
+gho pages export <slug> --format html --out ./output.html
+```
+
+**品質チェック**:
+- ✅ すべてのテストがパス
+- ✅ 型チェック（`go vet`）成功
+- ✅ Lint（golangci-lint）成功
+- ✅ ビルド成功
+
+**コミット**:
+- `dec99de feat(cmd): Phase 1 - get → info リネーム（全リソース）`
+- `a1d6f61 feat(cmd): Phase 2 - catコマンドの追加（posts, pages）`
+
+**参考**: gogcliのコマンド設計パターン（`gog docs info/cat/copy/export`）
+
 ## 次のステップ
 
 Phase 7が完了し、主要なGhost Admin API機能の実装がすべて完了しました。
+現在、Phase 8（コマンド設計改善）を進行中です。
 
 今後の拡張機能については `docs/NEXT_STEPS.md` を参照してください。
