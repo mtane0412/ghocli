@@ -42,8 +42,7 @@ func (c *SiteCmd) Run(root *RootFlags) error {
 		return formatter.Print(site)
 	}
 
-	// テーブル形式で出力
-	headers := []string{"Field", "Value"}
+	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
 		{"Title", site.Title},
 		{"Description", site.Description},
@@ -51,7 +50,11 @@ func (c *SiteCmd) Run(root *RootFlags) error {
 		{"Version", site.Version},
 	}
 
-	return formatter.PrintTable(headers, rows)
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		return err
+	}
+
+	return formatter.Flush()
 }
 
 // getAPIClient はAPIクライアントを取得します

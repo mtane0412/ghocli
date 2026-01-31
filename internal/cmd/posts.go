@@ -132,8 +132,7 @@ func (c *PostsInfoCmd) Run(root *RootFlags) error {
 		return formatter.Print(post)
 	}
 
-	// テーブル形式で出力
-	headers := []string{"Field", "Value"}
+	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
 		{"ID", post.ID},
 		{"Title", post.Title},
@@ -147,7 +146,11 @@ func (c *PostsInfoCmd) Run(root *RootFlags) error {
 		rows = append(rows, []string{"Published", post.PublishedAt.Format("2006-01-02 15:04:05")})
 	}
 
-	return formatter.PrintTable(headers, rows)
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		return err
+	}
+
+	return formatter.Flush()
 }
 
 // PostsCreateCmd は投稿を作成するコマンドです

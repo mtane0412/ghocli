@@ -12,22 +12,48 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/mattn/go-runewidth"
 )
 
 // Formatter は出力フォーマッターです
 type Formatter struct {
-	writer io.Writer
-	mode   string // "json", "table", "plain"
+	writer    io.Writer
+	tabwriter *tabwriter.Writer
+	mode      string // "json", "table", "plain"
 }
 
 // NewFormatter は新しい出力フォーマッターを作成します。
 func NewFormatter(writer io.Writer, mode string) *Formatter {
-	return &Formatter{
+	f := &Formatter{
 		writer: writer,
 		mode:   mode,
 	}
+
+	// テーブル形式の場合はtabwriterでラップ
+	if mode == "table" {
+		f.tabwriter = tabwriter.NewWriter(writer, 0, 4, 2, ' ', 0)
+	}
+
+	return f
+}
+
+// Flush はバッファされた出力をフラッシュします。
+// テーブル形式の場合にtabwriterをフラッシュする必要があります。
+func (f *Formatter) Flush() error {
+	if f.tabwriter != nil {
+		return f.tabwriter.Flush()
+	}
+	return nil
+}
+
+// getWriter は出力先のwriterを取得します。
+func (f *Formatter) getWriter() io.Writer {
+	if f.tabwriter != nil {
+		return f.tabwriter
+	}
+	return f.writer
 }
 
 // Print は任意のデータを出力します。
@@ -167,4 +193,32 @@ func (f *Formatter) PrintMessage(message string) {
 // PrintError はエラーメッセージを出力します。
 func (f *Formatter) PrintError(message string) {
 	fmt.Fprintln(f.writer, "Error:", message)
+}
+
+// PrintKeyValue はキー/値のペアをヘッダーなしで出力します。
+// 単一アイテム情報の表示に使用します。
+func (f *Formatter) PrintKeyValue(rows [][]string) error {
+	if f.mode == "json" {
+		// キー/値のマップとして出力
+		data := make(map[string]string)
+		for _, row := range rows {
+			if len(row) >= 2 {
+				data[row[0]] = row[1]
+			}
+		}
+		encoder := json.NewEncoder(f.writer)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(data)
+	}
+
+	// Plain/テーブル形式共通：タブ区切りで出力
+	// テーブル形式の場合はtabwriterで自動的に整列される
+	w := f.getWriter()
+	for _, row := range rows {
+		if _, err := fmt.Fprintln(w, strings.Join(row, "\t")); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

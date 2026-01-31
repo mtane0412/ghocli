@@ -117,8 +117,7 @@ func (c *PagesInfoCmd) Run(root *RootFlags) error {
 		return formatter.Print(page)
 	}
 
-	// テーブル形式で出力
-	headers := []string{"Field", "Value"}
+	// キー/値形式で出力（ヘッダーなし）
 	rows := [][]string{
 		{"ID", page.ID},
 		{"Title", page.Title},
@@ -132,7 +131,11 @@ func (c *PagesInfoCmd) Run(root *RootFlags) error {
 		rows = append(rows, []string{"Published", page.PublishedAt.Format("2006-01-02 15:04:05")})
 	}
 
-	return formatter.PrintTable(headers, rows)
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		return err
+	}
+
+	return formatter.Flush()
 }
 
 // PagesCreateCmd はページを作成するコマンドです

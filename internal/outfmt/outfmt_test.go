@@ -175,3 +175,124 @@ func TestPrintTable_日本語文字列を含むテーブル表示(t *testing.T) 
 		}
 	}
 }
+
+// TestPrintKeyValue_プレーン形式で出力
+func TestPrintKeyValue_プレーン形式で出力(t *testing.T) {
+	var buf bytes.Buffer
+	formatter := NewFormatter(&buf, "plain")
+
+	// キー/値のペア（ヘッダーなし）
+	rows := [][]string{
+		{"Title", "はなしのタネ"},
+		{"URL", "https://hanashinotane.com"},
+		{"Version", "5.102"},
+	}
+
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		t.Fatalf("キー/値出力に失敗: %v", err)
+	}
+
+	output := buf.String()
+	lines := strings.Split(strings.TrimSpace(output), "\n")
+
+	// データ3行（ヘッダーなし）
+	if len(lines) != 3 {
+		t.Errorf("行数 = %d; want 3", len(lines))
+	}
+
+	// TSV形式（タブ区切り）であることを確認
+	if !strings.Contains(lines[0], "\t") {
+		t.Error("データ行1がタブ区切りではない")
+	}
+
+	// 最初の行が "Title\tはなしのタネ" であることを確認
+	expected := "Title\tはなしのタネ"
+	if lines[0] != expected {
+		t.Errorf("最初の行 = %q; want %q", lines[0], expected)
+	}
+
+	// "Field" または "Value" というヘッダーがないことを確認
+	if strings.Contains(output, "Field") || strings.Contains(output, "Value") {
+		t.Error("出力にヘッダー（Field/Value）が含まれている")
+	}
+}
+
+// TestPrintKeyValue_JSON形式で出力
+func TestPrintKeyValue_JSON形式で出力(t *testing.T) {
+	var buf bytes.Buffer
+	formatter := NewFormatter(&buf, "json")
+
+	// キー/値のペア
+	rows := [][]string{
+		{"Title", "はなしのタネ"},
+		{"URL", "https://hanashinotane.com"},
+		{"Version", "5.102"},
+	}
+
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		t.Fatalf("キー/値出力に失敗: %v", err)
+	}
+
+	output := buf.String()
+
+	// JSONオブジェクトとして出力されることを確認（配列ではない）
+	if strings.HasPrefix(strings.TrimSpace(output), "[") {
+		t.Error("JSON出力が配列形式になっている（オブジェクト形式であるべき）")
+	}
+
+	// 各キーが含まれていることを確認
+	if !strings.Contains(output, `"Title"`) {
+		t.Error("JSONに'Title'フィールドが含まれていない")
+	}
+	if !strings.Contains(output, `"はなしのタネ"`) {
+		t.Error("JSONに'はなしのタネ'値が含まれていない")
+	}
+	if !strings.Contains(output, `"URL"`) {
+		t.Error("JSONに'URL'フィールドが含まれていない")
+	}
+}
+
+// TestPrintKeyValue_テーブル形式で出力
+func TestPrintKeyValue_テーブル形式で出力(t *testing.T) {
+	var buf bytes.Buffer
+	formatter := NewFormatter(&buf, "table")
+
+	// キー/値のペア
+	rows := [][]string{
+		{"Title", "はなしのタネ"},
+		{"URL", "https://hanashinotane.com"},
+		{"Version", "5.102"},
+	}
+
+	if err := formatter.PrintKeyValue(rows); err != nil {
+		t.Fatalf("キー/値出力に失敗: %v", err)
+	}
+
+	// tabwriterをFlushする
+	if err := formatter.Flush(); err != nil {
+		t.Fatalf("Flush失敗: %v", err)
+	}
+
+	output := buf.String()
+	lines := strings.Split(output, "\n")
+
+	// データ3行、最後の空行 = 4行（ヘッダー行とセパレーター行はなし）
+	if len(lines) != 4 {
+		t.Errorf("行数 = %d; want 4 (got: %v)", len(lines), lines)
+	}
+
+	// 最初の行に "Title" が含まれることを確認
+	if !strings.Contains(lines[0], "Title") {
+		t.Error("最初の行に'Title'が含まれていない")
+	}
+
+	// 最初の行に "はなしのタネ" が含まれることを確認
+	if !strings.Contains(lines[0], "はなしのタネ") {
+		t.Error("最初の行に'はなしのタネ'が含まれていない")
+	}
+
+	// タブ文字は含まれていないこと（tabwriterでスペースに変換される）
+	if strings.Contains(lines[0], "\t") {
+		t.Error("タブ文字が含まれている（tabwriterで整列されるべき）")
+	}
+}
