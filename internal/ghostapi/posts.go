@@ -94,11 +94,11 @@ func (c *Client) GetPost(idOrSlug string) (*Post, error) {
 	// スラッグかどうかを判定（IDは通常24文字の16進数）
 	var path string
 	if len(idOrSlug) == 24 {
-		// IDとして扱う
-		path = fmt.Sprintf("/ghost/api/admin/posts/%s/", idOrSlug)
+		// IDとして扱う（formats=html,lexicalでHTML/Lexical両方を取得）
+		path = fmt.Sprintf("/ghost/api/admin/posts/%s/?formats=html,lexical", idOrSlug)
 	} else {
-		// スラッグとして扱う
-		path = fmt.Sprintf("/ghost/api/admin/posts/slug/%s/", idOrSlug)
+		// スラッグとして扱う（formats=html,lexicalでHTML/Lexical両方を取得）
+		path = fmt.Sprintf("/ghost/api/admin/posts/slug/%s/?formats=html,lexical", idOrSlug)
 	}
 
 	// リクエストを実行
