@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/k3a/html2text"
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
 )
@@ -492,9 +493,8 @@ func (c *PagesCatCmd) Run(root *RootFlags) error {
 	case "html":
 		content = page.HTML
 	case "text":
-		// TODO: HTMLからテキストへの変換を実装
-		// 現時点ではHTMLをそのまま出力
-		content = page.HTML
+		// HTMLからテキストへ変換
+		content = html2text.HTML2Text(page.HTML)
 	case "lexical":
 		content = page.Lexical
 	default:

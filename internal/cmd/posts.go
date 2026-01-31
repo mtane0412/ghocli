@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/k3a/html2text"
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
 )
@@ -934,9 +935,8 @@ func (c *PostsCatCmd) Run(root *RootFlags) error {
 	case "html":
 		content = post.HTML
 	case "text":
-		// TODO: HTMLからテキストへの変換を実装
-		// 現時点ではHTMLをそのまま出力
-		content = post.HTML
+		// HTMLからテキストへ変換
+		content = html2text.HTML2Text(post.HTML)
 	case "lexical":
 		content = post.Lexical
 	default:

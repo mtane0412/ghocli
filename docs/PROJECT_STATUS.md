@@ -425,6 +425,7 @@ gho/
 github.com/alecthomas/kong v1.13.0        # CLIフレームワーク
 github.com/99designs/keyring v1.2.2       # キーリング統合
 github.com/golang-jwt/jwt/v5 v5.3.1       # JWT生成
+github.com/k3a/html2text v1.3.0           # HTML→テキスト変換
 ```
 
 ## 品質チェックコマンド
@@ -502,11 +503,12 @@ gho posts get <id>
 #### 8.2: catコマンドの追加（完了）
 - posts/pagesに本文コンテンツを標準出力に表示する`cat`コマンドを追加
 - `--format`オプションでhtml/text/lexical形式を選択可能
+- textフォーマットはk3a/html2textライブラリを使用してHTMLからプレーンテキストに変換
 
 **使用例**:
 ```bash
 gho posts cat <id>                      # HTML形式で出力
-gho posts cat <id> --format text        # テキスト形式で出力
+gho posts cat <id> --format text        # テキスト形式で出力（HTMLタグを除去）
 gho posts cat <id> --format lexical     # Lexical JSON形式で出力
 gho pages cat <slug> --format html      # ページの本文をHTML形式で出力
 ```
@@ -525,15 +527,15 @@ gho pages copy <slug>                            # ページをコピー
 gho pages copy <slug> --title "新タイトル"       # カスタムタイトルでコピー
 ```
 
-#### 8.4: exportコマンドの追加（予定）
-- posts/pagesをファイルにエクスポートする`export`コマンド
-- HTML/JSONフォーマット対応
+#### 8.4: catコマンドのtextフォーマット実装（完了）
+- posts/pagesの`cat`コマンドで`--format text`が正しく動作するように実装
+- k3a/html2textライブラリを使用してHTMLからプレーンテキストに変換
+- シェルリダイレクト（`gho posts cat <id> --format html > output.html`）でエクスポート可能なため、専用のexportコマンドは不要と判断
 
-```bash
-gho posts export <id> --format html --out ./output.html
-gho posts export <id> --format json --out ./output.json
-gho pages export <slug> --format html --out ./output.html
-```
+**実装箇所**:
+- `internal/cmd/posts.go:939` - HTMLからテキストへの変換実装
+- `internal/cmd/pages.go:497` - 同上
+- `go.mod` - k3a/html2text v1.3.0を追加
 
 **品質チェック**:
 - ✅ すべてのテストがパス
@@ -544,6 +546,7 @@ gho pages export <slug> --format html --out ./output.html
 **コミット**:
 - `dec99de feat(cmd): Phase 1 - get → info リネーム（全リソース）`
 - `a1d6f61 feat(cmd): Phase 2 - catコマンドの追加（posts, pages）`
+- `18ab842 feat(cmd): Phase 8.3 - copyコマンドの追加（posts, pages）`
 
 **参考**: gogcliのコマンド設計パターン（`gog docs info/cat/copy/export`）
 
