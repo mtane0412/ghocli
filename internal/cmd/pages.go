@@ -467,7 +467,7 @@ func (c *PagesUnpublishCmd) Run(root *RootFlags) error {
 // PagesCatCmd はページの本文コンテンツを表示するコマンドです
 type PagesCatCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
-	Format   string `help:"Output format (html, text, lexical)" default:"html"`
+	Format   string `help:"Output format (text, html, lexical)" default:"text"`
 }
 
 // Run はpagesコマンドのcatサブコマンドを実行します

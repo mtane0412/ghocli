@@ -909,7 +909,7 @@ func hasSubstringIgnoreCase(s, substr string) bool {
 // PostsCatCmd は投稿の本文コンテンツを表示するコマンドです
 type PostsCatCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
-	Format   string `help:"Output format (html, text, lexical)" default:"html"`
+	Format   string `help:"Output format (text, html, lexical)" default:"text"`
 }
 
 // Run はpostsコマンドのcatサブコマンドを実行します
