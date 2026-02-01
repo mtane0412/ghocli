@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/k3a/html2text"
+	"github.com/mtane0412/gho/internal/fields"
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
 )
@@ -146,6 +147,23 @@ type PostsInfoCmd struct {
 
 // Run はpostsコマンドのinfoサブコマンドを実行します
 func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
+	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
+	if root.JSON && root.Fields == "" {
+		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+		formatter.PrintMessage(fields.ListAvailable(fields.PostFields))
+		return nil
+	}
+
+	// フィールド指定をパース
+	var selectedFields []string
+	if root.Fields != "" {
+		parsedFields, err := fields.Parse(root.Fields, fields.PostFields)
+		if err != nil {
+			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+		}
+		selectedFields = parsedFields
+	}
+
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -160,6 +178,18 @@ func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 出力フォーマッターを作成
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// フィールド指定がある場合はフィルタリングして出力
+	if len(selectedFields) > 0 {
+		// Post構造体をmap[string]interface{}に変換
+		postMap, err := outfmt.StructToMap(post)
+		if err != nil {
+			return fmt.Errorf("投稿データの変換に失敗: %w", err)
+		}
+
+		// フィールドフィルタリングして出力
+		return outfmt.FilterFields(formatter, []map[string]interface{}{postMap}, selectedFields)
+	}
 
 	// JSON形式の場合はそのまま出力
 	if root.JSON {

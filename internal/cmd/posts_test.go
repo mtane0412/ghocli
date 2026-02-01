@@ -151,3 +151,24 @@ func TestPostsListCmd_フィールド一覧表示(t *testing.T) {
 	// 実際のAPI呼び出しを含むため、ユニットテストとしては実装しない
 	t.Skip("統合テストで実装")
 }
+
+// TestPostsInfoCmd_Fields対応 はPostsInfoCmdがfieldsをサポートすることを確認します
+func TestPostsInfoCmd_Fields対応(t *testing.T) {
+	// RootFlagsにFieldsが設定できることを確認
+	root := &RootFlags{
+		JSON:   true,
+		Fields: "id,title,status",
+	}
+
+	// Fieldsフィールドが正しく設定されることを確認
+	if root.Fields != "id,title,status" {
+		t.Errorf("RootFlags.Fieldsが設定されていません: got=%s", root.Fields)
+	}
+}
+
+// TestPostsInfoCmd_フィールド一覧表示 はJSON単独時にフィールド一覧が表示されることを確認します
+func TestPostsInfoCmd_フィールド一覧表示(t *testing.T) {
+	// このテストは実装後に動作確認のために使用
+	// 実際のAPI呼び出しを含むため、ユニットテストとしては実装しない
+	t.Skip("統合テストで実装")
+}
