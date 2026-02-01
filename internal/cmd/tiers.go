@@ -21,8 +21,7 @@ import (
 // TiersCmd はティア管理コマンドです
 type TiersCmd struct {
 	List   TiersListCmd   `cmd:"" help:"List tiers"`
-	Info   TiersInfoCmd   `cmd:"" help:"ティアの情報を表示"`
-	Get    TiersInfoCmd   `cmd:"" hidden:"" help:"ティアを取得（非推奨: infoを使用してください）"`
+	Get    TiersInfoCmd   `cmd:"" help:"ティアの情報を表示"`
 	Create TiersCreateCmd `cmd:"" help:"Create a tier"`
 	Update TiersUpdateCmd `cmd:"" help:"Update a tier"`
 }

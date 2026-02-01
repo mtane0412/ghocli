@@ -20,8 +20,7 @@ import (
 // UsersCmd はユーザー管理コマンドです
 type UsersCmd struct {
 	List   UsersListCmd   `cmd:"" help:"List users"`
-	Info   UsersInfoCmd   `cmd:"" help:"ユーザーの情報を表示"`
-	Get    UsersInfoCmd   `cmd:"" hidden:"" help:"ユーザーを取得（非推奨: infoを使用してください）"`
+	Get    UsersInfoCmd   `cmd:"" help:"ユーザーの情報を表示"`
 	Update UsersUpdateCmd `cmd:"" help:"Update a user"`
 }
 

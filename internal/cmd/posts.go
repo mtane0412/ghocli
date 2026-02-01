@@ -23,8 +23,7 @@ import (
 // PostsCmd は投稿管理コマンドです
 type PostsCmd struct {
 	List    PostsListCmd    `cmd:"" help:"List posts"`
-	Info    PostsInfoCmd    `cmd:"" help:"投稿の情報を表示"`
-	Get     PostsInfoCmd    `cmd:"" hidden:"" help:"投稿を取得（非推奨: infoを使用してください）"`
+	Get     PostsInfoCmd    `cmd:"" help:"投稿の情報を表示"`
 	Cat     PostsCatCmd     `cmd:"" help:"本文コンテンツを表示"`
 	Create  PostsCreateCmd  `cmd:"" help:"Create a post"`
 	Update  PostsUpdateCmd  `cmd:"" help:"Update a post"`

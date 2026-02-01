@@ -19,8 +19,7 @@ import (
 // TagsCmd はタグ管理コマンドです
 type TagsCmd struct {
 	List   TagsListCmd   `cmd:"" help:"List tags"`
-	Info   TagsInfoCmd   `cmd:"" help:"タグの情報を表示"`
-	Get    TagsInfoCmd   `cmd:"" hidden:"" help:"タグを取得（非推奨: infoを使用してください）"`
+	Get    TagsInfoCmd   `cmd:"" help:"タグの情報を表示"`
 	Create TagsCreateCmd `cmd:"" help:"Create a tag"`
 	Update TagsUpdateCmd `cmd:"" help:"Update a tag"`
 	Delete TagsDeleteCmd `cmd:"" help:"Delete a tag"`

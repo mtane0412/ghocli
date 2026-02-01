@@ -20,8 +20,7 @@ import (
 // PagesCmd はページ管理コマンドです
 type PagesCmd struct {
 	List   PagesListCmd   `cmd:"" help:"List pages"`
-	Info   PagesInfoCmd   `cmd:"" help:"ページの情報を表示"`
-	Get    PagesInfoCmd   `cmd:"" hidden:"" help:"ページを取得（非推奨: infoを使用してください）"`
+	Get    PagesInfoCmd   `cmd:"" help:"ページの情報を表示"`
 	Cat    PagesCatCmd    `cmd:"" help:"本文コンテンツを表示"`
 	Create PagesCreateCmd `cmd:"" help:"Create a page"`
 	Update PagesUpdateCmd `cmd:"" help:"Update a page"`
