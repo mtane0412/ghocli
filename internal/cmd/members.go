@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mtane0412/gho/internal/fields"
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
 )
@@ -44,6 +45,23 @@ type MembersListCmd struct {
 
 // Run はmembersコマンドのlistサブコマンドを実行します
 func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
+	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
+	if root.JSON && root.Fields == "" {
+		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+		formatter.PrintMessage(fields.ListAvailable(fields.MemberFields))
+		return nil
+	}
+
+	// フィールド指定をパース
+	var selectedFields []string
+	if root.Fields != "" {
+		parsedFields, err := fields.Parse(root.Fields, fields.MemberFields)
+		if err != nil {
+			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+		}
+		selectedFields = parsedFields
+	}
+
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -63,6 +81,22 @@ func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 出力フォーマッターを作成
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// フィールド指定がある場合はフィルタリングして出力
+	if len(selectedFields) > 0 {
+		// Member構造体をmap[string]interface{}に変換
+		var membersData []map[string]interface{}
+		for _, member := range response.Members {
+			memberMap, err := outfmt.StructToMap(member)
+			if err != nil {
+				return fmt.Errorf("メンバーデータの変換に失敗: %w", err)
+			}
+			membersData = append(membersData, memberMap)
+		}
+
+		// フィールドフィルタリングして出力
+		return outfmt.FilterFields(formatter, membersData, selectedFields)
+	}
 
 	// JSON形式の場合はそのまま出力
 	if root.JSON {
@@ -92,6 +126,23 @@ type MembersInfoCmd struct {
 
 // Run はmembersコマンドのinfoサブコマンドを実行します
 func (c *MembersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
+	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
+	if root.JSON && root.Fields == "" {
+		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+		formatter.PrintMessage(fields.ListAvailable(fields.MemberFields))
+		return nil
+	}
+
+	// フィールド指定をパース
+	var selectedFields []string
+	if root.Fields != "" {
+		parsedFields, err := fields.Parse(root.Fields, fields.MemberFields)
+		if err != nil {
+			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+		}
+		selectedFields = parsedFields
+	}
+
 	// APIクライアントを取得
 	client, err := getAPIClient(root)
 	if err != nil {
@@ -106,6 +157,18 @@ func (c *MembersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 出力フォーマッターを作成
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// フィールド指定がある場合はフィルタリングして出力
+	if len(selectedFields) > 0 {
+		// Member構造体をmap[string]interface{}に変換
+		memberMap, err := outfmt.StructToMap(member)
+		if err != nil {
+			return fmt.Errorf("メンバーデータの変換に失敗: %w", err)
+		}
+
+		// フィールドフィルタリングして出力
+		return outfmt.FilterFields(formatter, []map[string]interface{}{memberMap}, selectedFields)
+	}
 
 	// JSON形式の場合はそのまま出力
 	if root.JSON {
