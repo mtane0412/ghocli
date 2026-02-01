@@ -28,7 +28,7 @@ type TagsCmd struct {
 
 // TagsListCmd はタグ一覧を取得するコマンドです
 type TagsListCmd struct {
-	Limit   int    `help:"Number of tags to retrieve" short:"l" default:"15"`
+	Limit   int    `help:"Number of tags to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
 	Include string `help:"Include additional data (count.posts)" short:"i"`
 }

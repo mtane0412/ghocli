@@ -27,10 +27,10 @@ type UsersCmd struct {
 
 // UsersListCmd はユーザー一覧を取得するコマンドです
 type UsersListCmd struct {
-	Limit   int    `help:"Number of users to retrieve" short:"l" default:"15"`
+	Limit   int    `help:"Number of users to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
 	Include string `help:"Include additional data (e.g., roles,count.posts)" short:"i"`
-	Filter  string `help:"Filter query"`
+	Filter  string `help:"Filter query" aliases:"where,w"`
 }
 
 // Run はusersコマンドのlistサブコマンドを実行します

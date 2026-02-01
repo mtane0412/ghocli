@@ -37,9 +37,9 @@ type MembersCmd struct {
 
 // MembersListCmd はメンバー一覧を取得するコマンドです
 type MembersListCmd struct {
-	Limit  int    `help:"Number of members to retrieve" short:"l" default:"15"`
+	Limit  int    `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
-	Filter string `help:"Filter query (e.g., status:paid)"`
+	Filter string `help:"Filter query (e.g., status:paid)" aliases:"where,w"`
 	Order  string `help:"Sort order (e.g., created_at DESC)" short:"o"`
 }
 
@@ -344,7 +344,7 @@ func (c *MembersDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // MembersPaidCmd は有料会員一覧を取得するコマンドです
 type MembersPaidCmd struct {
-	Limit int `help:"Number of members to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -392,7 +392,7 @@ func (c *MembersPaidCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // MembersFreeCmd は無料会員一覧を取得するコマンドです
 type MembersFreeCmd struct {
-	Limit int `help:"Number of members to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -574,7 +574,7 @@ func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // MembersRecentCmd は最近登録したメンバー一覧を取得するコマンドです
 type MembersRecentCmd struct {
-	Limit int `help:"Number of members to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 }
 
 // Run はmembersコマンドのrecentサブコマンドを実行します

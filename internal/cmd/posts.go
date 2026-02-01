@@ -56,7 +56,7 @@ type PostsCmd struct {
 // PostsListCmd は投稿一覧を取得するコマンドです
 type PostsListCmd struct {
 	Status string `help:"Filter by status (draft, published, scheduled, all)" short:"S" default:"all"`
-	Limit  int    `help:"Number of posts to retrieve" short:"l" default:"15"`
+	Limit  int    `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
 }
 
@@ -448,7 +448,7 @@ func (c *PostsPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PostsDraftsCmd は下書き投稿一覧を取得するコマンドです
 type PostsDraftsCmd struct {
-	Limit int `help:"Number of posts to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -496,7 +496,7 @@ func (c *PostsDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PostsPublishedCmd は公開済み投稿一覧を取得するコマンドです
 type PostsPublishedCmd struct {
-	Limit int `help:"Number of posts to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -548,7 +548,7 @@ func (c *PostsPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PostsScheduledCmd は予約投稿一覧を取得するコマンドです
 type PostsScheduledCmd struct {
-	Limit int `help:"Number of posts to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -894,7 +894,7 @@ func (c *PostsBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 // PostsSearchCmd は投稿を検索するコマンドです
 type PostsSearchCmd struct {
 	Query string `arg:"" help:"Search query"`
-	Limit int    `help:"Number of posts to retrieve" short:"l" default:"15"`
+	Limit int    `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 }
 
 // Run はpostsコマンドのsearchサブコマンドを実行します

@@ -27,9 +27,9 @@ type NewslettersCmd struct {
 
 // NewslettersListCmd はニュースレター一覧を取得するコマンドです
 type NewslettersListCmd struct {
-	Limit  int    `help:"Number of newsletters to retrieve" short:"l" default:"15"`
+	Limit  int    `help:"Number of newsletters to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
-	Filter string `help:"Filter condition (e.g., status:active)"`
+	Filter string `help:"Filter condition (e.g., status:active)" aliases:"where,w"`
 }
 
 // Run はnewslettersコマンドのlistサブコマンドを実行します

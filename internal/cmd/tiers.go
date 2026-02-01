@@ -28,10 +28,10 @@ type TiersCmd struct {
 
 // TiersListCmd はティア一覧を取得するコマンドです
 type TiersListCmd struct {
-	Limit   int    `help:"Number of tiers to retrieve" short:"l" default:"15"`
+	Limit   int    `help:"Number of tiers to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
 	Include string `help:"Include additional data (monthly_price,yearly_price,benefits)" short:"i"`
-	Filter  string `help:"Filter condition"`
+	Filter  string `help:"Filter condition" aliases:"where,w"`
 }
 
 // Run はtiersコマンドのlistサブコマンドを実行します

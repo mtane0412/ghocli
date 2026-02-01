@@ -53,7 +53,7 @@ type PagesCmd struct {
 // PagesListCmd はページ一覧を取得するコマンドです
 type PagesListCmd struct {
 	Status string `help:"Filter by status (draft, published, scheduled, all)" short:"S" default:"all"`
-	Limit  int    `help:"Number of pages to retrieve" short:"l" default:"15"`
+	Limit  int    `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
 }
 
@@ -669,7 +669,7 @@ func (c *PagesCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PagesDraftsCmd は下書きページ一覧を取得するコマンドです
 type PagesDraftsCmd struct {
-	Limit int `help:"Number of pages to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -717,7 +717,7 @@ func (c *PagesDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PagesPublishedCmd は公開済みページ一覧を取得するコマンドです
 type PagesPublishedCmd struct {
-	Limit int `help:"Number of pages to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -769,7 +769,7 @@ func (c *PagesPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PagesScheduledCmd は予約ページ一覧を取得するコマンドです
 type PagesScheduledCmd struct {
-	Limit int `help:"Number of pages to retrieve" short:"l" default:"15"`
+	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
@@ -998,7 +998,7 @@ func (c *PagesBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 // PagesSearchCmd はページを検索するコマンドです
 type PagesSearchCmd struct {
 	Query string `arg:"" help:"Search query"`
-	Limit int    `help:"Number of pages to retrieve" short:"l" default:"15"`
+	Limit int    `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 }
 
 // Run はpagesコマンドのsearchサブコマンドを実行します
