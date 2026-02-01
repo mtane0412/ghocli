@@ -164,7 +164,7 @@ func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		discountInfo += " " + c.Currency
 	}
 	action := fmt.Sprintf("create offer '%s' (code: %s, discount: %s)", c.Name, c.Code, discountInfo)
-	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
@@ -232,7 +232,7 @@ func (c *OffersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 破壊的操作の確認
 	action := fmt.Sprintf("update offer '%s' (ID: %s)", existingOffer.Name, c.ID)
-	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 

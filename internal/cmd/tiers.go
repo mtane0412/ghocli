@@ -161,7 +161,7 @@ func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		priceInfo = fmt.Sprintf(" (monthly: %d %s, yearly: %d %s)", c.MonthlyPrice, c.Currency, c.YearlyPrice, c.Currency)
 	}
 	action := fmt.Sprintf("create tier '%s'%s", c.Name, priceInfo)
-	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
@@ -227,7 +227,7 @@ func (c *TiersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 破壊的操作の確認
 	action := fmt.Sprintf("update tier '%s' (ID: %s)", existingTier.Name, c.ID)
-	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 

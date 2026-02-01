@@ -144,7 +144,7 @@ func (c *NewslettersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 破壊的操作の確認
 	action := fmt.Sprintf("create newsletter '%s'", c.Name)
-	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ func (c *NewslettersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// 破壊的操作の確認
 	action := fmt.Sprintf("update newsletter '%s' (ID: %s)", existingNewsletter.Name, c.ID)
-	if err := confirmDestructive(action, root.Force, root.NoInput); err != nil {
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 

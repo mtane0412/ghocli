@@ -8,58 +8,77 @@
 package cmd
 
 import (
-	"bufio"
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"golang.org/x/term"
+
+	"github.com/mtane0412/gho/internal/input"
+	"github.com/mtane0412/gho/internal/ui"
 )
 
-// confirmDestructive は破壊的操作の実行前にユーザー確認を行います
+// ConfirmDestructive は破壊的操作の実行前にユーザー確認を行います
 //
-// action: 実行する操作の説明（例: "delete post 'テスト記事'"）
-// force: 確認をスキップするフラグ
-// noInput: 対話的入力を無効化するフラグ（CI環境向け）
+// ctx: コンテキスト（UIの取得に使用）
+// root: RootFlagsからForceとNoInputフラグを取得
+// message: 実行する操作の説明（例: "delete post 'テスト記事'"）
 //
 // 戻り値:
-//   - force=true の場合は常にnilを返す
-//   - noInput=true かつ force=false の場合はエラーを返す
-//   - 非対話的環境（TTYでない）の場合は、forceなしではエラーを返す
-//   - 対話的環境では、ユーザーに確認プロンプトを表示し、y/yes以外の入力でエラーを返す
-func confirmDestructive(action string, force bool, noInput bool) error {
+//   - Force=true の場合は常にnilを返す
+//   - NoInput=true かつ Force=false の場合はExitError{Code: 1}を返す
+//   - 非対話的環境（TTYでない）の場合は、ForceなしではExitError{Code: 1}を返す
+//   - 対話的環境では、ユーザーに確認プロンプトを表示し、y/yes以外の入力でExitError{Code: 1}を返す
+func ConfirmDestructive(ctx context.Context, root *RootFlags, message string) error {
 	// Forceフラグが有効な場合は確認をスキップ
-	if force {
+	if root.Force {
 		return nil
 	}
 
-	// NoInputフラグが有効な場合は、対話的入力を禁止
-	if noInput {
-		return fmt.Errorf("refusing to %s without --force (non-interactive)", action)
+	// NoInputフラグが有効な場合、または非対話的環境の場合は、対話的入力を禁止
+	if root.NoInput || !term.IsTerminal(int(os.Stdin.Fd())) {
+		return &ExitError{
+			Code: 1,
+			Err:  fmt.Errorf("refusing to %s without --force (non-interactive)", message),
+		}
 	}
 
-	// TTY検出 - 非対話的環境では--forceなしで拒否
-	if !term.IsTerminal(int(os.Stdin.Fd())) {
-		return fmt.Errorf("refusing to %s without --force (non-interactive)", action)
+	// contextからUIを取得
+	output := ui.FromContext(ctx)
+	if output == nil {
+		// UIが設定されていない場合はエラー（通常は発生しない）
+		return &ExitError{
+			Code: 1,
+			Err:  errors.New("UI not configured in context"),
+		}
 	}
 
-	// 確認プロンプトを表示
-	fmt.Printf("Proceed to %s? [y/N]: ", action)
-
-	// ユーザー入力を読み取る
-	reader := bufio.NewReader(os.Stdin)
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		return fmt.Errorf("failed to read user input: %w", err)
+	// 確認プロンプトを表示し、ユーザー入力を読み取る
+	prompt := fmt.Sprintf("Proceed to %s? [y/N]: ", message)
+	line, readErr := input.PromptLineFrom(ctx, prompt, os.Stdin)
+	if readErr != nil && !errors.Is(readErr, os.ErrClosed) {
+		// EOFの場合はキャンセルとして扱う
+		if errors.Is(readErr, io.EOF) {
+			return &ExitError{Code: 1, Err: errors.New("cancelled")}
+		}
+		// その他のエラー
+		return &ExitError{
+			Code: 1,
+			Err:  fmt.Errorf("failed to read user input: %w", readErr),
+		}
 	}
 
-	// 入力を正規化（前後の空白と改行を削除、小文字化）
-	input = strings.ToLower(strings.TrimSpace(input))
+	// 入力を正規化（前後の空白を削除、小文字化）
+	ans := strings.ToLower(strings.TrimSpace(line))
 
-	// "y" または "yes" 以外はキャンセル
-	if input != "y" && input != "yes" {
-		return fmt.Errorf("operation cancelled by user")
+	// "y" または "yes" の場合のみ続行
+	if ans == "y" || ans == "yes" {
+		return nil
 	}
 
-	return nil
+	// それ以外はキャンセル
+	return &ExitError{Code: 1, Err: errors.New("cancelled")}
 }
