@@ -49,6 +49,9 @@ type CLI struct {
 	Themes      ThemesCmd      `cmd:"" aliases:"theme" help:"Themes management"`
 	Webhooks    WebhooksCmd    `cmd:"" aliases:"webhook,wh" help:"Webhooks management"`
 	Settings    SettingsCmd    `cmd:"" aliases:"setting" help:"Settings management"`
+
+	Completion         CompletionCmd         `cmd:"" help:"Generate shell completion script"`
+	CompletionInternal CompletionInternalCmd `cmd:"" name:"__complete" hidden:"" help:""`
 }
 
 // GetOutputMode はRootFlagsから出力モードを決定します
