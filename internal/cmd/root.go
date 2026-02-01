@@ -47,6 +47,7 @@ type CLI struct {
 	Offers      OffersCmd      `cmd:"" help:"Offers management"`
 	Themes      ThemesCmd      `cmd:"" help:"Themes management"`
 	Webhooks    WebhooksCmd    `cmd:"" help:"Webhooks management"`
+	Settings    SettingsCmd    `cmd:"" help:"Settings management"`
 }
 
 // GetOutputMode はRootFlagsから出力モードを決定します

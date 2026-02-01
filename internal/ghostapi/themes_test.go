@@ -237,3 +237,34 @@ func TestActivateTheme_テーマの有効化(t *testing.T) {
 		t.Error("Activeフラグ = false; want true")
 	}
 }
+
+// TestDeleteTheme_テーマの削除
+func TestDeleteTheme_テーマの削除(t *testing.T) {
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		expectedPath := "/ghost/api/admin/themes/custom-theme/"
+		if r.URL.Path != expectedPath {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+		}
+		if r.Method != "DELETE" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "DELETE")
+		}
+
+		// レスポンスを返す（204 No Content）
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアント作成エラー: %v", err)
+	}
+
+	// テーマを削除
+	err = client.DeleteTheme("custom-theme")
+	if err != nil {
+		t.Fatalf("テーマ削除エラー: %v", err)
+	}
+}

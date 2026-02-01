@@ -16,3 +16,9 @@ func TestThemesInstallCmd_構造体が存在すること(t *testing.T) {
 	// ThemesInstallCmdが定義されていることを確認
 	_ = &ThemesInstallCmd{}
 }
+
+// TestThemesDeleteCmd_構造体が存在すること
+func TestThemesDeleteCmd_構造体が存在すること(t *testing.T) {
+	// ThemesDeleteCmdが定義されていることを確認
+	_ = &ThemesDeleteCmd{}
+}

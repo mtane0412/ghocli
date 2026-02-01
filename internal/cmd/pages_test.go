@@ -49,6 +49,64 @@ func TestPagesCopyCmd_構造体が存在すること(t *testing.T) {
 	_ = &PagesCopyCmd{}
 }
 
+// ========================================
+// Phase 1: ステータス別一覧ショートカット
+// ========================================
+
+// TestPagesDraftsCmd_構造体が存在すること
+func TestPagesDraftsCmd_構造体が存在すること(t *testing.T) {
+	// PagesDraftsCmdが定義されていることを確認
+	_ = &PagesDraftsCmd{}
+}
+
+// TestPagesPublishedCmd_構造体が存在すること
+func TestPagesPublishedCmd_構造体が存在すること(t *testing.T) {
+	// PagesPublishedCmdが定義されていることを確認
+	_ = &PagesPublishedCmd{}
+}
+
+// TestPagesScheduledCmd_構造体が存在すること
+func TestPagesScheduledCmd_構造体が存在すること(t *testing.T) {
+	// PagesScheduledCmdが定義されていることを確認
+	_ = &PagesScheduledCmd{}
+}
+
+// ========================================
+// Phase 1: 予約公開
+// ========================================
+
+// TestPagesScheduleCmd_構造体が存在すること
+func TestPagesScheduleCmd_構造体が存在すること(t *testing.T) {
+	// PagesScheduleCmdが定義されていることを確認
+	_ = &PagesScheduleCmd{}
+}
+
+// ========================================
+// Phase 1: 検索
+// ========================================
+
+// TestPagesSearchCmd_構造体が存在すること
+func TestPagesSearchCmd_構造体が存在すること(t *testing.T) {
+	// PagesSearchCmdが定義されていることを確認
+	_ = &PagesSearchCmd{}
+}
+
+// ========================================
+// Phase 1: バッチ操作
+// ========================================
+
+// TestPagesBatchPublishCmd_構造体が存在すること
+func TestPagesBatchPublishCmd_構造体が存在すること(t *testing.T) {
+	// PagesBatchPublishCmdが定義されていることを確認
+	_ = &PagesBatchPublishCmd{}
+}
+
+// TestPagesBatchDeleteCmd_構造体が存在すること
+func TestPagesBatchDeleteCmd_構造体が存在すること(t *testing.T) {
+	// PagesBatchDeleteCmdが定義されていることを確認
+	_ = &PagesBatchDeleteCmd{}
+}
+
 // TestPagesCat_HTML2Text_シンプルなHTMLをテキストに変換できること
 func TestPagesCat_HTML2Text_シンプルなHTMLをテキストに変換できること(t *testing.T) {
 	// テストケース: シンプルな段落タグ

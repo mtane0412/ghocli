@@ -21,6 +21,7 @@ type ThemesCmd struct {
 	List     ThemesListCmd     `cmd:"" help:"List themes"`
 	Upload   ThemesUploadCmd   `cmd:"" help:"Upload a theme"`
 	Activate ThemesActivateCmd `cmd:"" help:"Activate a theme"`
+	Delete   ThemesDeleteCmd   `cmd:"" help:"Delete a theme"`
 
 	// Phase 3: 複合操作
 	Install ThemesInstallCmd `cmd:"" help:"Upload and activate a theme"`
@@ -219,6 +220,56 @@ func (c *ThemesInstallCmd) Run(ctx context.Context, root *RootFlags) error {
 	if root.JSON {
 		return formatter.Print(activatedTheme)
 	}
+
+	return nil
+}
+
+// ========================================
+// テーマ削除
+// ========================================
+
+// ThemesDeleteCmd はテーマを削除するコマンドです
+type ThemesDeleteCmd struct {
+	Name string `arg:"" help:"Theme name"`
+}
+
+// Run はthemesコマンドのdeleteサブコマンドを実行します
+func (c *ThemesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
+	// APIクライアントを取得
+	client, err := getAPIClient(root)
+	if err != nil {
+		return err
+	}
+
+	// テーマ一覧を取得してアクティブかチェック
+	themes, err := client.ListThemes()
+	if err != nil {
+		return fmt.Errorf("テーマ一覧の取得に失敗: %w", err)
+	}
+
+	// アクティブなテーマの削除を防止
+	for _, theme := range themes.Themes {
+		if theme.Name == c.Name && theme.Active {
+			return fmt.Errorf("アクティブなテーマは削除できません: %s", c.Name)
+		}
+	}
+
+	// 破壊的操作の確認
+	action := fmt.Sprintf("delete theme '%s'", c.Name)
+	if err := ConfirmDestructive(ctx, root, action); err != nil {
+		return err
+	}
+
+	// テーマを削除
+	if err := client.DeleteTheme(c.Name); err != nil {
+		return fmt.Errorf("テーマの削除に失敗: %w", err)
+	}
+
+	// 出力フォーマッターを作成
+	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
+
+	// 成功メッセージを表示
+	formatter.PrintMessage(fmt.Sprintf("テーマを削除しました: %s", c.Name))
 
 	return nil
 }

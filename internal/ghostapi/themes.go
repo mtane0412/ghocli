@@ -107,3 +107,16 @@ func (c *Client) ActivateTheme(name string) (*Theme, error) {
 
 	return &resp.Themes[0], nil
 }
+
+// DeleteTheme はテーマを削除します
+func (c *Client) DeleteTheme(name string) error {
+	path := fmt.Sprintf("/ghost/api/admin/themes/%s/", name)
+
+	// リクエストを実行
+	_, err := c.doRequest("DELETE", path, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
