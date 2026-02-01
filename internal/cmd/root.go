@@ -37,18 +37,18 @@ type CLI struct {
 	Auth        AuthCmd        `cmd:"" help:"Authentication management"`
 	Config      ConfigCmd      `cmd:"" help:"Configuration management"`
 	Site        SiteCmd        `cmd:"" help:"Site information"`
-	Posts       PostsCmd       `cmd:"" help:"Posts management"`
-	Pages       PagesCmd       `cmd:"" help:"Pages management"`
-	Tags        TagsCmd        `cmd:"" help:"Tags management"`
-	Images      ImagesCmd      `cmd:"" help:"Images management"`
-	Members     MembersCmd     `cmd:"" help:"Members management"`
-	Users       UsersCmd       `cmd:"" help:"Users management"`
-	Newsletters NewslettersCmd `cmd:"" help:"Newsletters management"`
-	Tiers       TiersCmd       `cmd:"" help:"Tiers management"`
-	Offers      OffersCmd      `cmd:"" help:"Offers management"`
-	Themes      ThemesCmd      `cmd:"" help:"Themes management"`
-	Webhooks    WebhooksCmd    `cmd:"" help:"Webhooks management"`
-	Settings    SettingsCmd    `cmd:"" help:"Settings management"`
+	Posts       PostsCmd       `cmd:"" aliases:"post,p" help:"Posts management"`
+	Pages       PagesCmd       `cmd:"" aliases:"page" help:"Pages management"`
+	Tags        TagsCmd        `cmd:"" aliases:"tag,t" help:"Tags management"`
+	Images      ImagesCmd      `cmd:"" aliases:"image,img" help:"Images management"`
+	Members     MembersCmd     `cmd:"" aliases:"member,m" help:"Members management"`
+	Users       UsersCmd       `cmd:"" aliases:"user,u" help:"Users management"`
+	Newsletters NewslettersCmd `cmd:"" aliases:"newsletter,nl" help:"Newsletters management"`
+	Tiers       TiersCmd       `cmd:"" aliases:"tier" help:"Tiers management"`
+	Offers      OffersCmd      `cmd:"" aliases:"offer" help:"Offers management"`
+	Themes      ThemesCmd      `cmd:"" aliases:"theme" help:"Themes management"`
+	Webhooks    WebhooksCmd    `cmd:"" aliases:"webhook,wh" help:"Webhooks management"`
+	Settings    SettingsCmd    `cmd:"" aliases:"setting" help:"Settings management"`
 }
 
 // GetOutputMode はRootFlagsから出力モードを決定します

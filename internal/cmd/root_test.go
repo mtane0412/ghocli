@@ -177,19 +177,19 @@ func TestExecute_近似コマンド提案(t *testing.T) {
 		wantErrorString string
 	}{
 		{
-			name:            "themeをthemesと提案",
-			args:            []string{"gho", "theme", "-h"},
+			name:            "themesのタイポをthemesと提案",
+			args:            []string{"gho", "themse"},
 			wantErrorString: "did you mean \"themes\"?",
 		},
 		{
-			name:            "postをpostsと提案",
-			args:            []string{"gho", "post"},
+			name:            "postsのタイポをpostsと提案",
+			args:            []string{"gho", "postss"},
 			wantErrorString: "did you mean \"posts\"?",
 		},
 		{
-			name:            "tagをtagsと提案",
-			args:            []string{"gho", "tag"},
-			wantErrorString: "did you mean \"tags\"?",
+			name:            "authのタイポをauthと提案",
+			args:            []string{"gho", "auht"},
+			wantErrorString: "did you mean \"auth\"?",
 		},
 		{
 			name:            "完全に不明なコマンドは提案なし",
@@ -267,4 +267,263 @@ func TestRootFlags_FieldsFlagOverridesEnv(t *testing.T) {
 
 	// フラグが環境変数より優先されるので、Fieldsが"id,title,status,url"になるはず
 	assert.Equal(t, "id,title,status,url", cli.Fields, "--fieldsフラグは環境変数より優先されるべき")
+}
+
+// TestCommandAliases_Posts はpostsコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Posts(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"postsコマンド", "posts"},
+		{"postエイリアス", "post"},
+		{"pエイリアス", "p"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Tags はtagsコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Tags(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"tagsコマンド", "tags"},
+		{"tagエイリアス", "tag"},
+		{"tエイリアス", "t"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Pages はpagesコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Pages(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"pagesコマンド", "pages"},
+		{"pageエイリアス", "page"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Members はmembersコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Members(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"membersコマンド", "members"},
+		{"memberエイリアス", "member"},
+		{"mエイリアス", "m"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Users はusersコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Users(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"usersコマンド", "users"},
+		{"userエイリアス", "user"},
+		{"uエイリアス", "u"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Newsletters はnewslettersコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Newsletters(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"newslettersコマンド", "newsletters"},
+		{"newsletterエイリアス", "newsletter"},
+		{"nlエイリアス", "nl"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Tiers はtiersコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Tiers(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"tiersコマンド", "tiers"},
+		{"tierエイリアス", "tier"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Offers はoffersコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Offers(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"offersコマンド", "offers"},
+		{"offerエイリアス", "offer"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Webhooks はwebhooksコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Webhooks(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"webhooksコマンド", "webhooks"},
+		{"webhookエイリアス", "webhook"},
+		{"whエイリアス", "wh"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			// webhooksはlistサブコマンドを持たないため、createで確認
+			// 必須引数がないため失敗するが、コマンド自体は認識される
+			_, err = parser.Parse([]string{tc.command, "create"})
+			// エラーは発生するが、"unexpected argument"ではないことを確認
+			if err != nil {
+				assert.NotContains(t, err.Error(), "unexpected argument", "%sコマンドは認識されるべき", tc.command)
+			}
+		})
+	}
+}
+
+// TestCommandAliases_Settings はsettingsコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Settings(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"settingsコマンド", "settings"},
+		{"settingエイリアス", "setting"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			_, err = parser.Parse([]string{tc.command, "list"})
+			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+		})
+	}
+}
+
+// TestCommandAliases_Images はimagesコマンドのエイリアスが動作することをテストします
+func TestCommandAliases_Images(t *testing.T) {
+	testCases := []struct {
+		name    string
+		command string
+	}{
+		{"imagesコマンド", "images"},
+		{"imageエイリアス", "image"},
+		{"imgエイリアス", "img"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var cli CLI
+			parser, err := kong.New(&cli)
+			require.NoError(t, err)
+
+			// imagesはuploadサブコマンドを持つ
+			// 必須引数がないため失敗するが、コマンド自体は認識される
+			_, err = parser.Parse([]string{tc.command, "upload"})
+			// エラーは発生するが、"unexpected argument"ではないことを確認
+			if err != nil {
+				assert.NotContains(t, err.Error(), "unexpected argument", "%sコマンドは認識されるべき", tc.command)
+			}
+		})
+	}
 }
