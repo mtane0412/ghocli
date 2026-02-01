@@ -587,9 +587,89 @@ ID                        TITLE                               STATUS     CREATED
 
 **参考**: gogcliのコマンド設計パターン（`gog docs info/cat/copy/export`）
 
+#### 8.6: フィールド選択機能の実装（進行中）
+
+**完了日**: 2026-02-01（Phase 1-6完了）
+
+Ghost Admin APIの全フィールドに対応し、gh CLI風の`--fields`オプションによるフィールド選択機能を実装。
+
+**実装完了内容**:
+
+1. **基盤整備**
+   - `internal/fields/` - フィールド定義パッケージ
+     - `fields.go`: Parse, Validate, ListAvailable関数
+     - `posts.go`: Post用フィールド定義（40フィールド）
+   - すべての関数にユニットテストを実装
+
+2. **構造体の拡張**
+   - `internal/ghostapi/types.go` - Author構造体の追加
+   - `internal/ghostapi/posts.go` - Post構造体を40フィールド以上に拡張
+     - 基本情報、コンテンツ、画像、SEO、日時、制御、カスタム、関連、その他、メール・ニュースレター
+   - JSON変換テストを実装
+
+3. **コマンド層の準備**
+   - `internal/cmd/root.go` - RootFlagsに`Fields`フィールドを追加
+     - `-F, --fields` オプション
+     - `GHO_FIELDS` 環境変数サポート
+   - 環境変数とフラグ優先度のテストを実装
+
+4. **出力層の拡張**
+   - `internal/outfmt/filter.go` - フィールドフィルタリング機能
+     - `FilterFields()`: 指定フィールドのみを抽出して出力
+     - `StructToMap()`: 構造体をmap[string]interface{}に変換
+   - JSON/Plain/Table形式すべてで動作するテストを実装
+
+5. **posts listコマンド実装**
+   - `internal/cmd/posts.go` - PostsListCmd.Runを拡張
+     - JSON単独（--fieldsなし）時：利用可能なフィールド一覧を表示
+     - フィールド指定時：指定フィールドのみを出力
+
+**使用例**:
+```bash
+# フィールド一覧を表示
+gho posts list --json
+
+# 指定フィールドのみ取得（JSON）
+gho posts list --json --fields id,title,status,excerpt
+
+# Plain形式（TSV）でフィールド指定
+gho posts list --plain --fields id,title,url
+
+# テーブル形式でもフィールド指定可能
+gho posts list --fields id,title,status,feature_image
+
+# 環境変数で指定
+export GHO_FIELDS="id,title,status"
+gho posts list --json
+
+# ショートオプション
+gho posts list --json -F id,title,url
+```
+
+**品質チェック**:
+- ✅ すべてのテストがパス
+- ✅ 型チェック（`go vet`）成功
+- ✅ ビルド成功
+
+**残りのタスク**:
+- posts getコマンドへの対応
+- pages, tags, members, users等の他リソースへの横展開
+- 各リソースのフィールド定義作成
+
+**詳細**: `docs/fields-feature-implementation.md` を参照
+
 ## 次のステップ
 
 Phase 7が完了し、主要なGhost Admin API機能の実装がすべて完了しました。
 現在、Phase 8（コマンド設計改善）を進行中です。
+
+### Phase 8.6: フィールド選択機能の継続実装
+
+次回作業時のチェックリスト：
+1. posts getコマンドへの--fields対応
+2. 他リソース（pages, tags, members, users等）への横展開
+3. 各リソースのフィールド定義作成
+
+詳細は `docs/fields-feature-implementation.md` を参照してください。
 
 今後の拡張機能については `docs/NEXT_STEPS.md` を参照してください。

@@ -21,6 +21,7 @@ type RootFlags struct {
 	Site    string `help:"Site alias or URL" short:"s" env:"GHO_SITE"`
 	JSON    bool   `help:"Output JSON" env:"GHO_JSON"`
 	Plain   bool   `help:"Output stable TSV" env:"GHO_PLAIN"`
+	Fields  string `help:"Fields to output (comma-separated)" short:"F" env:"GHO_FIELDS"`
 	Force   bool   `help:"Skip confirmations" short:"f"`
 	NoInput bool   `help:"Never prompt; fail instead (useful for CI)" env:"GHO_NO_INPUT"`
 	Verbose bool   `help:"Enable verbose logging" short:"v" env:"GHO_VERBOSE"`

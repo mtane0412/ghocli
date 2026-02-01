@@ -17,17 +17,65 @@ import (
 
 // Post はGhostの投稿を表します
 type Post struct {
-	ID          string     `json:"id,omitempty"`
-	UUID        string     `json:"uuid,omitempty"`
-	Title       string     `json:"title"`
-	Slug        string     `json:"slug,omitempty"`
-	HTML        string     `json:"html,omitempty"`
-	Lexical     string     `json:"lexical,omitempty"`
-	Status      string     `json:"status"` // draft, published, scheduled
-	URL         string     `json:"url,omitempty"`
+	// 基本情報
+	ID     string `json:"id,omitempty"`
+	UUID   string `json:"uuid,omitempty"`
+	Title  string `json:"title"`
+	Slug   string `json:"slug,omitempty"`
+	Status string `json:"status"` // draft, published, scheduled
+	URL    string `json:"url,omitempty"`
+
+	// コンテンツ
+	HTML          string `json:"html,omitempty"`
+	Lexical       string `json:"lexical,omitempty"`
+	Excerpt       string `json:"excerpt,omitempty"`
+	CustomExcerpt string `json:"custom_excerpt,omitempty"`
+
+	// 画像
+	FeatureImage        string `json:"feature_image,omitempty"`
+	FeatureImageAlt     string `json:"feature_image_alt,omitempty"`
+	FeatureImageCaption string `json:"feature_image_caption,omitempty"`
+	OGImage             string `json:"og_image,omitempty"`
+	TwitterImage        string `json:"twitter_image,omitempty"`
+
+	// SEO
+	MetaTitle          string `json:"meta_title,omitempty"`
+	MetaDescription    string `json:"meta_description,omitempty"`
+	OGTitle            string `json:"og_title,omitempty"`
+	OGDescription      string `json:"og_description,omitempty"`
+	TwitterTitle       string `json:"twitter_title,omitempty"`
+	TwitterDescription string `json:"twitter_description,omitempty"`
+	CanonicalURL       string `json:"canonical_url,omitempty"`
+
+	// 日時
 	CreatedAt   time.Time  `json:"created_at,omitempty"`
 	UpdatedAt   time.Time  `json:"updated_at,omitempty"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`
+
+	// 制御
+	Visibility string `json:"visibility,omitempty"` // public, members, paid
+	Featured   bool   `json:"featured,omitempty"`
+	EmailOnly  bool   `json:"email_only,omitempty"`
+
+	// カスタム
+	CodeinjectionHead string `json:"codeinjection_head,omitempty"`
+	CodeinjectionFoot string `json:"codeinjection_foot,omitempty"`
+	CustomTemplate    string `json:"custom_template,omitempty"`
+
+	// 関連
+	Tags          []Tag    `json:"tags,omitempty"`
+	Authors       []Author `json:"authors,omitempty"`
+	PrimaryAuthor *Author  `json:"primary_author,omitempty"`
+	PrimaryTag    *Tag     `json:"primary_tag,omitempty"`
+
+	// その他
+	CommentID   string `json:"comment_id,omitempty"`
+	ReadingTime int    `json:"reading_time,omitempty"`
+
+	// メール・ニュースレター
+	EmailSegment           string `json:"email_segment,omitempty"`
+	NewsletterID           string `json:"newsletter_id,omitempty"`
+	SendEmailWhenPublished bool   `json:"send_email_when_published,omitempty"`
 }
 
 // ListOptions は投稿一覧取得のオプションです

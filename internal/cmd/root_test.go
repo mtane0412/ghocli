@@ -168,3 +168,59 @@ func TestExecute_不正なコマンド(t *testing.T) {
 		t.Error("Execute(invalid-command) exit code = 0, want non-zero")
 	}
 }
+
+// TestRootFlags_Fieldsフィールド はRootFlagsにFieldsフィールドが存在することを確認します
+func TestRootFlags_Fieldsフィールド(t *testing.T) {
+	// RootFlagsインスタンスを作成
+	flags := &RootFlags{
+		Fields: "id,title,status",
+	}
+
+	// Fieldsフィールドが設定されることを確認
+	assert.Equal(t, "id,title,status", flags.Fields, "Fieldsフィールドが正しく設定されるべき")
+}
+
+// TestRootFlags_Fieldsデフォルト値 はFieldsのデフォルト値を確認します
+func TestRootFlags_Fieldsデフォルト値(t *testing.T) {
+	// RootFlagsインスタンスを作成（デフォルト値）
+	flags := &RootFlags{}
+
+	// Fieldsのデフォルト値が空文字列であることを確認
+	assert.Equal(t, "", flags.Fields, "Fieldsのデフォルト値は空文字列であるべき")
+}
+
+// TestRootFlags_FieldsEnvVar はGHO_FIELDS環境変数が正しく読み込まれることをテストします
+func TestRootFlags_FieldsEnvVar(t *testing.T) {
+	// 環境変数を設定
+	os.Setenv("GHO_FIELDS", "id,title,url")
+	defer os.Unsetenv("GHO_FIELDS")
+
+	// CLIをパース（posts listコマンドを使用）
+	var cli CLI
+	parser, err := kong.New(&cli)
+	require.NoError(t, err)
+
+	_, err = parser.Parse([]string{"posts", "list"})
+	require.NoError(t, err)
+
+	// GHO_FIELDSが設定されているので、Fieldsが"id,title,url"になるはず
+	assert.Equal(t, "id,title,url", cli.Fields, "GHO_FIELDS環境変数が設定されている場合、Fieldsが正しく設定されるべき")
+}
+
+// TestRootFlags_FieldsFlagOverridesEnv はフラグが環境変数より優先されることをテストします
+func TestRootFlags_FieldsFlagOverridesEnv(t *testing.T) {
+	// 環境変数を設定
+	os.Setenv("GHO_FIELDS", "id,title")
+	defer os.Unsetenv("GHO_FIELDS")
+
+	// CLIをパース（--fieldsフラグを指定）
+	var cli CLI
+	parser, err := kong.New(&cli)
+	require.NoError(t, err)
+
+	_, err = parser.Parse([]string{"--fields=id,title,status,url", "posts", "list"})
+	require.NoError(t, err)
+
+	// フラグが環境変数より優先されるので、Fieldsが"id,title,status,url"になるはず
+	assert.Equal(t, "id,title,status,url", cli.Fields, "--fieldsフラグは環境変数より優先されるべき")
+}

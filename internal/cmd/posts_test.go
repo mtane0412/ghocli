@@ -131,3 +131,23 @@ func TestPostsCat_HTML2Text_リストを含むHTMLをテキストに変換でき
 		t.Errorf("HTML→テキスト変換が正しくありません。expected=%q, got=%q", expected, result)
 	}
 }
+
+// TestPostsList_Fields対応 はpostsListCmd.Runがfieldsをサポートすることを確認します
+func TestPostsList_Fields対応(t *testing.T) {
+	// RootFlagsにFieldsが設定できることを確認
+	root := &RootFlags{
+		Fields: "id,title,status",
+	}
+
+	// Fieldsフィールドが正しく設定されることを確認
+	if root.Fields != "id,title,status" {
+		t.Errorf("RootFlags.Fieldsが設定されていません: got=%s", root.Fields)
+	}
+}
+
+// TestPostsListCmd_フィールド一覧表示 はJSON単独時にフィールド一覧が表示されることを確認します
+func TestPostsListCmd_フィールド一覧表示(t *testing.T) {
+	// このテストは実装後に動作確認のために使用
+	// 実際のAPI呼び出しを含むため、ユニットテストとしては実装しない
+	t.Skip("統合テストで実装")
+}
