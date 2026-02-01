@@ -321,3 +321,103 @@ func TestDeletePage_ページの削除(t *testing.T) {
 		t.Fatalf("ページの削除に失敗: %v", err)
 	}
 }
+
+// TestGetPage_拡張フィールドのパース
+func TestGetPage_拡張フィールドのパース(t *testing.T) {
+	pageID := "64fac5417c4c6b0001234601"
+
+	// テスト用のHTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// レスポンスを返す（拡張フィールドを含む）
+		response := map[string]interface{}{
+			"pages": []map[string]interface{}{
+				{
+					"id":         pageID,
+					"title":      "拡張フィールドテストページ",
+					"slug":       "extended-fields-test",
+					"html":       "<p>ページ本文</p>",
+					"status":     "published",
+					"url":        "https://example.com/extended-fields-test/",
+					"excerpt":    "ページの抜粋です。",
+					"visibility": "public",
+					"featured":   true,
+					"authors": []map[string]interface{}{
+						{
+							"id":   "author1",
+							"name": "山田太郎",
+						},
+					},
+					"tags": []map[string]interface{}{
+						{
+							"id":   "tag1",
+							"name": "テスト",
+						},
+						{
+							"id":   "tag2",
+							"name": "サンプル",
+						},
+					},
+					"created_at":   "2024-01-15T10:00:00.000Z",
+					"updated_at":   "2024-01-15T10:00:00.000Z",
+					"published_at": "2024-01-15T10:00:00.000Z",
+				},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// ページを取得
+	page, err := client.GetPage(pageID)
+	if err != nil {
+		t.Fatalf("ページの取得に失敗: %v", err)
+	}
+
+	// 基本フィールドの検証
+	if page.ID != pageID {
+		t.Errorf("ID = %q; want %q", page.ID, pageID)
+	}
+	if page.Title != "拡張フィールドテストページ" {
+		t.Errorf("Title = %q; want %q", page.Title, "拡張フィールドテストページ")
+	}
+
+	// 拡張フィールドの検証
+	if page.URL != "https://example.com/extended-fields-test/" {
+		t.Errorf("URL = %q; want %q", page.URL, "https://example.com/extended-fields-test/")
+	}
+	if page.Excerpt != "ページの抜粋です。" {
+		t.Errorf("Excerpt = %q; want %q", page.Excerpt, "ページの抜粋です。")
+	}
+	if page.Visibility != "public" {
+		t.Errorf("Visibility = %q; want %q", page.Visibility, "public")
+	}
+	if !page.Featured {
+		t.Errorf("Featured = %v; want %v", page.Featured, true)
+	}
+
+	// Authors の検証
+	if len(page.Authors) != 1 {
+		t.Errorf("Authors数 = %d; want %d", len(page.Authors), 1)
+	}
+	if len(page.Authors) > 0 && page.Authors[0].Name != "山田太郎" {
+		t.Errorf("Authors[0].Name = %q; want %q", page.Authors[0].Name, "山田太郎")
+	}
+
+	// Tags の検証
+	if len(page.Tags) != 2 {
+		t.Errorf("Tags数 = %d; want %d", len(page.Tags), 2)
+	}
+	if len(page.Tags) > 0 && page.Tags[0].Name != "テスト" {
+		t.Errorf("Tags[0].Name = %q; want %q", page.Tags[0].Name, "テスト")
+	}
+	if len(page.Tags) > 1 && page.Tags[1].Name != "サンプル" {
+		t.Errorf("Tags[1].Name = %q; want %q", page.Tags[1].Name, "サンプル")
+	}
+}

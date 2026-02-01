@@ -172,9 +172,41 @@ func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 		{"title", page.Title},
 		{"slug", page.Slug},
 		{"status", page.Status},
-		{"created", page.CreatedAt.Format("2006-01-02 15:04:05")},
-		{"updated", page.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
+
+	// visibilityを追加
+	if page.Visibility != "" {
+		rows = append(rows, []string{"visibility", page.Visibility})
+	}
+
+	// urlを追加
+	if page.URL != "" {
+		rows = append(rows, []string{"url", page.URL})
+	}
+
+	// authorsを追加（存在する場合のみ）
+	if len(page.Authors) > 0 {
+		rows = append(rows, []string{"authors", outfmt.FormatAuthors(page.Authors)})
+	}
+
+	// tagsを追加（存在する場合のみ）
+	if len(page.Tags) > 0 {
+		rows = append(rows, []string{"tags", outfmt.FormatTags(page.Tags)})
+	}
+
+	// featuredを追加（trueの場合のみ）
+	if page.Featured {
+		rows = append(rows, []string{"featured", "true"})
+	}
+
+	// excerptを追加（存在する場合のみ、140文字で切り詰め）
+	if page.Excerpt != "" {
+		rows = append(rows, []string{"excerpt", outfmt.TruncateExcerpt(page.Excerpt, 140)})
+	}
+
+	// 日時フィールド
+	rows = append(rows, []string{"created", page.CreatedAt.Format("2006-01-02 15:04:05")})
+	rows = append(rows, []string{"updated", page.UpdatedAt.Format("2006-01-02 15:04:05")})
 
 	if page.PublishedAt != nil {
 		rows = append(rows, []string{"published", page.PublishedAt.Format("2006-01-02 15:04:05")})
