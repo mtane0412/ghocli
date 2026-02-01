@@ -47,13 +47,6 @@ type PagesListCmd struct {
 
 // Run はpagesコマンドのlistサブコマンドを実行します
 func (c *PagesListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
-	if root.JSON && root.Fields == "" {
-		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fields.ListAvailable(fields.PageFields))
-		return nil
-	}
-
 	// フィールド指定をパース
 	var selectedFields []string
 	if root.Fields != "" {
@@ -131,13 +124,6 @@ type PagesInfoCmd struct {
 
 // Run はpagesコマンドのinfoサブコマンドを実行します
 func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
-	if root.JSON && root.Fields == "" {
-		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fields.ListAvailable(fields.PageFields))
-		return nil
-	}
-
 	// フィールド指定をパース
 	var selectedFields []string
 	if root.Fields != "" {

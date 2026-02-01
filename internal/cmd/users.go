@@ -35,13 +35,6 @@ type UsersListCmd struct {
 
 // Run はusersコマンドのlistサブコマンドを実行します
 func (c *UsersListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
-	if root.JSON && root.Fields == "" {
-		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fields.ListAvailable(fields.UserFields))
-		return nil
-	}
-
 	// フィールド指定をパース
 	var selectedFields []string
 	if root.Fields != "" {
@@ -116,13 +109,6 @@ type UsersInfoCmd struct {
 
 // Run はusersコマンドのinfoサブコマンドを実行します
 func (c *UsersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
-	if root.JSON && root.Fields == "" {
-		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fields.ListAvailable(fields.UserFields))
-		return nil
-	}
-
 	// フィールド指定をパース
 	var selectedFields []string
 	if root.Fields != "" {

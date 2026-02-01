@@ -62,22 +62,14 @@ type PostsListCmd struct {
 
 // Run はpostsコマンドのlistサブコマンドを実行します
 func (c *PostsListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
-	if root.JSON && root.Fields == "" {
-		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage("Specify fields with --fields. Available fields: id, uuid, title, slug, status, url, html, lexical, excerpt, custom_excerpt, feature_image, feature_image_alt, feature_image_caption, og_image, twitter_image, meta_title, meta_description, og_title, og_description, twitter_title, twitter_description, canonical_url, created_at, updated_at, published_at, visibility, featured, email_only, codeinjection_head, codeinjection_foot, custom_template, tags, authors, primary_author, primary_tag, comment_id, reading_time, email_segment, newsletter_id, send_email_when_published")
-		return nil
-	}
-
 	// フィールド指定をパース
 	var selectedFields []string
 	if root.Fields != "" {
-		// fieldsパッケージを使用してパース
-		// ここでは直接カンマ区切りでパース（fieldsパッケージのインポートが必要）
-		fields := strings.Split(root.Fields, ",")
-		for _, field := range fields {
-			selectedFields = append(selectedFields, strings.TrimSpace(field))
+		parsedFields, err := fields.Parse(root.Fields, fields.PostFields)
+		if err != nil {
+			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
 		}
+		selectedFields = parsedFields
 	}
 
 	// APIクライアントを取得
@@ -147,13 +139,6 @@ type PostsInfoCmd struct {
 
 // Run はpostsコマンドのinfoサブコマンドを実行します
 func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// JSON単独（--fieldsなし）の場合は利用可能なフィールド一覧を表示
-	if root.JSON && root.Fields == "" {
-		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fields.ListAvailable(fields.PostFields))
-		return nil
-	}
-
 	// フィールド指定をパース
 	var selectedFields []string
 	if root.Fields != "" {
