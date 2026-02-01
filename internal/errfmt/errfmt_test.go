@@ -82,3 +82,61 @@ func contains(s, substr string) bool {
 			return false
 		}())
 }
+
+// TestFormatAuthError は認証エラーフォーマット関数をテストする
+func TestFormatAuthError(t *testing.T) {
+	// 実行
+	msg := errfmt.FormatAuthError("myblog")
+
+	// 検証: サイト名が含まれること
+	if !contains(msg, "myblog") {
+		t.Errorf("FormatAuthError() = %q; want to contain 'myblog'", msg)
+	}
+
+	// 検証: 認証エラーメッセージが含まれること
+	if !contains(msg, "No API key configured") {
+		t.Errorf("FormatAuthError() = %q; want to contain 'No API key configured'", msg)
+	}
+
+	// 検証: 対処法が含まれること
+	if !contains(msg, "gho auth add myblog") {
+		t.Errorf("FormatAuthError() = %q; want to contain 'gho auth add myblog'", msg)
+	}
+}
+
+// TestFormatSiteError はサイト未指定エラーフォーマット関数をテストする
+func TestFormatSiteError(t *testing.T) {
+	// 実行
+	msg := errfmt.FormatSiteError()
+
+	// 検証: サイト未指定メッセージが含まれること
+	if !contains(msg, "No site specified") {
+		t.Errorf("FormatSiteError() = %q; want to contain 'No site specified'", msg)
+	}
+
+	// 検証: --siteフラグの説明が含まれること
+	if !contains(msg, "--site") {
+		t.Errorf("FormatSiteError() = %q; want to contain '--site'", msg)
+	}
+
+	// 検証: config set default_siteの説明が含まれること
+	if !contains(msg, "gho config set default_site") {
+		t.Errorf("FormatSiteError() = %q; want to contain 'gho config set default_site'", msg)
+	}
+}
+
+// TestFormatFlagError は不明なフラグエラーフォーマット関数をテストする
+func TestFormatFlagError(t *testing.T) {
+	// 実行
+	msg := errfmt.FormatFlagError("--foo")
+
+	// 検証: 不明なフラグメッセージが含まれること
+	if !contains(msg, "unknown flag --foo") {
+		t.Errorf("FormatFlagError() = %q; want to contain 'unknown flag --foo'", msg)
+	}
+
+	// 検証: --helpヒントが含まれること
+	if !contains(msg, "--help") {
+		t.Errorf("FormatFlagError() = %q; want to contain '--help'", msg)
+	}
+}

@@ -32,6 +32,37 @@ func (e *AuthRequiredError) Unwrap() error {
 	return e.Err
 }
 
+// FormatAuthError は認証エラーをフォーマットする
+//
+// 認証が設定されていないサイトに対するエラーメッセージを生成し、
+// gho auth addコマンドでの対処法を提示する。
+func FormatAuthError(site string) string {
+	return fmt.Sprintf(`No API key configured for site "%s".
+
+Add credentials:
+  gho auth add %s https://%s.ghost.io`, site, site, site)
+}
+
+// FormatSiteError はサイト未指定エラーをフォーマットする
+//
+// サイトが指定されていない場合のエラーメッセージを生成し、
+// --siteフラグまたはdefault_site設定での対処法を提示する。
+func FormatSiteError() string {
+	return `No site specified.
+
+Specify with --site flag or set default:
+  gho config set default_site myblog`
+}
+
+// FormatFlagError は不明なフラグエラーをフォーマットする
+//
+// 不明なフラグが指定された場合のエラーメッセージを生成し、
+// --helpフラグでの対処法を提示する。
+func FormatFlagError(flag string) string {
+	return fmt.Sprintf(`unknown flag %s
+Run with --help to see available flags`, flag)
+}
+
 // Format は、エラーをユーザー向けにフォーマットする
 //
 // 以下の特別なエラー型を認識し、適切な対処法を含めたメッセージを返す：
