@@ -169,6 +169,50 @@ func TestExecute_不正なコマンド(t *testing.T) {
 	}
 }
 
+// TestExecute_近似コマンド提案 はレーベンシュタイン距離が2以下のコマンドを提案することをテストします
+func TestExecute_近似コマンド提案(t *testing.T) {
+	testCases := []struct {
+		name            string
+		args            []string
+		wantErrorString string
+	}{
+		{
+			name:            "themeをthemesと提案",
+			args:            []string{"gho", "theme", "-h"},
+			wantErrorString: "did you mean \"themes\"?",
+		},
+		{
+			name:            "postをpostsと提案",
+			args:            []string{"gho", "post"},
+			wantErrorString: "did you mean \"posts\"?",
+		},
+		{
+			name:            "tagをtagsと提案",
+			args:            []string{"gho", "tag"},
+			wantErrorString: "did you mean \"tags\"?",
+		},
+		{
+			name:            "完全に不明なコマンドは提案なし",
+			args:            []string{"gho", "unknowncommand"},
+			wantErrorString: "unexpected argument",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// コマンドを実行
+			err := Execute(tc.args)
+
+			// エラーが返されるべき
+			require.Error(t, err, "Execute(%v) should return error", tc.args)
+
+			// エラーメッセージに期待する文字列が含まれるべき
+			assert.Contains(t, err.Error(), tc.wantErrorString,
+				"Execute(%v) error message should contain %q", tc.args, tc.wantErrorString)
+		})
+	}
+}
+
 // TestRootFlags_Fieldsフィールド はRootFlagsにFieldsフィールドが存在することを確認します
 func TestRootFlags_Fieldsフィールド(t *testing.T) {
 	// RootFlagsインスタンスを作成

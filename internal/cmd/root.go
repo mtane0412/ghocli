@@ -9,6 +9,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/alecthomas/kong"
@@ -84,6 +85,7 @@ func Execute(args []string, opts ...ExecuteOptions) (err error) {
 		kong.Name("gho"),
 		kong.Description("Ghost Admin API CLI"),
 		kong.UsageOnError(),
+		kong.Writers(os.Stdout, os.Stderr),
 		kong.Vars{
 			"version": version,
 		},
@@ -101,6 +103,8 @@ func Execute(args []string, opts ...ExecuteOptions) (err error) {
 	// Kongでパース
 	kctx, err := parser.Parse(parseArgs)
 	if err != nil {
+		// パースエラーをstderrに出力
+		fmt.Fprintln(os.Stderr, err)
 		return err
 	}
 
