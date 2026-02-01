@@ -89,6 +89,7 @@ func Execute(args []string, opts ...ExecuteOptions) (err error) {
 		kong.Description("Ghost Admin API CLI"),
 		kong.UsageOnError(),
 		kong.Writers(os.Stdout, os.Stderr),
+		kong.Help(helpPrinter),
 		kong.Vars{
 			"version": version,
 		},
