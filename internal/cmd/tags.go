@@ -26,66 +26,66 @@ type TagsCmd struct {
 	Delete TagsDeleteCmd `cmd:"" help:"Delete a tag"`
 }
 
-// TagsListCmd はタグ一覧を取得するコマンドです
+// TagsListCmd is the command to retrieve タグ list
 type TagsListCmd struct {
 	Limit   int    `help:"Number of tags to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
 	Include string `help:"Include additional data (count.posts)" short:"i"`
 }
 
-// Run はtagsコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the tags command
 func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.TagFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// タグ一覧を取得
+	// Get tag list
 	response, err := client.ListTags(ghostapi.TagListOptions{
 		Limit:   c.Limit,
 		Page:    c.Page,
 		Include: c.Include,
 	})
 	if err != nil {
-		return fmt.Errorf("タグ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list tags: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Tag構造体をmap[string]interface{}に変換
+		// Convert Tag struct to map[string]interface{}
 		var tagsData []map[string]interface{}
 		for _, tag := range response.Tags {
 			tagMap, err := outfmt.StructToMap(tag)
 			if err != nil {
-				return fmt.Errorf("タグデータの変換に失敗: %w", err)
+				return fmt.Errorf("failed to convert tag data: %w", err)
 			}
 			tagsData = append(tagsData, tagMap)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, tagsData, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Tags)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Name", "Slug", "Visibility", "Created"}
 	rows := make([][]string, len(response.Tags))
 	for i, tag := range response.Tags {
@@ -101,56 +101,56 @@ func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TagsInfoCmd はタグ情報を表示するコマンドです
+// TagsInfoCmd is the command to show タグ information
 type TagsInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Tag ID or slug (use 'slug:tag-name' format for slug)"`
 }
 
-// Run はtagsコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the tags command
 func (c *TagsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.TagFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// タグを取得
+	// Get tag
 	tag, err := client.GetTag(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("タグの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get tag: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Tag構造体をmap[string]interface{}に変換
+		// Convert Tag struct to map[string]interface{}
 		tagMap, err := outfmt.StructToMap(tag)
 		if err != nil {
-			return fmt.Errorf("タグデータの変換に失敗: %w", err)
+			return fmt.Errorf("failed to convert tag data: %w", err)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, []map[string]interface{}{tagMap}, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(tag)
 	}
 
-	// キー/値形式で出力（ヘッダーなし）
+	// Output in key/value format (no headers)
 	rows := [][]string{
 		{"id", tag.ID},
 		{"name", tag.Name},
@@ -168,22 +168,22 @@ func (c *TagsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// TagsCreateCmd はタグを作成するコマンドです
+// TagsCreateCmd is the command to create タグ
 type TagsCreateCmd struct {
 	Name        string `help:"Tag name" short:"n" required:""`
 	Description string `help:"Tag description" short:"d"`
 	Visibility  string `help:"Tag visibility (public, internal)" default:"public"`
 }
 
-// Run はtagsコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the tags command
 func (c *TagsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 新規タグを作成
+	// Create new tag
 	newTag := &ghostapi.Tag{
 		Name:        c.Name,
 		Description: c.Description,
@@ -192,18 +192,18 @@ func (c *TagsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdTag, err := client.CreateTag(newTag)
 	if err != nil {
-		return fmt.Errorf("タグの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create tag: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("タグを作成しました: %s (ID: %s)", createdTag.Name, createdTag.ID))
+		formatter.PrintMessage(fmt.Sprintf("created tag: %s (ID: %s)", createdTag.Name, createdTag.ID))
 	}
 
-	// JSON形式の場合はタグ情報も出力
+	// Also output tag information if JSON format
 	if root.JSON {
 		return formatter.Print(createdTag)
 	}
@@ -211,7 +211,7 @@ func (c *TagsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// TagsUpdateCmd はタグを更新するコマンドです
+// TagsUpdateCmd is the command to update タグ
 type TagsUpdateCmd struct {
 	ID          string `arg:"" help:"Tag ID"`
 	Name        string `help:"Tag name" short:"n"`
@@ -219,21 +219,21 @@ type TagsUpdateCmd struct {
 	Visibility  string `help:"Tag visibility (public, internal)"`
 }
 
-// Run はtagsコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the tags command
 func (c *TagsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のタグを取得
+	// Get existing tag
 	existingTag, err := client.GetTag(c.ID)
 	if err != nil {
-		return fmt.Errorf("タグの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get tag: %w", err)
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updateTag := &ghostapi.Tag{
 		Name:        existingTag.Name,
 		Slug:        existingTag.Slug,
@@ -251,21 +251,21 @@ func (c *TagsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updateTag.Visibility = c.Visibility
 	}
 
-	// タグを更新
+	// Update tag
 	updatedTag, err := client.UpdateTag(c.ID, updateTag)
 	if err != nil {
-		return fmt.Errorf("タグの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update tag: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("タグを更新しました: %s (ID: %s)", updatedTag.Name, updatedTag.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated tag: %s (ID: %s)", updatedTag.Name, updatedTag.ID))
 	}
 
-	// JSON形式の場合はタグ情報も出力
+	// Also output tag information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedTag)
 	}
@@ -273,41 +273,41 @@ func (c *TagsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// TagsDeleteCmd はタグを削除するコマンドです
+// TagsDeleteCmd is the command to delete タグ
 type TagsDeleteCmd struct {
 	ID string `arg:"" help:"Tag ID"`
 }
 
-// Run はtagsコマンドのdeleteサブコマンドを実行します
+// Run executes the delete subcommand of the tags command
 func (c *TagsDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// タグ情報を取得して確認メッセージを構築
+	// Get tag information to build confirmation message
 	tag, err := client.GetTag(c.ID)
 	if err != nil {
-		return fmt.Errorf("タグの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get tag: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete tag '%s' (ID: %s)", tag.Name, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// タグを削除
+	// Delete tag
 	if err := client.DeleteTag(c.ID); err != nil {
-		return fmt.Errorf("タグの削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete tag: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
-	formatter.PrintMessage(fmt.Sprintf("タグを削除しました (ID: %s)", c.ID))
+	// Show success message
+	formatter.PrintMessage(fmt.Sprintf("deleted tag (ID: %s)", c.ID))
 
 	return nil
 }

@@ -1,8 +1,8 @@
 /**
  * filter.go
- * フィールドフィルタリング機能
+ * Field filtering functionality
  *
- * 指定されたフィールドのみを出力する機能を提供します。
+ * Provides functionality to output only specified fields.
  */
 
 package outfmt
@@ -14,38 +14,38 @@ import (
 	"strings"
 )
 
-// FilterFields は指定されたフィールドのみをフィルタリングして出力します
+// FilterFields filters and outputs only the specified fields
 //
-// データがmap[string]interface{}またはそのスライスの場合、指定されたフィールドのみを抽出します。
-// fieldsがnilまたは空の場合は、全フィールドをそのまま出力します。
+// If data is a map[string]interface{} or a slice thereof, it extracts only the specified fields.
+// If fields is nil or empty, all fields are output as is.
 func FilterFields(formatter *Formatter, data interface{}, fields []string) error {
-	// フィールド指定がない場合は、そのまま出力
+	// If no field specification, output as is
 	if len(fields) == 0 {
 		return formatter.Print(data)
 	}
 
-	// データの型に応じてフィルタリング
+	// Filter based on data type
 	switch v := data.(type) {
 	case map[string]interface{}:
-		// 単一のマップをフィルタリング
+		// Filter a single map
 		filtered := filterMap(v, fields)
 		return formatter.Print(filtered)
 
 	case []map[string]interface{}:
-		// スライスの各要素をフィルタリング
+		// Filter each element of the slice
 		filtered := make([]map[string]interface{}, len(v))
 		for i, item := range v {
 			filtered[i] = filterMap(item, fields)
 		}
 
-		// モードに応じて出力
+		// Output based on mode
 		if formatter.mode == "plain" {
 			return formatter.PrintTable(fields, mapSliceToRows(filtered, fields))
 		}
 		return formatter.Print(filtered)
 
 	case []interface{}:
-		// interface{}スライスをmap[string]interface{}スライスに変換
+		// Convert interface{} slice to map[string]interface{} slice
 		var mapSlice []map[string]interface{}
 		for _, item := range v {
 			if m, ok := item.(map[string]interface{}); ok {
@@ -58,23 +58,23 @@ func FilterFields(formatter *Formatter, data interface{}, fields []string) error
 				filtered[i] = filterMap(item, fields)
 			}
 
-			// モードに応じて出力
+			// Output based on mode
 			if formatter.mode == "plain" {
 				return formatter.PrintTable(fields, mapSliceToRows(filtered, fields))
 			}
 			return formatter.Print(filtered)
 		}
 
-		// 変換できない場合はそのまま出力
+		// Output as is if conversion fails
 		return formatter.Print(v)
 
 	default:
-		// 構造体の場合はreflectionを使用してフィルタリング
+		// Filter struct using reflection
 		return filterStruct(formatter, data, fields)
 	}
 }
 
-// filterMap はマップから指定されたフィールドのみを抽出します
+// filterMap extracts only the specified fields from a map
 func filterMap(m map[string]interface{}, fields []string) map[string]interface{} {
 	filtered := make(map[string]interface{})
 	for _, field := range fields {
@@ -85,7 +85,7 @@ func filterMap(m map[string]interface{}, fields []string) map[string]interface{}
 	return filtered
 }
 
-// mapSliceToRows はマップスライスをテーブル行に変換します
+// mapSliceToRows converts a map slice to table rows
 func mapSliceToRows(data []map[string]interface{}, fields []string) [][]string {
 	rows := make([][]string, len(data))
 	for i, item := range data {
@@ -102,26 +102,26 @@ func mapSliceToRows(data []map[string]interface{}, fields []string) [][]string {
 	return rows
 }
 
-// filterStruct は構造体から指定されたフィールドのみを抽出します
+// filterStruct extracts only the specified fields from a struct
 func filterStruct(formatter *Formatter, data interface{}, fields []string) error {
-	// 構造体をマップに変換
+	// Convert struct to map
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("構造体のマーシャルに失敗: %w", err)
+		return fmt.Errorf("failed to marshal struct: %w", err)
 	}
 
 	var m interface{}
 	if err := json.Unmarshal(jsonData, &m); err != nil {
-		return fmt.Errorf("JSONのアンマーシャルに失敗: %w", err)
+		return fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	// マップに変換できた場合はフィルタリング
+	// Filter if conversion to map succeeded
 	switch v := m.(type) {
 	case map[string]interface{}:
 		filtered := filterMap(v, fields)
 		return formatter.Print(filtered)
 	case []interface{}:
-		// スライスの場合
+		// For slices
 		var mapSlice []map[string]interface{}
 		for _, item := range v {
 			if itemMap, ok := item.(map[string]interface{}); ok {
@@ -134,7 +134,7 @@ func filterStruct(formatter *Formatter, data interface{}, fields []string) error
 				filtered[i] = filterMap(item, fields)
 			}
 
-			// モードに応じて出力
+			// Output based on mode
 			if formatter.mode == "plain" {
 				return formatter.PrintTable(fields, mapSliceToRows(filtered, fields))
 			}
@@ -142,11 +142,11 @@ func filterStruct(formatter *Formatter, data interface{}, fields []string) error
 		}
 	}
 
-	// フィルタリングできない場合はそのまま出力
+	// Output as is if filtering fails
 	return formatter.Print(data)
 }
 
-// StructToMap は構造体をmap[string]interface{}に変換します
+// StructToMap converts a struct to map[string]interface{}
 func StructToMap(data interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 
@@ -164,19 +164,19 @@ func StructToMap(data interface{}) (map[string]interface{}, error) {
 		field := t.Field(i)
 		value := v.Field(i)
 
-		// JSONタグからフィールド名を取得
+		// Get field name from JSON tag
 		jsonTag := field.Tag.Get("json")
 		if jsonTag == "" || jsonTag == "-" {
 			continue
 		}
 
-		// "omitempty"などのオプションを除去
+		// Remove options like "omitempty"
 		fieldName := strings.Split(jsonTag, ",")[0]
 		if fieldName == "" {
 			fieldName = field.Name
 		}
 
-		// 値が空の場合はスキップ（omitemptyの場合）
+		// Skip if value is empty (for omitempty)
 		if strings.Contains(jsonTag, "omitempty") && value.IsZero() {
 			continue
 		}

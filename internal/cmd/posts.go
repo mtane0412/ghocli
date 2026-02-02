@@ -1,8 +1,8 @@
 /**
  * posts.go
- * 投稿管理コマンド
+ * Post management commands
  *
- * Ghost投稿の作成、更新、削除、公開機能を提供します。
+ * Provides functionality for creating, updating, deleting, and publishing Ghost posts.
  */
 
 package cmd
@@ -21,98 +21,98 @@ import (
 	"github.com/mtane0412/gho/internal/outfmt"
 )
 
-// PostsCmd は投稿管理コマンドです
+// PostsCmd is the post management command
 type PostsCmd struct {
 	List    PostsListCmd    `cmd:"" help:"List posts"`
-	Get     PostsInfoCmd    `cmd:"" help:"投稿の情報を表示"`
-	Cat     PostsCatCmd     `cmd:"" help:"本文コンテンツを表示"`
+	Get     PostsInfoCmd    `cmd:"" help:"Show post information"`
+	Cat     PostsCatCmd     `cmd:"" help:"Show content body"`
 	Create  PostsCreateCmd  `cmd:"" help:"Create a post"`
 	Update  PostsUpdateCmd  `cmd:"" help:"Update a post"`
 	Delete  PostsDeleteCmd  `cmd:"" help:"Delete a post"`
 	Publish PostsPublishCmd `cmd:"" help:"Publish a draft"`
 
-	// Phase 1: ステータス別一覧ショートカット
+	// Phase 1: Status-based list shortcuts
 	Drafts    PostsDraftsCmd    `cmd:"" help:"List draft posts"`
 	Published PostsPublishedCmd `cmd:"" help:"List published posts"`
 	Scheduled PostsScheduledCmd `cmd:"" help:"List scheduled posts"`
 
-	// Phase 1: URL取得
+	// Phase 1: URL retrieval
 	URL PostsURLCmd `cmd:"" help:"Get post URL"`
 
-	// Phase 2: 状態変更
+	// Phase 2: State changes
 	Unpublish PostsUnpublishCmd `cmd:"" help:"Unpublish a post"`
 
-	// Phase 3: 予約投稿
+	// Phase 3: Scheduled publishing
 	Schedule PostsScheduleCmd `cmd:"" help:"Schedule a post"`
 
-	// Phase 4: バッチ操作
+	// Phase 4: Batch operations
 	Batch  PostsBatchCmd  `cmd:"" help:"Batch operations"`
 	Search PostsSearchCmd `cmd:"" help:"Search posts"`
 
-	// Phase 8.3: コピー
-	Copy PostsCopyCmd `cmd:"" help:"投稿をコピー"`
+	// Phase 8.3: Copy
+	Copy PostsCopyCmd `cmd:"" help:"Copy a post"`
 }
 
-// PostsListCmd は投稿一覧を取得するコマンドです
+// PostsListCmd is the command to retrieve 投稿 list
 type PostsListCmd struct {
 	Status string `help:"Filter by status (draft, published, scheduled, all)" short:"S" default:"all"`
 	Limit  int    `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpostsコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the posts command
 func (c *PostsListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.PostFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 投稿一覧を取得
+	// Get post list
 	response, err := client.ListPosts(ghostapi.ListOptions{
 		Status: c.Status,
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("投稿一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list posts: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Post構造体をmap[string]interface{}に変換
+		// Convert Post struct to map[string]interface{}
 		var postsData []map[string]interface{}
 		for _, post := range response.Posts {
 			postMap, err := outfmt.StructToMap(post)
 			if err != nil {
-				return fmt.Errorf("投稿データの変換に失敗: %w", err)
+				return fmt.Errorf("failed to convert post data: %w", err)
 			}
 			postsData = append(postsData, postMap)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, postsData, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Posts)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Published"}
 	rows := make([][]string, len(response.Posts))
 	for i, post := range response.Posts {
@@ -132,56 +132,56 @@ func (c *PostsListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsInfoCmd は投稿情報を表示するコマンドです
+// PostsInfoCmd is the command to show 投稿 information
 type PostsInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 }
 
-// Run はpostsコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the posts command
 func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.PostFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 投稿を取得
+	// Get post
 	post, err := client.GetPost(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Post構造体をmap[string]interface{}に変換
+		// Convert Post struct to map[string]interface{}
 		postMap, err := outfmt.StructToMap(post)
 		if err != nil {
-			return fmt.Errorf("投稿データの変換に失敗: %w", err)
+			return fmt.Errorf("failed to convert post data: %w", err)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, []map[string]interface{}{postMap}, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(post)
 	}
 
-	// キー/値形式で出力（ヘッダーなし）
+	// Output in key/value format (no headers)
 	rows := [][]string{
 		{"id", post.ID},
 		{"title", post.Title},
@@ -234,7 +234,7 @@ func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// PostsCreateCmd は投稿を作成するコマンドです
+// PostsCreateCmd is the command to create 投稿
 type PostsCreateCmd struct {
 	Title   string `help:"Post title" short:"t" required:""`
 	HTML    string `help:"Post content (HTML)" short:"c"`
@@ -242,15 +242,15 @@ type PostsCreateCmd struct {
 	Status  string `help:"Post status (draft, published)" default:"draft"`
 }
 
-// Run はpostsコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the posts command
 func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 新規投稿を作成
+	// Create new post
 	newPost := &ghostapi.Post{
 		Title:   c.Title,
 		HTML:    c.HTML,
@@ -260,18 +260,18 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdPost, err := client.CreatePost(newPost)
 	if err != nil {
-		return fmt.Errorf("投稿の作成に失敗: %w", err)
+		return fmt.Errorf("failed to create post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("投稿を作成しました: %s (ID: %s)", createdPost.Title, createdPost.ID))
+		formatter.PrintMessage(fmt.Sprintf("created post: %s (ID: %s)", createdPost.Title, createdPost.ID))
 	}
 
-	// JSON形式の場合は投稿情報も出力
+	// Also output post information if JSON format
 	if root.JSON {
 		return formatter.Print(createdPost)
 	}
@@ -279,7 +279,7 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PostsUpdateCmd は投稿を更新するコマンドです
+// PostsUpdateCmd is the command to update 投稿
 type PostsUpdateCmd struct {
 	ID      string `arg:"" help:"Post ID"`
 	Title   string `help:"Post title" short:"t"`
@@ -288,28 +288,28 @@ type PostsUpdateCmd struct {
 	Status  string `help:"Post status (draft, published)"`
 }
 
-// Run はpostsコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the posts command
 func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存の投稿を取得
+	// Get existing post
 	existingPost, err := client.GetPost(c.ID)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updatePost := &ghostapi.Post{
 		Title:     existingPost.Title,
 		Slug:      existingPost.Slug,
 		HTML:      existingPost.HTML,
 		Lexical:   existingPost.Lexical,
 		Status:    existingPost.Status,
-		UpdatedAt: existingPost.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt: existingPost.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
 	if c.Title != "" {
@@ -325,21 +325,21 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updatePost.Status = c.Status
 	}
 
-	// 投稿を更新
+	// Update post
 	updatedPost, err := client.UpdatePost(c.ID, updatePost)
 	if err != nil {
-		return fmt.Errorf("投稿の更新に失敗: %w", err)
+		return fmt.Errorf("failed to update post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("投稿を更新しました: %s (ID: %s)", updatedPost.Title, updatedPost.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated post: %s (ID: %s)", updatedPost.Title, updatedPost.ID))
 	}
 
-	// JSON形式の場合は投稿情報も出力
+	// Also output post information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedPost)
 	}
@@ -347,94 +347,94 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PostsDeleteCmd は投稿を削除するコマンドです
+// PostsDeleteCmd is the command to delete 投稿
 type PostsDeleteCmd struct {
 	ID string `arg:"" help:"Post ID"`
 }
 
-// Run はpostsコマンドのdeleteサブコマンドを実行します
+// Run executes the delete subcommand of the posts command
 func (c *PostsDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 投稿情報を取得して確認メッセージを構築
+	// Get post information to build confirmation message
 	post, err := client.GetPost(c.ID)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete post '%s' (ID: %s)", post.Title, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 投稿を削除
+	// Delete post
 	if err := client.DeletePost(c.ID); err != nil {
-		return fmt.Errorf("投稿の削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
-	formatter.PrintMessage(fmt.Sprintf("投稿を削除しました (ID: %s)", c.ID))
+	// Show success message
+	formatter.PrintMessage(fmt.Sprintf("deleted post (ID: %s)", c.ID))
 
 	return nil
 }
 
-// PostsPublishCmd は下書き投稿を公開するコマンドです
+// PostsPublishCmd is the command to publish 下書き投稿
 type PostsPublishCmd struct {
 	ID string `arg:"" help:"Post ID"`
 }
 
-// Run はpostsコマンドのpublishサブコマンドを実行します
+// Run executes the publish subcommand of the posts command
 func (c *PostsPublishCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存の投稿を取得
+	// Get existing post
 	existingPost, err := client.GetPost(c.ID)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// すでに公開済みの場合はエラー
+	// Error if already published
 	if existingPost.Status == "published" {
-		return fmt.Errorf("この投稿はすでに公開されています")
+		return fmt.Errorf("post is already published")
 	}
 
-	// ステータスをpublishedに変更
+	// Change status to published
 	updatePost := &ghostapi.Post{
 		Title:     existingPost.Title,
 		Slug:      existingPost.Slug,
 		HTML:      existingPost.HTML,
 		Lexical:   existingPost.Lexical,
 		Status:    "published",
-		UpdatedAt: existingPost.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt: existingPost.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
-	// 投稿を更新
+	// Update post
 	publishedPost, err := client.UpdatePost(c.ID, updatePost)
 	if err != nil {
-		return fmt.Errorf("投稿の公開に失敗: %w", err)
+		return fmt.Errorf("failed to publish post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("投稿を公開しました: %s (ID: %s)", publishedPost.Title, publishedPost.ID))
+		formatter.PrintMessage(fmt.Sprintf("published post: %s (ID: %s)", publishedPost.Title, publishedPost.ID))
 	}
 
-	// JSON形式の場合は投稿情報も出力
+	// Also output post information if JSON format
 	if root.JSON {
 		return formatter.Print(publishedPost)
 	}
@@ -446,39 +446,39 @@ func (c *PostsPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 1: ステータス別一覧ショートカット
 // ========================================
 
-// PostsDraftsCmd は下書き投稿一覧を取得するコマンドです
+// PostsDraftsCmd is the command to retrieve draft 投稿 list
 type PostsDraftsCmd struct {
 	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpostsコマンドのdraftsサブコマンドを実行します
+// Run executes the drafts subcommand of the posts command
 func (c *PostsDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 下書き投稿一覧を取得
+	// Get draft post list
 	response, err := client.ListPosts(ghostapi.ListOptions{
 		Status: "draft",
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("下書き投稿一覧の取得に失敗: %w", err)
+		return fmt.Errorf("下書きfailed to list posts: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Posts)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Updated"}
 	rows := make([][]string, len(response.Posts))
 	for i, post := range response.Posts {
@@ -494,39 +494,39 @@ func (c *PostsDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsPublishedCmd は公開済み投稿一覧を取得するコマンドです
+// PostsPublishedCmd is the command to retrieve published 投稿 list
 type PostsPublishedCmd struct {
 	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpostsコマンドのpublishedサブコマンドを実行します
+// Run executes the published subcommand of the posts command
 func (c *PostsPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 公開済み投稿一覧を取得
+	// Get published post list
 	response, err := client.ListPosts(ghostapi.ListOptions{
 		Status: "published",
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("公開済み投稿一覧の取得に失敗: %w", err)
+		return fmt.Errorf("公開済みfailed to list posts: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Posts)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Published"}
 	rows := make([][]string, len(response.Posts))
 	for i, post := range response.Posts {
@@ -546,39 +546,39 @@ func (c *PostsPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsScheduledCmd は予約投稿一覧を取得するコマンドです
+// PostsScheduledCmd is the command to retrieve scheduled 投稿 list
 type PostsScheduledCmd struct {
 	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpostsコマンドのscheduledサブコマンドを実行します
+// Run executes the scheduled subcommand of the posts command
 func (c *PostsScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 予約投稿一覧を取得
+	// Get scheduled post list
 	response, err := client.ListPosts(ghostapi.ListOptions{
 		Status: "scheduled",
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("予約投稿一覧の取得に失敗: %w", err)
+		return fmt.Errorf("予約failed to list posts: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Posts)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Scheduled"}
 	rows := make([][]string, len(response.Posts))
 	for i, post := range response.Posts {
@@ -602,41 +602,41 @@ func (c *PostsScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 1: URL取得
 // ========================================
 
-// PostsURLCmd は投稿のWeb URLを取得するコマンドです
+// PostsURLCmd is the command to get 投稿 web URL
 type PostsURLCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 	Open     bool   `help:"Open URL in browser" short:"o"`
 }
 
-// Run はpostsコマンドのurlサブコマンドを実行します
+// Run executes the url subcommand of the posts command
 func (c *PostsURLCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 投稿を取得
+	// Get post
 	post, err := client.GetPost(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// URLを取得
+	// Get URL
 	url := post.URL
 	if url == "" {
-		return fmt.Errorf("投稿のURLが取得できませんでした")
+		return fmt.Errorf("could not get post URL")
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// URLを出力
+	// Output URL
 	formatter.PrintMessage(url)
 
-	// --openフラグが指定されている場合はブラウザで開く
+	// Open in browser if --open flag is specified
 	if c.Open {
-		// OSに応じたコマンドでブラウザを開く
+		// Open browser with OS-appropriate command
 		var cmd string
 		switch {
 		case fileExists("/usr/bin/open"): // macOS
@@ -648,7 +648,7 @@ func (c *PostsURLCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 
 		if err := runCommand(cmd, url); err != nil {
-			return fmt.Errorf("ブラウザでURLを開くことに失敗: %w", err)
+			return fmt.Errorf("failed to open URL in browser: %w", err)
 		}
 	}
 
@@ -659,55 +659,55 @@ func (c *PostsURLCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 2: 状態変更
 // ========================================
 
-// PostsUnpublishCmd は公開済み投稿を下書きに戻すコマンドです
+// PostsUnpublishCmd is the command to unpublish 公開済み投稿
 type PostsUnpublishCmd struct {
 	ID string `arg:"" help:"Post ID"`
 }
 
-// Run はpostsコマンドのunpublishサブコマンドを実行します
+// Run executes the unpublish subcommand of the posts command
 func (c *PostsUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存の投稿を取得
+	// Get existing post
 	existingPost, err := client.GetPost(c.ID)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// すでに下書きの場合はエラー
+	// Error if already a draft
 	if existingPost.Status == "draft" {
-		return fmt.Errorf("この投稿はすでに下書きです")
+		return fmt.Errorf("post is already a draft")
 	}
 
-	// ステータスをdraftに変更
+	// Change status to draft
 	updatePost := &ghostapi.Post{
 		Title:     existingPost.Title,
 		Slug:      existingPost.Slug,
 		HTML:      existingPost.HTML,
 		Lexical:   existingPost.Lexical,
 		Status:    "draft",
-		UpdatedAt: existingPost.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt: existingPost.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
-	// 投稿を更新
+	// Update post
 	unpublishedPost, err := client.UpdatePost(c.ID, updatePost)
 	if err != nil {
-		return fmt.Errorf("投稿の非公開化に失敗: %w", err)
+		return fmt.Errorf("failed to unpublish post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("投稿を下書きに戻しました: %s (ID: %s)", unpublishedPost.Title, unpublishedPost.ID))
+		formatter.PrintMessage(fmt.Sprintf("unpublished post: %s (ID: %s)", unpublishedPost.Title, unpublishedPost.ID))
 	}
 
-	// JSON形式の場合は投稿情報も出力
+	// Also output post information if JSON format
 	if root.JSON {
 		return formatter.Print(unpublishedPost)
 	}
@@ -719,33 +719,33 @@ func (c *PostsUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 3: 予約投稿
 // ========================================
 
-// PostsScheduleCmd は投稿を予約公開に設定するコマンドです
+// PostsScheduleCmd is the command to schedule 投稿 for publishing
 type PostsScheduleCmd struct {
 	ID string `arg:"" help:"Post ID"`
 	At string `help:"Schedule time (YYYY-MM-DD HH:MM)" required:""`
 }
 
-// Run はpostsコマンドのscheduleサブコマンドを実行します
+// Run executes the schedule subcommand of the posts command
 func (c *PostsScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存の投稿を取得
+	// Get existing post
 	existingPost, err := client.GetPost(c.ID)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// 日時をパース
+	// Parse datetime
 	publishedAt, err := parseDateTime(c.At)
 	if err != nil {
-		return fmt.Errorf("日時のパースに失敗: %w", err)
+		return fmt.Errorf("failed to parse datetime: %w", err)
 	}
 
-	// ステータスをscheduledに変更し、公開日時を設定
+	// Change status to scheduled and set publish date
 	updatePost := &ghostapi.Post{
 		Title:       existingPost.Title,
 		Slug:        existingPost.Slug,
@@ -753,25 +753,25 @@ func (c *PostsScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
 		Lexical:     existingPost.Lexical,
 		Status:      "scheduled",
 		PublishedAt: &publishedAt,
-		UpdatedAt:   existingPost.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt:   existingPost.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
-	// 投稿を更新
+	// Update post
 	scheduledPost, err := client.UpdatePost(c.ID, updatePost)
 	if err != nil {
-		return fmt.Errorf("投稿の予約公開設定に失敗: %w", err)
+		return fmt.Errorf("failed to schedule post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("投稿を予約公開に設定しました: %s (ID: %s, 公開予定: %s)",
+		formatter.PrintMessage(fmt.Sprintf("scheduled post: %s (ID: %s, scheduled for: %s)",
 			scheduledPost.Title, scheduledPost.ID, publishedAt.Format("2006-01-02 15:04")))
 	}
 
-	// JSON形式の場合は投稿情報も出力
+	// Also output post information if JSON format
 	if root.JSON {
 		return formatter.Print(scheduledPost)
 	}
@@ -789,39 +789,39 @@ type PostsBatchCmd struct {
 	Delete  PostsBatchDeleteCmd  `cmd:"" help:"Batch delete posts"`
 }
 
-// PostsBatchPublishCmd は複数投稿を一括公開するコマンドです
+// PostsBatchPublishCmd is the command to batch publish 投稿
 type PostsBatchPublishCmd struct {
 	IDs []string `arg:"" help:"Post IDs to publish"`
 }
 
-// Run はposts batch publishサブコマンドを実行します
+// Run executes the posts batch publish subcommand
 func (c *PostsBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 各投稿を公開
+	// Publish each post
 	successCount := 0
 	for _, id := range c.IDs {
-		// 既存の投稿を取得
+		// Get existing post
 		existingPost, err := client.GetPost(id)
 		if err != nil {
-			formatter.PrintMessage(fmt.Sprintf("投稿の取得に失敗 (ID: %s): %v", id, err))
+			formatter.PrintMessage(fmt.Sprintf("failed to get post (ID: %s): %v", id, err))
 			continue
 		}
 
 		// すでに公開済みの場合はスキップ
 		if existingPost.Status == "published" {
-			formatter.PrintMessage(fmt.Sprintf("スキップ (すでに公開済み): %s (ID: %s)", existingPost.Title, id))
+			formatter.PrintMessage(fmt.Sprintf("skipped (already published): %s (ID: %s)", existingPost.Title, id))
 			continue
 		}
 
-		// ステータスをpublishedに変更
+		// Change status to published
 		updatePost := &ghostapi.Post{
 			Title:     existingPost.Title,
 			Slug:      existingPost.Slug,
@@ -831,58 +831,58 @@ func (c *PostsBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 			UpdatedAt: existingPost.UpdatedAt,
 		}
 
-		// 投稿を更新
+		// Update post
 		_, err = client.UpdatePost(id, updatePost)
 		if err != nil {
-			formatter.PrintMessage(fmt.Sprintf("投稿の公開に失敗 (ID: %s): %v", id, err))
+			formatter.PrintMessage(fmt.Sprintf("failed to publish post (ID: %s): %v", id, err))
 			continue
 		}
 
-		formatter.PrintMessage(fmt.Sprintf("公開しました: %s (ID: %s)", existingPost.Title, id))
+		formatter.PrintMessage(fmt.Sprintf("published: %s (ID: %s)", existingPost.Title, id))
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\n完了: %d件の投稿を公開しました", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のpublished post", successCount))
 
 	return nil
 }
 
-// PostsBatchDeleteCmd は複数投稿を一括削除するコマンドです
+// PostsBatchDeleteCmd is the command to batch delete 投稿
 type PostsBatchDeleteCmd struct {
 	IDs []string `arg:"" help:"Post IDs to delete"`
 }
 
-// Run はposts batch deleteサブコマンドを実行します
+// Run executes the posts batch delete subcommand
 func (c *PostsBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete %d posts", len(c.IDs))
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 各投稿を削除
+	// Delete each post
 	successCount := 0
 	for _, id := range c.IDs {
-		// 投稿を削除
+		// Delete post
 		if err := client.DeletePost(id); err != nil {
-			formatter.PrintMessage(fmt.Sprintf("投稿の削除に失敗 (ID: %s): %v", id, err))
+			formatter.PrintMessage(fmt.Sprintf("failed to delete post (ID: %s): %v", id, err))
 			continue
 		}
 
-		formatter.PrintMessage(fmt.Sprintf("削除しました (ID: %s)", id))
+		formatter.PrintMessage(fmt.Sprintf("deleted (ID: %s)", id))
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\n完了: %d件の投稿を削除しました", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のdeleted post", successCount))
 
 	return nil
 }
@@ -891,34 +891,34 @@ func (c *PostsBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 4: 投稿検索
 // ========================================
 
-// PostsSearchCmd は投稿を検索するコマンドです
+// PostsSearchCmd is the command to search 投稿
 type PostsSearchCmd struct {
 	Query string `arg:"" help:"Search query"`
 	Limit int    `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 }
 
-// Run はpostsコマンドのsearchサブコマンドを実行します
+// Run executes the search subcommand of the posts command
 func (c *PostsSearchCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 投稿一覧を取得（検索クエリはfilterとして渡す）
+	// Get post list（検索クエリはfilterとして渡す）
 	response, err := client.ListPosts(ghostapi.ListOptions{
 		Status: "all",
 		Limit:  c.Limit,
 		Page:   1,
 	})
 	if err != nil {
-		return fmt.Errorf("投稿検索に失敗: %w", err)
+		return fmt.Errorf("failed to search posts: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// クエリに一致する投稿をフィルタリング（簡易的な実装）
+	// Filter posts matching query (simple implementation)
 	var filteredPosts []ghostapi.Post
 	for _, post := range response.Posts {
 		if containsIgnoreCase(post.Title, c.Query) || containsIgnoreCase(post.HTML, c.Query) {
@@ -926,12 +926,12 @@ func (c *PostsSearchCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(filteredPosts)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created"}
 	rows := make([][]string, len(filteredPosts))
 	for i, post := range filteredPosts {
@@ -990,44 +990,44 @@ func hasSubstringIgnoreCase(s, substr string) bool {
 // Phase 2: catコマンド
 // ========================================
 
-// PostsCatCmd は投稿の本文コンテンツを表示するコマンドです
+// PostsCatCmd is the command to show 投稿 content body
 type PostsCatCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 	Format   string `help:"Output format (text, html, lexical)" default:"text"`
 }
 
-// Run はpostsコマンドのcatサブコマンドを実行します
+// Run executes the cat subcommand of the posts command
 func (c *PostsCatCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 投稿を取得
+	// Get post
 	post, err := client.GetPost(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フォーマットに応じて出力
+	// Output according to format
 	var content string
 	switch c.Format {
 	case "html":
 		content = post.HTML
 	case "text":
-		// HTMLからテキストへ変換
+		// Convert HTML to text
 		content = html2text.HTML2Text(post.HTML)
 	case "lexical":
 		content = post.Lexical
 	default:
-		return fmt.Errorf("未対応のフォーマット: %s (html, text, lexical のいずれかを指定してください)", c.Format)
+		return fmt.Errorf("unsupported format: %s (html, text, lexical のいずれかを指定してください)", c.Format)
 	}
 
-	// コンテンツを出力
+	// Output content
 	formatter.PrintMessage(content)
 
 	return nil
@@ -1037,33 +1037,33 @@ func (c *PostsCatCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 8.3: copyコマンド
 // ========================================
 
-// PostsCopyCmd は投稿をコピーするコマンドです
+// PostsCopyCmd is the command to copy 投稿
 type PostsCopyCmd struct {
-	IDOrSlug string `arg:"" help:"コピー元の投稿ID またはスラッグ"`
-	Title    string `help:"新しいタイトル（省略時は '元タイトル (Copy)'）" short:"t"`
+	IDOrSlug string `arg:"" help:"Source post ID or slug"`
+	Title    string `help:"New title (defaults to 'Original Title (Copy)')" short:"t"`
 }
 
-// Run はpostsコマンドのcopyサブコマンドを実行します
+// Run executes the copy subcommand of the posts command
 func (c *PostsCopyCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 元の投稿を取得
+	// Get original post
 	original, err := client.GetPost(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("投稿の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// 新しいタイトルを決定
+	// Determine new title
 	newTitle := c.Title
 	if newTitle == "" {
 		newTitle = original.Title + " (Copy)"
 	}
 
-	// 新しい投稿を作成（ID/UUID/Slug/URL/日時は除外、Statusはdraft固定）
+	// Create new post (exclude ID/UUID/Slug/URL/dates, Status fixed to draft)
 	newPost := &ghostapi.Post{
 		Title:   newTitle,
 		HTML:    original.HTML,
@@ -1071,21 +1071,21 @@ func (c *PostsCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 		Status:  "draft",
 	}
 
-	// 投稿を作成
+	// Create post
 	createdPost, err := client.CreatePost(newPost)
 	if err != nil {
-		return fmt.Errorf("投稿のコピーに失敗: %w", err)
+		return fmt.Errorf("failed to copy post: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("投稿をコピーしました: %s (ID: %s)", createdPost.Title, createdPost.ID))
+		formatter.PrintMessage(fmt.Sprintf("copied post: %s (ID: %s)", createdPost.Title, createdPost.ID))
 	}
 
-	// JSON形式の場合は投稿情報も出力
+	// Also output post information if JSON format
 	if root.JSON {
 		return formatter.Print(createdPost)
 	}

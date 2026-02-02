@@ -1,11 +1,11 @@
 /**
  * output.go
- * UI出力機能
+ * UI output functionality
  *
- * stdout/stderrの分離を提供します。
- * - データ出力 → stdout
- * - 進捗メッセージ → stderr
- * - エラーメッセージ → stderr
+ * Provides separation of stdout/stderr:
+ * - Data output → stdout
+ * - Progress messages → stderr
+ * - Error messages → stderr
  */
 
 package ui
@@ -16,26 +16,26 @@ import (
 	"io"
 )
 
-// Output はUI出力を管理する構造体です
+// Output manages UI output
 type Output struct {
 	stdout io.Writer
 	stderr io.Writer
 }
 
-// contextのキー型
+// context key type
 type contextKey int
 
 const (
 	uiKey contextKey = iota
 )
 
-// WithUI はcontextにUI出力を設定する
+// WithUI sets UI output in the context
 func WithUI(ctx context.Context, ui *Output) context.Context {
 	return context.WithValue(ctx, uiKey, ui)
 }
 
-// FromContext はcontextからUI出力を取得する
-// UIが設定されていない場合はnilを返す
+// FromContext retrieves UI output from the context
+// Returns nil if UI is not set
 func FromContext(ctx context.Context) *Output {
 	if ui, ok := ctx.Value(uiKey).(*Output); ok {
 		return ui
@@ -43,7 +43,7 @@ func FromContext(ctx context.Context) *Output {
 	return nil
 }
 
-// NewOutput は新しいOutputを作成します
+// NewOutput creates a new Output
 func NewOutput(stdout, stderr io.Writer) *Output {
 	return &Output{
 		stdout: stdout,
@@ -51,18 +51,18 @@ func NewOutput(stdout, stderr io.Writer) *Output {
 	}
 }
 
-// PrintData はデータをstdoutに出力します
+// PrintData outputs data to stdout
 func (o *Output) PrintData(data string) error {
 	_, err := fmt.Fprintln(o.stdout, data)
 	return err
 }
 
-// PrintMessage は進捗メッセージをstderrに出力します
+// PrintMessage outputs a progress message to stderr
 func (o *Output) PrintMessage(message string) {
 	fmt.Fprintln(o.stderr, message)
 }
 
-// PrintError はエラーメッセージをstderrに出力します
+// PrintError outputs an error message to stderr
 func (o *Output) PrintError(message string) {
 	fmt.Fprintln(o.stderr, message)
 }

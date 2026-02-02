@@ -27,32 +27,32 @@ type ThemesCmd struct {
 	Install ThemesInstallCmd `cmd:"" help:"Upload and activate a theme"`
 }
 
-// ThemesListCmd はテーマ一覧を取得するコマンドです
+// ThemesListCmd is the command to retrieve テーマ list
 type ThemesListCmd struct{}
 
-// Run はthemesコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the themes command
 func (c *ThemesListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// テーマ一覧を取得
+	// Get theme list
 	response, err := client.ListThemes()
 	if err != nil {
-		return fmt.Errorf("テーマ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list themes: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Themes)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"Name", "Active", "Version", "Description"}
 	rows := make([][]string, len(response.Themes))
 	for i, theme := range response.Themes {
@@ -79,50 +79,50 @@ func (c *ThemesListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// ThemesUploadCmd はテーマをアップロードするコマンドです
+// ThemesUploadCmd is the command to upload テーマ
 type ThemesUploadCmd struct {
 	File string `arg:"" help:"Theme zip file path" type:"existingfile"`
 }
 
-// Run はthemesコマンドのuploadサブコマンドを実行します
+// Run executes the upload subcommand of the themes command
 func (c *ThemesUploadCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ファイルを開く
+	// Open file
 	file, err := os.Open(c.File)
 	if err != nil {
-		return fmt.Errorf("ファイルのオープンに失敗: %w", err)
+		return fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
-	// ファイル名を取得
+	// Get filename
 	fileInfo, err := file.Stat()
 	if err != nil {
-		return fmt.Errorf("ファイル情報の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get file information: %w", err)
 	}
 
-	// テーマをアップロード
+	// Upload theme
 	theme, err := client.UploadTheme(file, fileInfo.Name())
 	if err != nil {
-		return fmt.Errorf("テーマのアップロードに失敗: %w", err)
+		return fmt.Errorf("failed to upload theme: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("テーマをアップロードしました: %s", theme.Name))
+		formatter.PrintMessage(fmt.Sprintf("uploaded theme: %s", theme.Name))
 		if theme.Package != nil && theme.Package.Version != "" {
-			formatter.PrintMessage(fmt.Sprintf("バージョン: %s", theme.Package.Version))
+			formatter.PrintMessage(fmt.Sprintf("version: %s", theme.Package.Version))
 		}
 	}
 
-	// JSON形式の場合はテーマ情報も出力
+	// Also output theme information if JSON format
 	if root.JSON {
 		return formatter.Print(theme)
 	}
@@ -130,34 +130,34 @@ func (c *ThemesUploadCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// ThemesActivateCmd はテーマを有効化するコマンドです
+// ThemesActivateCmd is the command to activate テーマ
 type ThemesActivateCmd struct {
 	Name string `arg:"" help:"Theme name"`
 }
 
-// Run はthemesコマンドのactivateサブコマンドを実行します
+// Run executes the activate subcommand of the themes command
 func (c *ThemesActivateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// テーマを有効化
+	// Activate theme
 	theme, err := client.ActivateTheme(c.Name)
 	if err != nil {
-		return fmt.Errorf("テーマの有効化に失敗: %w", err)
+		return fmt.Errorf("failed to activate theme: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("テーマを有効化しました: %s", theme.Name))
+		formatter.PrintMessage(fmt.Sprintf("activated theme: %s", theme.Name))
 	}
 
-	// JSON形式の場合はテーマ情報も出力
+	// Also output theme information if JSON format
 	if root.JSON {
 		return formatter.Print(theme)
 	}
@@ -169,54 +169,54 @@ func (c *ThemesActivateCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 3: 複合操作
 // ========================================
 
-// ThemesInstallCmd はテーマをアップロードして有効化するコマンドです
+// ThemesInstallCmd is the command to upload and activate テーマ
 type ThemesInstallCmd struct {
 	File string `arg:"" help:"Path to theme zip file" type:"existingfile"`
 }
 
-// Run はthemesコマンドのinstallサブコマンドを実行します
+// Run executes the install subcommand of the themes command
 func (c *ThemesInstallCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// ファイルを開く
+	// Open file
 	file, err := os.Open(c.File)
 	if err != nil {
-		return fmt.Errorf("ファイルを開くことに失敗: %w", err)
+		return fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
-	// ファイル名を取得
+	// Get filename
 	filename := filepath.Base(c.File)
 
-	// テーマをアップロード
-	formatter.PrintMessage(fmt.Sprintf("テーマをアップロード中: %s", c.File))
+	// Upload theme
+	formatter.PrintMessage(fmt.Sprintf("uploading theme: %s", c.File))
 	uploadedTheme, err := client.UploadTheme(file, filename)
 	if err != nil {
-		return fmt.Errorf("テーマのアップロードに失敗: %w", err)
+		return fmt.Errorf("failed to upload theme: %w", err)
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("テーマをアップロードしました: %s", uploadedTheme.Name))
+	formatter.PrintMessage(fmt.Sprintf("uploaded theme: %s", uploadedTheme.Name))
 
-	// テーマを有効化
-	formatter.PrintMessage(fmt.Sprintf("テーマを有効化中: %s", uploadedTheme.Name))
+	// Activate theme
+	formatter.PrintMessage(fmt.Sprintf("activating theme: %s", uploadedTheme.Name))
 	activatedTheme, err := client.ActivateTheme(uploadedTheme.Name)
 	if err != nil {
-		return fmt.Errorf("テーマの有効化に失敗: %w", err)
+		return fmt.Errorf("failed to activate theme: %w", err)
 	}
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("テーマをインストールして有効化しました: %s", activatedTheme.Name))
+		formatter.PrintMessage(fmt.Sprintf("installed and activated theme: %s", activatedTheme.Name))
 	}
 
-	// JSON形式の場合はテーマ情報も出力
+	// Also output theme information if JSON format
 	if root.JSON {
 		return formatter.Print(activatedTheme)
 	}
@@ -228,48 +228,48 @@ func (c *ThemesInstallCmd) Run(ctx context.Context, root *RootFlags) error {
 // テーマ削除
 // ========================================
 
-// ThemesDeleteCmd はテーマを削除するコマンドです
+// ThemesDeleteCmd is the command to delete テーマ
 type ThemesDeleteCmd struct {
 	Name string `arg:"" help:"Theme name"`
 }
 
-// Run はthemesコマンドのdeleteサブコマンドを実行します
+// Run executes the delete subcommand of the themes command
 func (c *ThemesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// テーマ一覧を取得してアクティブかチェック
+	// Get theme listしてアクティブかチェック
 	themes, err := client.ListThemes()
 	if err != nil {
-		return fmt.Errorf("テーマ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list themes: %w", err)
 	}
 
-	// アクティブなテーマの削除を防止
+	// Prevent deletion of active theme
 	for _, theme := range themes.Themes {
 		if theme.Name == c.Name && theme.Active {
-			return fmt.Errorf("アクティブなテーマは削除できません: %s", c.Name)
+			return fmt.Errorf("cannot delete active theme: %s", c.Name)
 		}
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete theme '%s'", c.Name)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// テーマを削除
+	// Delete theme
 	if err := client.DeleteTheme(c.Name); err != nil {
-		return fmt.Errorf("テーマの削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete theme: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
-	formatter.PrintMessage(fmt.Sprintf("テーマを削除しました: %s", c.Name))
+	// Show success message
+	formatter.PrintMessage(fmt.Sprintf("deleted theme: %s", c.Name))
 
 	return nil
 }

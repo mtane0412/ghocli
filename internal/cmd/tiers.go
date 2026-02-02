@@ -26,7 +26,7 @@ type TiersCmd struct {
 	Update TiersUpdateCmd `cmd:"" help:"Update a tier"`
 }
 
-// TiersListCmd はティア一覧を取得するコマンドです
+// TiersListCmd is the command to retrieve ティア list
 type TiersListCmd struct {
 	Limit   int    `help:"Number of tiers to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
@@ -34,15 +34,15 @@ type TiersListCmd struct {
 	Filter  string `help:"Filter condition" aliases:"where,w"`
 }
 
-// Run はtiersコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the tiers command
 func (c *TiersListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ティア一覧を取得
+	// Get tier list
 	response, err := client.ListTiers(ghostapi.TierListOptions{
 		Limit:   c.Limit,
 		Page:    c.Page,
@@ -50,18 +50,18 @@ func (c *TiersListCmd) Run(ctx context.Context, root *RootFlags) error {
 		Filter:  c.Filter,
 	})
 	if err != nil {
-		return fmt.Errorf("ティア一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list tiers: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Tiers)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Name", "Slug", "Type", "Active", "Visibility", "Created"}
 	rows := make([][]string, len(response.Tiers))
 	for i, tier := range response.Tiers {
@@ -83,35 +83,35 @@ func (c *TiersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TiersInfoCmd はティア情報を表示するコマンドです
+// TiersInfoCmd is the command to show ティア information
 type TiersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Tier ID or slug (use 'slug:tier-name' format for slug)"`
 	Include  string `help:"Include additional data (monthly_price,yearly_price,benefits)" short:"i"`
 }
 
-// Run はtiersコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the tiers command
 func (c *TiersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ティアを取得
+	// Get tier
 	tier, err := client.GetTier(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ティアの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get tier: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(tier)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"Field", "Value"}
 	rows := [][]string{
 		{"ID", tier.ID},
@@ -133,7 +133,7 @@ func (c *TiersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TiersCreateCmd はティアを作成するコマンドです
+// TiersCreateCmd is the command to create ティア
 type TiersCreateCmd struct {
 	Name           string   `help:"Tier name" short:"n" required:""`
 	Description    string   `help:"Tier description" short:"d"`
@@ -146,15 +146,15 @@ type TiersCreateCmd struct {
 	Benefits       []string `help:"Benefits list" short:"b"`
 }
 
-// Run はtiersコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the tiers command
 func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	priceInfo := ""
 	if c.Type == "paid" {
 		priceInfo = fmt.Sprintf(" (monthly: %d %s, yearly: %d %s)", c.MonthlyPrice, c.Currency, c.YearlyPrice, c.Currency)
@@ -164,7 +164,7 @@ func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// 新規ティアを作成
+	// Create new tier
 	newTier := &ghostapi.Tier{
 		Name:           c.Name,
 		Description:    c.Description,
@@ -179,18 +179,18 @@ func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdTier, err := client.CreateTier(newTier)
 	if err != nil {
-		return fmt.Errorf("ティアの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create tier: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ティアを作成しました: %s (ID: %s)", createdTier.Name, createdTier.ID))
+		formatter.PrintMessage(fmt.Sprintf("created tier: %s (ID: %s)", createdTier.Name, createdTier.ID))
 	}
 
-	// JSON形式の場合はティア情報も出力
+	// Also output tier information if JSON format
 	if root.JSON {
 		return formatter.Print(createdTier)
 	}
@@ -198,7 +198,7 @@ func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// TiersUpdateCmd はティアを更新するコマンドです
+// TiersUpdateCmd is the command to update ティア
 type TiersUpdateCmd struct {
 	ID             string   `arg:"" help:"Tier ID"`
 	Name           string   `help:"Tier name" short:"n"`
@@ -210,27 +210,27 @@ type TiersUpdateCmd struct {
 	Benefits       []string `help:"Benefits list" short:"b"`
 }
 
-// Run はtiersコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the tiers command
 func (c *TiersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のティアを取得
+	// Get existing tier
 	existingTier, err := client.GetTier(c.ID)
 	if err != nil {
-		return fmt.Errorf("ティアの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get tier: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("update tier '%s' (ID: %s)", existingTier.Name, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updateTier := &ghostapi.Tier{
 		Name:           existingTier.Name,
 		Slug:           existingTier.Slug,
@@ -266,21 +266,21 @@ func (c *TiersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updateTier.Benefits = c.Benefits
 	}
 
-	// ティアを更新
+	// Update tier
 	updatedTier, err := client.UpdateTier(c.ID, updateTier)
 	if err != nil {
-		return fmt.Errorf("ティアの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update tier: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ティアを更新しました: %s (ID: %s)", updatedTier.Name, updatedTier.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated tier: %s (ID: %s)", updatedTier.Name, updatedTier.ID))
 	}
 
-	// JSON形式の場合はティア情報も出力
+	// Also output tier information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedTier)
 	}

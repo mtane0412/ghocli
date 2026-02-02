@@ -28,40 +28,40 @@ type OffersCmd struct {
 	Archive OffersArchiveCmd `cmd:"" help:"Archive an offer"`
 }
 
-// OffersListCmd はオファー一覧を取得するコマンドです
+// OffersListCmd is the command to retrieve オファー list
 type OffersListCmd struct {
 	Limit  int    `help:"Number of offers to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
 	Filter string `help:"Filter condition (e.g., status:active)" aliases:"where,w"`
 }
 
-// Run はoffersコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the offers command
 func (c *OffersListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// オファー一覧を取得
+	// Get offer list
 	response, err := client.ListOffers(ghostapi.OfferListOptions{
 		Limit:  c.Limit,
 		Page:   c.Page,
 		Filter: c.Filter,
 	})
 	if err != nil {
-		return fmt.Errorf("オファー一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list offers: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Offers)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Name", "Code", "Type", "Amount", "Status", "Redemptions", "Created"}
 	rows := make([][]string, len(response.Offers))
 	for i, offer := range response.Offers {
@@ -80,34 +80,34 @@ func (c *OffersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// OffersInfoCmd はオファー情報を表示するコマンドです
+// OffersInfoCmd is the command to show オファー information
 type OffersInfoCmd struct {
 	ID string `arg:"" help:"Offer ID"`
 }
 
-// Run はoffersコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the offers command
 func (c *OffersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// オファーを取得
+	// Get offer
 	offer, err := client.GetOffer(c.ID)
 	if err != nil {
-		return fmt.Errorf("オファーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get offer: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(offer)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"Field", "Value"}
 	rows := [][]string{
 		{"ID", offer.ID},
@@ -132,7 +132,7 @@ func (c *OffersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// OffersCreateCmd はオファーを作成するコマンドです
+// OffersCreateCmd is the command to create オファー
 type OffersCreateCmd struct {
 	Name               string `help:"Offer name" short:"n" required:""`
 	Code               string `help:"Offer code" short:"c" required:""`
@@ -147,15 +147,15 @@ type OffersCreateCmd struct {
 	TierID             string `help:"Tier ID" required:""`
 }
 
-// Run はoffersコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the offers command
 func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	discountInfo := fmt.Sprintf("%d", c.Amount)
 	if c.Type == "percent" {
 		discountInfo += "%"
@@ -167,7 +167,7 @@ func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// 新規オファーを作成
+	// Create new offer
 	newOffer := &ghostapi.Offer{
 		Name:               c.Name,
 		Code:               c.Code,
@@ -186,18 +186,18 @@ func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdOffer, err := client.CreateOffer(newOffer)
 	if err != nil {
-		return fmt.Errorf("オファーの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create offer: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("オファーを作成しました: %s (ID: %s)", createdOffer.Name, createdOffer.ID))
+		formatter.PrintMessage(fmt.Sprintf("created offer: %s (ID: %s)", createdOffer.Name, createdOffer.ID))
 	}
 
-	// JSON形式の場合はオファー情報も出力
+	// Also output offer information if JSON format
 	if root.JSON {
 		return formatter.Print(createdOffer)
 	}
@@ -205,7 +205,7 @@ func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// OffersUpdateCmd はオファーを更新するコマンドです
+// OffersUpdateCmd is the command to update オファー
 type OffersUpdateCmd struct {
 	ID                 string `arg:"" help:"Offer ID"`
 	Name               string `help:"Offer name" short:"n"`
@@ -215,27 +215,27 @@ type OffersUpdateCmd struct {
 	DurationInMonths   *int   `help:"Duration in months (for repeating)"`
 }
 
-// Run はoffersコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the offers command
 func (c *OffersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のオファーを取得
+	// Get existing offer
 	existingOffer, err := client.GetOffer(c.ID)
 	if err != nil {
-		return fmt.Errorf("オファーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get offer: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("update offer '%s' (ID: %s)", existingOffer.Name, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updateOffer := &ghostapi.Offer{
 		Name:               existingOffer.Name,
 		Code:               existingOffer.Code,
@@ -266,21 +266,21 @@ func (c *OffersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updateOffer.DurationInMonths = *c.DurationInMonths
 	}
 
-	// オファーを更新
+	// Update offer
 	updatedOffer, err := client.UpdateOffer(c.ID, updateOffer)
 	if err != nil {
-		return fmt.Errorf("オファーの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update offer: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("オファーを更新しました: %s (ID: %s)", updatedOffer.Name, updatedOffer.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated offer: %s (ID: %s)", updatedOffer.Name, updatedOffer.ID))
 	}
 
-	// JSON形式の場合はオファー情報も出力
+	// Also output offer information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedOffer)
 	}
@@ -292,31 +292,31 @@ func (c *OffersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 2: 状態変更
 // ========================================
 
-// OffersArchiveCmd はオファーをアーカイブするコマンドです
+// OffersArchiveCmd is the command to archive オファー
 type OffersArchiveCmd struct {
 	ID string `arg:"" help:"Offer ID"`
 }
 
-// Run はoffersコマンドのarchiveサブコマンドを実行します
+// Run executes the archive subcommand of the offers command
 func (c *OffersArchiveCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のオファーを取得
+	// Get existing offer
 	existingOffer, err := client.GetOffer(c.ID)
 	if err != nil {
-		return fmt.Errorf("オファーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get offer: %w", err)
 	}
 
-	// すでにアーカイブ済みの場合はエラー
+	// Error if already archived
 	if existingOffer.Status == "archived" {
-		return fmt.Errorf("このオファーはすでにアーカイブされています")
+		return fmt.Errorf("offer is already archived")
 	}
 
-	// ステータスをarchivedに変更
+	// Change status to archived
 	updateOffer := &ghostapi.Offer{
 		Name:               existingOffer.Name,
 		Code:               existingOffer.Code,
@@ -332,21 +332,21 @@ func (c *OffersArchiveCmd) Run(ctx context.Context, root *RootFlags) error {
 		Tier:               existingOffer.Tier,
 	}
 
-	// オファーを更新
+	// Update offer
 	archivedOffer, err := client.UpdateOffer(c.ID, updateOffer)
 	if err != nil {
-		return fmt.Errorf("オファーのアーカイブに失敗: %w", err)
+		return fmt.Errorf("failed to archive offer: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("オファーをアーカイブしました: %s (ID: %s)", archivedOffer.Name, archivedOffer.ID))
+		formatter.PrintMessage(fmt.Sprintf("archived offer: %s (ID: %s)", archivedOffer.Name, archivedOffer.ID))
 	}
 
-	// JSON形式の場合はオファー情報も出力
+	// Also output offer information if JSON format
 	if root.JSON {
 		return formatter.Print(archivedOffer)
 	}

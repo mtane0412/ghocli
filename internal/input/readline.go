@@ -1,9 +1,9 @@
 /**
  * readline.go
- * 行読み取り機能
+ * Line reading functionality
  *
- * io.Readerから1行ずつ読み取る機能を提供する。
- * Unix (\n) と Windows (\r\n) の改行形式に対応。
+ * Provides functionality to read lines from io.Reader.
+ * Supports both Unix (\n) and Windows (\r\n) line endings.
  */
 package input
 
@@ -15,19 +15,20 @@ import (
 	"strings"
 )
 
-// ReadLine は、io.Readerから1行を読み取る
+// ReadLine reads a single line from io.Reader
 //
-// Unix (\n) と Windows (\r\n) の改行形式に対応する。
-// 単独の\rも改行として扱う。
+// Supports both Unix (\n) and Windows (\r\n) line endings.
+// A standalone \r is also treated as a line ending.
 //
-// 改行前にEOFに到達した場合、バッファに内容があればその内容を返す（エラーはnil）。
-// バッファに内容がない状態でEOFに到達した場合は、io.EOFを返す。
+// If EOF is reached before a line ending, the buffered content is returned
+// if available (error is nil). If EOF is reached with an empty buffer,
+// io.EOF is returned.
 //
-// r: 入力元のio.Reader
+// r: The input io.Reader
 //
-// 戻り値:
-//   - 読み取った行（改行文字を除く）
-//   - エラー（読み取りに失敗した場合）
+// Returns:
+//   - The read line (without line ending characters)
+//   - An error if reading fails
 func ReadLine(r io.Reader) (string, error) {
 	br := bufio.NewReader(r)
 
@@ -36,35 +37,35 @@ func ReadLine(r io.Reader) (string, error) {
 	for {
 		b, err := br.ReadByte()
 		if err != nil {
-			// EOFに到達した場合
+			// When EOF is reached
 			if errors.Is(err, io.EOF) {
-				// バッファに内容があればそれを返す
+				// Return buffered content if available
 				if sb.Len() > 0 {
 					return sb.String(), nil
 				}
 
-				// バッファが空の場合はEOFを返す
+				// Return EOF if buffer is empty
 				return "", io.EOF
 			}
 
-			// その他のエラー
+			// Other errors
 			return "", fmt.Errorf("read line: %w", err)
 		}
 
-		// 改行文字の処理
+		// Process line ending characters
 		if b == '\n' || b == '\r' {
-			// \rの場合、次の文字が\nならそれも読み飛ばす（Windows形式）
+			// For \r, skip the next \n if present (Windows format)
 			if b == '\r' {
 				if next, _ := br.Peek(1); len(next) == 1 && next[0] == '\n' {
 					_, _ = br.ReadByte()
 				}
 			}
 
-			// 改行文字を除いた行を返す
+			// Return the line without line ending characters
 			return sb.String(), nil
 		}
 
-		// 通常の文字をバッファに追加
+		// Add regular character to buffer
 		sb.WriteByte(b)
 	}
 }

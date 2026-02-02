@@ -35,7 +35,7 @@ type MembersCmd struct {
 	Recent  MembersRecentCmd  `cmd:"" help:"List recently created members"`
 }
 
-// MembersListCmd はメンバー一覧を取得するコマンドです
+// MembersListCmd is the command to retrieve メンバー list
 type MembersListCmd struct {
 	Limit  int    `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
@@ -43,25 +43,25 @@ type MembersListCmd struct {
 	Order  string `help:"Sort order (e.g., created_at DESC)" short:"o"`
 }
 
-// Run はmembersコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the members command
 func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.MemberFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// メンバー一覧を取得
+	// Get member list
 	response, err := client.ListMembers(ghostapi.MemberListOptions{
 		Limit:  c.Limit,
 		Page:   c.Page,
@@ -69,34 +69,34 @@ func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
 		Order:  c.Order,
 	})
 	if err != nil {
-		return fmt.Errorf("メンバー一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list members: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Member構造体をmap[string]interface{}に変換
+		// Convert Member struct to map[string]interface{}
 		var membersData []map[string]interface{}
 		for _, member := range response.Members {
 			memberMap, err := outfmt.StructToMap(member)
 			if err != nil {
-				return fmt.Errorf("メンバーデータの変換に失敗: %w", err)
+				return fmt.Errorf("failed to convert member data: %w", err)
 			}
 			membersData = append(membersData, memberMap)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, membersData, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Members)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Email", "Name", "Status", "Created"}
 	rows := make([][]string, len(response.Members))
 	for i, member := range response.Members {
@@ -112,56 +112,56 @@ func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// MembersInfoCmd はメンバー情報を表示するコマンドです
+// MembersInfoCmd is the command to show メンバー information
 type MembersInfoCmd struct {
 	ID string `arg:"" help:"Member ID"`
 }
 
-// Run はmembersコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the members command
 func (c *MembersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.MemberFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// メンバーを取得
+	// Get member
 	member, err := client.GetMember(c.ID)
 	if err != nil {
-		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get member: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Member構造体をmap[string]interface{}に変換
+		// Convert Member struct to map[string]interface{}
 		memberMap, err := outfmt.StructToMap(member)
 		if err != nil {
-			return fmt.Errorf("メンバーデータの変換に失敗: %w", err)
+			return fmt.Errorf("failed to convert member data: %w", err)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, []map[string]interface{}{memberMap}, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(member)
 	}
 
-	// キー/値形式で出力（ヘッダーなし）
+	// Output in key/value format (no headers)
 	rows := [][]string{
 		{"id", member.ID},
 		{"uuid", member.UUID},
@@ -180,7 +180,7 @@ func (c *MembersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// MembersCreateCmd はメンバーを作成するコマンドです
+// MembersCreateCmd is the command to create メンバー
 type MembersCreateCmd struct {
 	Email  string   `help:"Member email (required)" short:"e" required:""`
 	Name   string   `help:"Member name" short:"n"`
@@ -188,22 +188,22 @@ type MembersCreateCmd struct {
 	Labels []string `help:"Member labels" short:"l"`
 }
 
-// Run はmembersコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the members command
 func (c *MembersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 新規メンバーを作成
+	// Create new member
 	newMember := &ghostapi.Member{
 		Email: c.Email,
 		Name:  c.Name,
 		Note:  c.Note,
 	}
 
-	// ラベルを追加
+	// Add labels
 	if len(c.Labels) > 0 {
 		labels := make([]ghostapi.Label, len(c.Labels))
 		for i, labelName := range c.Labels {
@@ -214,18 +214,18 @@ func (c *MembersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdMember, err := client.CreateMember(newMember)
 	if err != nil {
-		return fmt.Errorf("メンバーの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create member: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("メンバーを作成しました: %s (ID: %s)", createdMember.Email, createdMember.ID))
+		formatter.PrintMessage(fmt.Sprintf("created member: %s (ID: %s)", createdMember.Email, createdMember.ID))
 	}
 
-	// JSON形式の場合はメンバー情報も出力
+	// Also output member information if JSON format
 	if root.JSON {
 		return formatter.Print(createdMember)
 	}
@@ -233,7 +233,7 @@ func (c *MembersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersUpdateCmd はメンバーを更新するコマンドです
+// MembersUpdateCmd is the command to update メンバー
 type MembersUpdateCmd struct {
 	ID     string   `arg:"" help:"Member ID"`
 	Name   string   `help:"Member name" short:"n"`
@@ -241,21 +241,21 @@ type MembersUpdateCmd struct {
 	Labels []string `help:"Member labels" short:"l"`
 }
 
-// Run はmembersコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the members command
 func (c *MembersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のメンバーを取得
+	// Get existing member
 	existingMember, err := client.GetMember(c.ID)
 	if err != nil {
-		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get member: %w", err)
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updateMember := &ghostapi.Member{
 		Email:  existingMember.Email,
 		Name:   existingMember.Name,
@@ -277,21 +277,21 @@ func (c *MembersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updateMember.Labels = labels
 	}
 
-	// メンバーを更新
+	// Update member
 	updatedMember, err := client.UpdateMember(c.ID, updateMember)
 	if err != nil {
-		return fmt.Errorf("メンバーの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update member: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("メンバーを更新しました: %s (ID: %s)", updatedMember.Email, updatedMember.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated member: %s (ID: %s)", updatedMember.Email, updatedMember.ID))
 	}
 
-	// JSON形式の場合はメンバー情報も出力
+	// Also output member information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedMember)
 	}
@@ -299,41 +299,41 @@ func (c *MembersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersDeleteCmd はメンバーを削除するコマンドです
+// MembersDeleteCmd is the command to delete メンバー
 type MembersDeleteCmd struct {
 	ID string `arg:"" help:"Member ID"`
 }
 
-// Run はmembersコマンドのdeleteサブコマンドを実行します
+// Run executes the delete subcommand of the members command
 func (c *MembersDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// メンバー情報を取得して確認メッセージを構築
+	// Get member information to build confirmation message
 	member, err := client.GetMember(c.ID)
 	if err != nil {
-		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get member: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete member '%s' (ID: %s)", member.Email, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// メンバーを削除
+	// Delete member
 	if err := client.DeleteMember(c.ID); err != nil {
-		return fmt.Errorf("メンバーの削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete member: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
-	formatter.PrintMessage(fmt.Sprintf("メンバーを削除しました (ID: %s)", c.ID))
+	// Show success message
+	formatter.PrintMessage(fmt.Sprintf("deleted member (ID: %s)", c.ID))
 
 	return nil
 }
@@ -342,39 +342,39 @@ func (c *MembersDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 1: ステータス別一覧ショートカット
 // ========================================
 
-// MembersPaidCmd は有料会員一覧を取得するコマンドです
+// MembersPaidCmd is the command to retrieve paid member list
 type MembersPaidCmd struct {
 	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はmembersコマンドのpaidサブコマンドを実行します
+// Run executes the paid subcommand of the members command
 func (c *MembersPaidCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 有料会員一覧を取得
+	// Get paid member list
 	response, err := client.ListMembers(ghostapi.MemberListOptions{
 		Limit:  c.Limit,
 		Page:   c.Page,
 		Filter: "status:paid",
 	})
 	if err != nil {
-		return fmt.Errorf("有料会員一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list paid members: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Members)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Email", "Name", "Status", "Created"}
 	rows := make([][]string, len(response.Members))
 	for i, member := range response.Members {
@@ -390,39 +390,39 @@ func (c *MembersPaidCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// MembersFreeCmd は無料会員一覧を取得するコマンドです
+// MembersFreeCmd is the command to retrieve free member list
 type MembersFreeCmd struct {
 	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はmembersコマンドのfreeサブコマンドを実行します
+// Run executes the free subcommand of the members command
 func (c *MembersFreeCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 無料会員一覧を取得
+	// Get free member list
 	response, err := client.ListMembers(ghostapi.MemberListOptions{
 		Limit:  c.Limit,
 		Page:   c.Page,
 		Filter: "status:free",
 	})
 	if err != nil {
-		return fmt.Errorf("無料会員一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list free members: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Members)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Email", "Name", "Status", "Created"}
 	rows := make([][]string, len(response.Members))
 	for i, member := range response.Members {
@@ -442,40 +442,40 @@ func (c *MembersFreeCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 3: ラベル操作
 // ========================================
 
-// MembersLabelCmd はメンバーにラベルを追加するコマンドです
+// MembersLabelCmd is the command to add label to メンバー
 type MembersLabelCmd struct {
 	ID    string `arg:"" help:"Member ID"`
 	Label string `arg:"" help:"Label name"`
 }
 
-// Run はmembersコマンドのlabelサブコマンドを実行します
+// Run executes the label subcommand of the members command
 func (c *MembersLabelCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のメンバーを取得
+	// Get existing member
 	existingMember, err := client.GetMember(c.ID)
 	if err != nil {
-		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get member: %w", err)
 	}
 
-	// 既存のラベルにLabel名がある場合はスキップ
+	// Skip if label name already exists in existing labels
 	for _, label := range existingMember.Labels {
 		if label.Name == c.Label {
-			// 出力フォーマッターを作成
+			// Create output formatter
 			formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-			formatter.PrintMessage(fmt.Sprintf("メンバーはすでにラベル '%s' を持っています (ID: %s)", c.Label, c.ID))
+			formatter.PrintMessage(fmt.Sprintf("member already has label '%s' holds label (ID: %s)", c.Label, c.ID))
 			return nil
 		}
 	}
 
-	// 既存のラベルに新しいラベルを追加
+	// Add new label to existing labels
 	newLabels := append(existingMember.Labels, ghostapi.Label{Name: c.Label})
 
-	// メンバーを更新
+	// Update member
 	updateMember := &ghostapi.Member{
 		Email:  existingMember.Email,
 		Name:   existingMember.Name,
@@ -485,18 +485,18 @@ func (c *MembersLabelCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	updatedMember, err := client.UpdateMember(c.ID, updateMember)
 	if err != nil {
-		return fmt.Errorf("メンバーの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update member: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("メンバーにラベルを追加しました: %s (ID: %s, Label: %s)", updatedMember.Email, updatedMember.ID, c.Label))
+		formatter.PrintMessage(fmt.Sprintf("added label to member: %s (ID: %s, Label: %s)", updatedMember.Email, updatedMember.ID, c.Label))
 	}
 
-	// JSON形式の場合はメンバー情報も出力
+	// Also output member information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedMember)
 	}
@@ -504,27 +504,27 @@ func (c *MembersLabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersUnlabelCmd はメンバーからラベルを削除するコマンドです
+// MembersUnlabelCmd is the command to remove label from メンバー
 type MembersUnlabelCmd struct {
 	ID    string `arg:"" help:"Member ID"`
 	Label string `arg:"" help:"Label name"`
 }
 
-// Run はmembersコマンドのunlabelサブコマンドを実行します
+// Run executes the unlabel subcommand of the members command
 func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のメンバーを取得
+	// Get existing member
 	existingMember, err := client.GetMember(c.ID)
 	if err != nil {
-		return fmt.Errorf("メンバーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get member: %w", err)
 	}
 
-	// 既存のラベルから指定されたラベルを削除
+	// Remove specified label from existing labels
 	var newLabels []ghostapi.Label
 	found := false
 	for _, label := range existingMember.Labels {
@@ -535,15 +535,15 @@ func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 	}
 
-	// ラベルが見つからなかった場合
+	// If label not found
 	if !found {
-		// 出力フォーマッターを作成
+		// Create output formatter
 		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fmt.Sprintf("メンバーはラベル '%s' を持っていません (ID: %s)", c.Label, c.ID))
+		formatter.PrintMessage(fmt.Sprintf("member does not have label '%s' does not have label (ID: %s)", c.Label, c.ID))
 		return nil
 	}
 
-	// メンバーを更新
+	// Update member
 	updateMember := &ghostapi.Member{
 		Email:  existingMember.Email,
 		Name:   existingMember.Name,
@@ -553,18 +553,18 @@ func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	updatedMember, err := client.UpdateMember(c.ID, updateMember)
 	if err != nil {
-		return fmt.Errorf("メンバーの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update member: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("メンバーからラベルを削除しました: %s (ID: %s, Label: %s)", updatedMember.Email, updatedMember.ID, c.Label))
+		formatter.PrintMessage(fmt.Sprintf("removed label from member: %s (ID: %s, Label: %s)", updatedMember.Email, updatedMember.ID, c.Label))
 	}
 
-	// JSON形式の場合はメンバー情報も出力
+	// Also output member information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedMember)
 	}
@@ -572,38 +572,38 @@ func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersRecentCmd は最近登録したメンバー一覧を取得するコマンドです
+// MembersRecentCmd is the command to retrieve recently registered メンバー list
 type MembersRecentCmd struct {
 	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 }
 
-// Run はmembersコマンドのrecentサブコマンドを実行します
+// Run executes the recent subcommand of the members command
 func (c *MembersRecentCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 最近登録したメンバー一覧を取得（created_atの降順でソート）
+	// Get recently registered member list (sorted by created_at DESC)
 	response, err := client.ListMembers(ghostapi.MemberListOptions{
 		Limit: c.Limit,
 		Page:  1,
 		Order: "created_at DESC",
 	})
 	if err != nil {
-		return fmt.Errorf("メンバー一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list members: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Members)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Email", "Name", "Status", "Created"}
 	rows := make([][]string, len(response.Members))
 	for i, member := range response.Members {

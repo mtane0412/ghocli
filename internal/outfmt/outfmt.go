@@ -1,8 +1,8 @@
 /**
  * outfmt.go
- * 出力フォーマット機能
+ * Output format functionality
  *
- * JSON、テーブル、プレーン（TSV）形式での出力をサポートします。
+ * Supports output in JSON, table, and plain (TSV) formats.
  */
 
 package outfmt
@@ -18,71 +18,71 @@ import (
 	"github.com/mattn/go-runewidth"
 )
 
-// Formatter は出力フォーマッターです
+// Formatter is the output formatter
 type Formatter struct {
 	writer    io.Writer
 	tabwriter *tabwriter.Writer
 	mode      string // "json", "table", "plain"
 }
 
-// Mode は出力フォーマットのモードを表す
+// Mode represents the output format mode
 type Mode struct {
-	// JSON はJSON形式で出力するかどうか
+	// JSON determines whether to output in JSON format
 	JSON bool
-	// Plain はプレーン形式（TSV）で出力するかどうか
+	// Plain determines whether to output in plain format (TSV)
 	Plain bool
 }
 
-// contextのキー型
+// context key type
 type contextKey int
 
 const (
 	modeKey contextKey = iota
 )
 
-// WithMode はcontextに出力モードを設定する
+// WithMode sets the output mode in the context
 func WithMode(ctx context.Context, mode Mode) context.Context {
 	return context.WithValue(ctx, modeKey, mode)
 }
 
-// getMode はcontextから出力モードを取得する
+// getMode retrieves the output mode from the context
 func getMode(ctx context.Context) Mode {
 	if mode, ok := ctx.Value(modeKey).(Mode); ok {
 		return mode
 	}
-	// デフォルトはテーブルモード
+	// Default is table mode
 	return Mode{JSON: false, Plain: false}
 }
 
-// IsJSON はJSON形式で出力するかどうかを返す
+// IsJSON returns whether to output in JSON format
 func IsJSON(ctx context.Context) bool {
 	return getMode(ctx).JSON
 }
 
-// IsPlain はプレーン形式（TSV）で出力するかどうかを返す
+// IsPlain returns whether to output in plain format (TSV)
 func IsPlain(ctx context.Context) bool {
 	return getMode(ctx).Plain
 }
 
-// tableWriter はテーブルモードの場合はtabwriterでラップし、それ以外はそのまま返す
+// tableWriter wraps with tabwriter in table mode, returns as is otherwise
 func tableWriter(ctx context.Context, w io.Writer) io.Writer {
 	mode := getMode(ctx)
-	// JSON または Plain モードの場合はそのまま返す
+	// Return as is for JSON or Plain mode
 	if mode.JSON || mode.Plain {
 		return w
 	}
-	// テーブルモードの場合はtabwriterでラップ
+	// Wrap with tabwriter for table mode
 	return tabwriter.NewWriter(w, 0, 4, 2, ' ', 0)
 }
 
-// NewFormatter は新しい出力フォーマッターを作成します。
+// NewFormatter creates a new output formatter.
 func NewFormatter(writer io.Writer, mode string) *Formatter {
 	f := &Formatter{
 		writer: writer,
 		mode:   mode,
 	}
 
-	// テーブル形式の場合はtabwriterでラップ
+	// Wrap with tabwriter for table format
 	if mode == "table" {
 		f.tabwriter = tabwriter.NewWriter(writer, 0, 4, 2, ' ', 0)
 	}
@@ -90,8 +90,8 @@ func NewFormatter(writer io.Writer, mode string) *Formatter {
 	return f
 }
 
-// Flush はバッファされた出力をフラッシュします。
-// テーブル形式の場合にtabwriterをフラッシュする必要があります。
+// Flush flushes buffered output.
+// Necessary to flush tabwriter for table format.
 func (f *Formatter) Flush() error {
 	if f.tabwriter != nil {
 		return f.tabwriter.Flush()
@@ -99,7 +99,7 @@ func (f *Formatter) Flush() error {
 	return nil
 }
 
-// getWriter は出力先のwriterを取得します。
+// getWriter returns the destination writer.
 func (f *Formatter) getWriter() io.Writer {
 	if f.tabwriter != nil {
 		return f.tabwriter
@@ -107,8 +107,8 @@ func (f *Formatter) getWriter() io.Writer {
 	return f.writer
 }
 
-// Print は任意のデータを出力します。
-// JSON形式の場合はJSONとして出力します。
+// Print outputs arbitrary data.
+// Outputs as JSON for JSON format.
 func (f *Formatter) Print(data interface{}) error {
 	if f.mode == "json" {
 		encoder := json.NewEncoder(f.writer)
@@ -116,34 +116,34 @@ func (f *Formatter) Print(data interface{}) error {
 		return encoder.Encode(data)
 	}
 
-	// デフォルトは標準出力
+	// Default is standard output
 	_, err := fmt.Fprintln(f.writer, data)
 	return err
 }
 
-// PrintTable はテーブル形式でデータを出力します。
+// PrintTable outputs data in table format.
 func (f *Formatter) PrintTable(headers []string, rows [][]string) error {
 	switch f.mode {
 	case "plain":
-		// TSV形式で出力
+		// Output in TSV format
 		return f.printTSV(headers, rows)
 	case "json":
-		// JSON配列として出力
+		// Output as JSON array
 		return f.printJSONTable(headers, rows)
 	default:
-		// テーブル形式で出力
+		// Output in table format
 		return f.printTableFormat(headers, rows)
 	}
 }
 
-// printTSV はTSV形式（タブ区切り）で出力します。
+// printTSV outputs in TSV format (tab-separated).
 func (f *Formatter) printTSV(headers []string, rows [][]string) error {
-	// ヘッダー行を出力
+	// Output header row
 	if _, err := fmt.Fprintln(f.writer, strings.Join(headers, "\t")); err != nil {
 		return err
 	}
 
-	// データ行を出力
+	// Output data rows
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(f.writer, strings.Join(row, "\t")); err != nil {
 			return err
@@ -153,9 +153,9 @@ func (f *Formatter) printTSV(headers []string, rows [][]string) error {
 	return nil
 }
 
-// printJSONTable はJSON配列形式で出力します。
+// printJSONTable outputs in JSON array format.
 func (f *Formatter) printJSONTable(headers []string, rows [][]string) error {
-	// 各行をマップに変換
+	// Convert each row to a map
 	var data []map[string]string
 	for _, row := range rows {
 		item := make(map[string]string)
@@ -172,9 +172,9 @@ func (f *Formatter) printJSONTable(headers []string, rows [][]string) error {
 	return encoder.Encode(data)
 }
 
-// printTableFormat はテーブル形式で出力します（人間向け）。
+// printTableFormat outputs in table format (human-readable).
 func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
-	// 各列の最大表示幅を計算（全角文字も考慮）
+	// Calculate maximum display width for each column (considering full-width characters)
 	colWidths := make([]int, len(headers))
 	for i, header := range headers {
 		colWidths[i] = runewidth.StringWidth(header)
@@ -190,12 +190,12 @@ func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
 		}
 	}
 
-	// ヘッダー行を出力
+	// Output header row
 	for i, header := range headers {
 		if i > 0 {
 			fmt.Fprint(f.writer, "  ")
 		}
-		// 表示幅に基づいてパディングを追加
+		// Add padding based on display width
 		fmt.Fprint(f.writer, header)
 		padding := colWidths[i] - runewidth.StringWidth(header)
 		if padding > 0 {
@@ -204,14 +204,14 @@ func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
 	}
 	fmt.Fprintln(f.writer)
 
-	// データ行を出力
+	// Output data rows
 	for _, row := range rows {
 		for i, cell := range row {
 			if i > 0 {
 				fmt.Fprint(f.writer, "  ")
 			}
 			if i < len(colWidths) {
-				// 表示幅に基づいてパディングを追加
+				// Add padding based on display width
 				fmt.Fprint(f.writer, cell)
 				padding := colWidths[i] - runewidth.StringWidth(cell)
 				if padding > 0 {
@@ -227,21 +227,21 @@ func (f *Formatter) printTableFormat(headers []string, rows [][]string) error {
 	return nil
 }
 
-// PrintMessage はメッセージを出力します。
+// PrintMessage outputs a message.
 func (f *Formatter) PrintMessage(message string) {
 	fmt.Fprintln(f.writer, message)
 }
 
-// PrintError はエラーメッセージを出力します。
+// PrintError outputs an error message.
 func (f *Formatter) PrintError(message string) {
 	fmt.Fprintln(f.writer, "Error:", message)
 }
 
-// PrintKeyValue はキー/値のペアをヘッダーなしで出力します。
-// 単一アイテム情報の表示に使用します。
+// PrintKeyValue outputs key/value pairs without headers.
+// Used for displaying single item information.
 func (f *Formatter) PrintKeyValue(rows [][]string) error {
 	if f.mode == "json" {
-		// キー/値のマップとして出力
+		// Output as key/value map
 		data := make(map[string]string)
 		for _, row := range rows {
 			if len(row) >= 2 {
@@ -253,8 +253,8 @@ func (f *Formatter) PrintKeyValue(rows [][]string) error {
 		return encoder.Encode(data)
 	}
 
-	// Plain/テーブル形式共通：タブ区切りで出力
-	// テーブル形式の場合はtabwriterで自動的に整列される
+	// Common for Plain/table format: output tab-separated
+	// Automatically aligned by tabwriter in table format
 	w := f.getWriter()
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(w, strings.Join(row, "\t")); err != nil {

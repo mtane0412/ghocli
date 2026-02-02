@@ -18,32 +18,32 @@ import (
 	"github.com/mtane0412/gho/internal/secrets"
 )
 
-// SiteCmd はサイト情報を取得するコマンドです
+// SiteCmd is the command to retrieve site information
 type SiteCmd struct{}
 
-// Run はsiteコマンドを実行します
+// Run executes the site command
 func (c *SiteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// サイト情報を取得
+	// Get site information
 	site, err := client.GetSite()
 	if err != nil {
-		return fmt.Errorf("サイト情報の取得に失敗: %w", err)
+		return fmt.Errorf("failed to get site information: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(site)
 	}
 
-	// キー/値形式で出力（ヘッダーなし）
+	// Output in key/value format (no headers)
 	rows := [][]string{
 		{"title", site.Title},
 		{"description", site.Description},

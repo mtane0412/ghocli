@@ -2,7 +2,7 @@
  * tags.go
  * Tags API
  *
- * Ghost Admin APIのTags機能を提供します。
+ * Provides Tags functionality for the Ghost Admin API.
  */
 
 package ghostapi
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// Tag はGhostのタグを表します
+// Tag represents a Ghost tag
 type Tag struct {
 	ID          string    `json:"id,omitempty"`
 	Name        string    `json:"name"`
@@ -26,15 +26,15 @@ type Tag struct {
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
-// TagListOptions はタグ一覧取得のオプションです
+// TagListOptions represents options for fetching tag list
 type TagListOptions struct {
-	Limit   int    // 取得件数（デフォルト: 15）
-	Page    int    // ページ番号（デフォルト: 1）
-	Include string // 含める追加情報（count.posts など）
-	Filter  string // フィルター条件
+	Limit   int    // Number of items to fetch (default: 15)
+	Page    int    // Page number (default: 1)
+	Include string // Additional information to include (count.posts, etc.)
+	Filter  string // Filter condition
 }
 
-// TagListResponse はタグ一覧のレスポンスです
+// TagListResponse represents a tag list response
 type TagListResponse struct {
 	Tags []Tag `json:"tags"`
 	Meta struct {
@@ -47,16 +47,16 @@ type TagListResponse struct {
 	} `json:"meta"`
 }
 
-// TagResponse はタグ単体のレスポンスです
+// TagResponse represents a single tag response
 type TagResponse struct {
 	Tags []Tag `json:"tags"`
 }
 
-// ListTags はタグ一覧を取得します
+// ListTags retrieves a list of tags
 func (c *Client) ListTags(opts TagListOptions) (*TagListResponse, error) {
 	path := "/ghost/api/admin/tags/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Limit > 0 {
 		params = append(params, fmt.Sprintf("limit=%d", opts.Limit))
@@ -75,27 +75,27 @@ func (c *Client) ListTags(opts TagListOptions) (*TagListResponse, error) {
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TagListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// GetTag は指定されたIDまたはスラッグのタグを取得します
-// idOrSlugが "slug:" で始まる場合はスラッグとして扱います
+// GetTag retrieves a tag by ID or slug
+// If idOrSlug starts with "slug:", it will be treated as a slug
 func (c *Client) GetTag(idOrSlug string) (*Tag, error) {
 	var path string
 
-	// スラッグかIDかを判定
+	// Determine if it's a slug or ID
 	if strings.HasPrefix(idOrSlug, "slug:") {
 		slug := strings.TrimPrefix(idOrSlug, "slug:")
 		path = fmt.Sprintf("/ghost/api/admin/tags/slug/%s/", slug)
@@ -103,96 +103,96 @@ func (c *Client) GetTag(idOrSlug string) (*Tag, error) {
 		path = fmt.Sprintf("/ghost/api/admin/tags/%s/", idOrSlug)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TagResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Tags) == 0 {
-		return nil, fmt.Errorf("タグが見つかりません: %s", idOrSlug)
+		return nil, fmt.Errorf("tag not found: %s", idOrSlug)
 	}
 
 	return &resp.Tags[0], nil
 }
 
-// CreateTag は新しいタグを作成します
+// CreateTag creates a new tag
 func (c *Client) CreateTag(tag *Tag) (*Tag, error) {
 	path := "/ghost/api/admin/tags/"
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"tags": []Tag{*tag},
 	}
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの生成に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("POST", path, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TagResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Tags) == 0 {
-		return nil, fmt.Errorf("タグの作成に失敗しました")
+		return nil, fmt.Errorf("failed to create tag")
 	}
 
 	return &resp.Tags[0], nil
 }
 
-// UpdateTag は既存のタグを更新します
+// UpdateTag updates an existing tag
 func (c *Client) UpdateTag(id string, tag *Tag) (*Tag, error) {
 	path := fmt.Sprintf("/ghost/api/admin/tags/%s/", id)
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"tags": []Tag{*tag},
 	}
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの生成に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TagResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Tags) == 0 {
-		return nil, fmt.Errorf("タグの更新に失敗しました")
+		return nil, fmt.Errorf("failed to update tag")
 	}
 
 	return &resp.Tags[0], nil
 }
 
-// DeleteTag はタグを削除します
+// DeleteTag deletes a tag
 func (c *Client) DeleteTag(id string) error {
 	path := fmt.Sprintf("/ghost/api/admin/tags/%s/", id)
 
-	// リクエストを実行
+	// Execute request
 	_, err := c.doRequest("DELETE", path, nil)
 	if err != nil {
 		return err

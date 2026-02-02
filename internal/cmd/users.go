@@ -25,7 +25,7 @@ type UsersCmd struct {
 	Update UsersUpdateCmd `cmd:"" help:"Update a user"`
 }
 
-// UsersListCmd はユーザー一覧を取得するコマンドです
+// UsersListCmd is the command to retrieve ユーザー list
 type UsersListCmd struct {
 	Limit   int    `help:"Number of users to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
@@ -33,25 +33,25 @@ type UsersListCmd struct {
 	Filter  string `help:"Filter query" aliases:"where,w"`
 }
 
-// Run はusersコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the users command
 func (c *UsersListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.UserFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ユーザー一覧を取得
+	// Get user list
 	response, err := client.ListUsers(ghostapi.UserListOptions{
 		Limit:   c.Limit,
 		Page:    c.Page,
@@ -59,34 +59,34 @@ func (c *UsersListCmd) Run(ctx context.Context, root *RootFlags) error {
 		Filter:  c.Filter,
 	})
 	if err != nil {
-		return fmt.Errorf("ユーザー一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list users: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// User構造体をmap[string]interface{}に変換
+		// Convert User struct to map[string]interface{}
 		var usersData []map[string]interface{}
 		for _, user := range response.Users {
 			userMap, err := outfmt.StructToMap(user)
 			if err != nil {
-				return fmt.Errorf("ユーザーデータの変換に失敗: %w", err)
+				return fmt.Errorf("failed to convert user data: %w", err)
 			}
 			usersData = append(usersData, userMap)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, usersData, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Users)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Name", "Slug", "Email", "Created"}
 	rows := make([][]string, len(response.Users))
 	for i, user := range response.Users {
@@ -102,56 +102,56 @@ func (c *UsersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// UsersInfoCmd はユーザー情報を表示するコマンドです
+// UsersInfoCmd is the command to show ユーザー information
 type UsersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"User ID or slug (use 'slug:user-slug' format for slug)"`
 }
 
-// Run はusersコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the users command
 func (c *UsersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.UserFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ユーザーを取得
+	// Get user
 	user, err := client.GetUser(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ユーザーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get user: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// User構造体をmap[string]interface{}に変換
+		// Convert User struct to map[string]interface{}
 		userMap, err := outfmt.StructToMap(user)
 		if err != nil {
-			return fmt.Errorf("ユーザーデータの変換に失敗: %w", err)
+			return fmt.Errorf("failed to convert user data: %w", err)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, []map[string]interface{}{userMap}, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(user)
 	}
 
-	// キー/値形式で出力（ヘッダーなし）
+	// Output in key/value format (no headers)
 	rows := [][]string{
 		{"id", user.ID},
 		{"name", user.Name},
@@ -166,7 +166,7 @@ func (c *UsersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 		{"updated", user.UpdatedAt.Format("2006-01-02 15:04:05")},
 	}
 
-	// ロール情報を追加
+	// Add role information
 	if len(user.Roles) > 0 {
 		roleNames := ""
 		for i, role := range user.Roles {
@@ -185,7 +185,7 @@ func (c *UsersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// UsersUpdateCmd はユーザーを更新するコマンドです
+// UsersUpdateCmd is the command to update ユーザー
 type UsersUpdateCmd struct {
 	ID       string `arg:"" help:"User ID"`
 	Name     string `help:"User name" short:"n"`
@@ -195,21 +195,21 @@ type UsersUpdateCmd struct {
 	Website  string `help:"User website" short:"w"`
 }
 
-// Run はusersコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the users command
 func (c *UsersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のユーザーを取得
+	// Get existing user
 	existingUser, err := client.GetUser(c.ID)
 	if err != nil {
-		return fmt.Errorf("ユーザーの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get user: %w", err)
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updateUser := &ghostapi.User{
 		Name:     existingUser.Name,
 		Slug:     existingUser.Slug,
@@ -235,21 +235,21 @@ func (c *UsersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updateUser.Website = c.Website
 	}
 
-	// ユーザーを更新
+	// Update user
 	updatedUser, err := client.UpdateUser(c.ID, updateUser)
 	if err != nil {
-		return fmt.Errorf("ユーザーの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update user: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ユーザーを更新しました: %s (ID: %s)", updatedUser.Name, updatedUser.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated user: %s (ID: %s)", updatedUser.Name, updatedUser.ID))
 	}
 
-	// JSON形式の場合はユーザー情報も出力
+	// Also output user information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedUser)
 	}

@@ -25,40 +25,40 @@ type NewslettersCmd struct {
 	Update NewslettersUpdateCmd `cmd:"" help:"Update a newsletter"`
 }
 
-// NewslettersListCmd はニュースレター一覧を取得するコマンドです
+// NewslettersListCmd is the command to retrieve ニュースレター list
 type NewslettersListCmd struct {
 	Limit  int    `help:"Number of newsletters to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
 	Filter string `help:"Filter condition (e.g., status:active)" aliases:"where,w"`
 }
 
-// Run はnewslettersコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the newsletters command
 func (c *NewslettersListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ニュースレター一覧を取得
+	// Get newsletter list
 	response, err := client.ListNewsletters(ghostapi.NewsletterListOptions{
 		Limit:  c.Limit,
 		Page:   c.Page,
 		Filter: c.Filter,
 	})
 	if err != nil {
-		return fmt.Errorf("ニュースレター一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list newsletters: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Newsletters)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Name", "Slug", "Status", "Visibility", "Created"}
 	rows := make([][]string, len(response.Newsletters))
 	for i, newsletter := range response.Newsletters {
@@ -75,34 +75,34 @@ func (c *NewslettersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// NewslettersInfoCmd はニュースレター情報を表示するコマンドです
+// NewslettersInfoCmd is the command to show ニュースレター information
 type NewslettersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Newsletter ID or slug (use 'slug:newsletter-name' format for slug)"`
 }
 
-// Run はnewslettersコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the newsletters command
 func (c *NewslettersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ニュースレターを取得
+	// Get newsletter
 	newsletter, err := client.GetNewsletter(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ニュースレターの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get newsletter: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(newsletter)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"Field", "Value"}
 	rows := [][]string{
 		{"ID", newsletter.ID},
@@ -123,7 +123,7 @@ func (c *NewslettersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// NewslettersCreateCmd はニュースレターを作成するコマンドです
+// NewslettersCreateCmd is the command to create ニュースレター
 type NewslettersCreateCmd struct {
 	Name              string `help:"Newsletter name" short:"n" required:""`
 	Description       string `help:"Newsletter description" short:"d"`
@@ -133,21 +133,21 @@ type NewslettersCreateCmd struct {
 	SenderEmail       string `help:"Sender email"`
 }
 
-// Run はnewslettersコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the newsletters command
 func (c *NewslettersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("create newsletter '%s'", c.Name)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 新規ニュースレターを作成
+	// Create new newsletter
 	newNewsletter := &ghostapi.Newsletter{
 		Name:              c.Name,
 		Description:       c.Description,
@@ -159,18 +159,18 @@ func (c *NewslettersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdNewsletter, err := client.CreateNewsletter(newNewsletter)
 	if err != nil {
-		return fmt.Errorf("ニュースレターの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create newsletter: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ニュースレターを作成しました: %s (ID: %s)", createdNewsletter.Name, createdNewsletter.ID))
+		formatter.PrintMessage(fmt.Sprintf("created newsletter: %s (ID: %s)", createdNewsletter.Name, createdNewsletter.ID))
 	}
 
-	// JSON形式の場合はニュースレター情報も出力
+	// Also output newsletter information if JSON format
 	if root.JSON {
 		return formatter.Print(createdNewsletter)
 	}
@@ -178,7 +178,7 @@ func (c *NewslettersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// NewslettersUpdateCmd はニュースレターを更新するコマンドです
+// NewslettersUpdateCmd is the command to update ニュースレター
 type NewslettersUpdateCmd struct {
 	ID                string `arg:"" help:"Newsletter ID"`
 	Name              string `help:"Newsletter name" short:"n"`
@@ -189,27 +189,27 @@ type NewslettersUpdateCmd struct {
 	SenderEmail       string `help:"Sender email"`
 }
 
-// Run はnewslettersコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the newsletters command
 func (c *NewslettersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のニュースレターを取得
+	// Get existing newsletter
 	existingNewsletter, err := client.GetNewsletter(c.ID)
 	if err != nil {
-		return fmt.Errorf("ニュースレターの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get newsletter: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("update newsletter '%s' (ID: %s)", existingNewsletter.Name, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updateNewsletter := &ghostapi.Newsletter{
 		Name:              existingNewsletter.Name,
 		Slug:              existingNewsletter.Slug,
@@ -240,21 +240,21 @@ func (c *NewslettersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updateNewsletter.SenderEmail = c.SenderEmail
 	}
 
-	// ニュースレターを更新
+	// Update newsletter
 	updatedNewsletter, err := client.UpdateNewsletter(c.ID, updateNewsletter)
 	if err != nil {
-		return fmt.Errorf("ニュースレターの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update newsletter: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ニュースレターを更新しました: %s (ID: %s)", updatedNewsletter.Name, updatedNewsletter.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated newsletter: %s (ID: %s)", updatedNewsletter.Name, updatedNewsletter.ID))
 	}
 
-	// JSON形式の場合はニュースレター情報も出力
+	// Also output newsletter information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedNewsletter)
 	}

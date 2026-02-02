@@ -2,7 +2,7 @@
  * posts.go
  * Posts API
  *
- * Ghost Admin APIのPosts機能を提供します。
+ * Provides Posts functionality for the Ghost Admin API.
  */
 
 package ghostapi
@@ -15,9 +15,9 @@ import (
 	"time"
 )
 
-// Post はGhostの投稿を表します
+// Post represents a Ghost post
 type Post struct {
-	// 基本情報
+	// Basic information
 	ID     string `json:"id,omitempty"`
 	UUID   string `json:"uuid,omitempty"`
 	Title  string `json:"title"`
@@ -25,13 +25,13 @@ type Post struct {
 	Status string `json:"status"` // draft, published, scheduled
 	URL    string `json:"url,omitempty"`
 
-	// コンテンツ
+	// Content
 	HTML          string `json:"html,omitempty"`
 	Lexical       string `json:"lexical,omitempty"`
 	Excerpt       string `json:"excerpt,omitempty"`
 	CustomExcerpt string `json:"custom_excerpt,omitempty"`
 
-	// 画像
+	// Images
 	FeatureImage        string `json:"feature_image,omitempty"`
 	FeatureImageAlt     string `json:"feature_image_alt,omitempty"`
 	FeatureImageCaption string `json:"feature_image_caption,omitempty"`
@@ -47,46 +47,46 @@ type Post struct {
 	TwitterDescription string `json:"twitter_description,omitempty"`
 	CanonicalURL       string `json:"canonical_url,omitempty"`
 
-	// 日時
+	// Timestamps
 	CreatedAt   time.Time  `json:"created_at,omitempty"`
 	UpdatedAt   time.Time  `json:"updated_at,omitempty"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`
 
-	// 制御
+	// Control
 	Visibility string `json:"visibility,omitempty"` // public, members, paid
 	Featured   bool   `json:"featured,omitempty"`
 	EmailOnly  bool   `json:"email_only,omitempty"`
 
-	// カスタム
+	// Custom
 	CodeinjectionHead string `json:"codeinjection_head,omitempty"`
 	CodeinjectionFoot string `json:"codeinjection_foot,omitempty"`
 	CustomTemplate    string `json:"custom_template,omitempty"`
 
-	// 関連
+	// Related
 	Tags          []Tag    `json:"tags,omitempty"`
 	Authors       []Author `json:"authors,omitempty"`
 	PrimaryAuthor *Author  `json:"primary_author,omitempty"`
 	PrimaryTag    *Tag     `json:"primary_tag,omitempty"`
 
-	// その他
+	// Other
 	CommentID   string `json:"comment_id,omitempty"`
 	ReadingTime int    `json:"reading_time,omitempty"`
 
-	// メール・ニュースレター
+	// Email/Newsletter
 	EmailSegment           string `json:"email_segment,omitempty"`
 	NewsletterID           string `json:"newsletter_id,omitempty"`
 	SendEmailWhenPublished bool   `json:"send_email_when_published,omitempty"`
 }
 
-// ListOptions は投稿一覧取得のオプションです
+// ListOptions represents options for fetching post list
 type ListOptions struct {
 	Status  string // draft, published, scheduled, all
-	Limit   int    // 取得件数（デフォルト: 15）
-	Page    int    // ページ番号（デフォルト: 1）
-	Include string // 含める追加情報（tags, authors など）
+	Limit   int    // Number of items to fetch (default: 15)
+	Page    int    // Page number (default: 1)
+	Include string // Additional information to include (tags, authors, etc.)
 }
 
-// PostListResponse は投稿一覧のレスポンスです
+// PostListResponse represents a post list response
 type PostListResponse struct {
 	Posts []Post `json:"posts"`
 	Meta  struct {
@@ -99,11 +99,11 @@ type PostListResponse struct {
 	} `json:"meta"`
 }
 
-// ListPosts は投稿一覧を取得します
+// ListPosts retrieves a list of posts
 func (c *Client) ListPosts(opts ListOptions) (*PostListResponse, error) {
 	path := "/ghost/api/admin/posts/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Status != "" && opts.Status != "all" {
 		params = append(params, fmt.Sprintf("filter=status:%s", opts.Status))
@@ -122,127 +122,127 @@ func (c *Client) ListPosts(opts ListOptions) (*PostListResponse, error) {
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var response PostListResponse
 	if err := json.Unmarshal(respBody, &response); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &response, nil
 }
 
-// GetPost は投稿を取得します（IDまたはスラッグで指定）
+// GetPost retrieves a post (by ID or slug)
 func (c *Client) GetPost(idOrSlug string) (*Post, error) {
-	// スラッグかどうかを判定（IDは通常24文字の16進数）
+	// Determine if it's a slug (IDs are typically 24-character hex strings)
 	var path string
 	if len(idOrSlug) == 24 {
-		// IDとして扱う（formats=html,lexicalでHTML/Lexical両方を取得）
+		// Treat as ID (fetch both HTML and Lexical with formats=html,lexical)
 		path = fmt.Sprintf("/ghost/api/admin/posts/%s/?formats=html,lexical", idOrSlug)
 	} else {
-		// スラッグとして扱う（formats=html,lexicalでHTML/Lexical両方を取得）
+		// Treat as slug (fetch both HTML and Lexical with formats=html,lexical)
 		path = fmt.Sprintf("/ghost/api/admin/posts/slug/%s/?formats=html,lexical", idOrSlug)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var response struct {
 		Posts []Post `json:"posts"`
 	}
 	if err := json.Unmarshal(respBody, &response); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(response.Posts) == 0 {
-		return nil, fmt.Errorf("投稿が見つかりません: %s", idOrSlug)
+		return nil, fmt.Errorf("post not found: %s", idOrSlug)
 	}
 
 	return &response.Posts[0], nil
 }
 
-// CreatePost は新しい投稿を作成します
+// CreatePost creates a new post
 func (c *Client) CreatePost(post *Post) (*Post, error) {
 	path := "/ghost/api/admin/posts/"
 
-	// リクエストボディを作成
+	// Create request body
 	reqBody := map[string]interface{}{
 		"posts": []interface{}{post},
 	}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの作成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("POST", path, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var response struct {
 		Posts []Post `json:"posts"`
 	}
 	if err := json.Unmarshal(respBody, &response); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(response.Posts) == 0 {
-		return nil, fmt.Errorf("投稿の作成に失敗しました")
+		return nil, fmt.Errorf("failed to create post")
 	}
 
 	return &response.Posts[0], nil
 }
 
-// UpdatePost は投稿を更新します
+// UpdatePost updates a post
 func (c *Client) UpdatePost(id string, post *Post) (*Post, error) {
 	path := fmt.Sprintf("/ghost/api/admin/posts/%s/", id)
 
-	// リクエストボディを作成
+	// Create request body
 	reqBody := map[string]interface{}{
 		"posts": []interface{}{post},
 	}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの作成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var response struct {
 		Posts []Post `json:"posts"`
 	}
 	if err := json.Unmarshal(respBody, &response); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(response.Posts) == 0 {
-		return nil, fmt.Errorf("投稿の更新に失敗しました")
+		return nil, fmt.Errorf("failed to update post")
 	}
 
 	return &response.Posts[0], nil
 }
 
-// DeletePost は投稿を削除します
+// DeletePost deletes a post
 func (c *Client) DeletePost(id string) error {
 	path := fmt.Sprintf("/ghost/api/admin/posts/%s/", id)
 
-	// リクエストを実行
+	// Execute request
 	_, err := c.doRequest("DELETE", path, nil)
 	return err
 }

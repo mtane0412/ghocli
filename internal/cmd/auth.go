@@ -1,8 +1,8 @@
 /**
  * auth.go
- * 認証管理コマンド
+ * Authentication management commands
  *
- * Ghost Admin APIキーの追加、一覧表示、削除、状態確認を行います。
+ * Performs addition, listing, removal, and status checking of Ghost Admin API keys.
  */
 
 package cmd
@@ -22,7 +22,7 @@ import (
 	"github.com/mtane0412/gho/internal/secrets"
 )
 
-// AuthCmd は認証管理コマンドのルートです
+// AuthCmd is the root command for authentication management
 type AuthCmd struct {
 	Add         AuthAddCmd         `cmd:"" help:"Add a new site authentication"`
 	List        AuthListCmd        `cmd:"" help:"List authenticated sites"`
@@ -32,42 +32,42 @@ type AuthCmd struct {
 	Credentials AuthCredentialsCmd `cmd:"" help:"Add authentication from credentials file"`
 }
 
-// AuthAddCmd はサイト認証を追加するコマンドです
+// AuthAddCmd is the command to add site authentication
 type AuthAddCmd struct {
 	SiteURL string `arg:"" help:"Ghost site URL (e.g., https://myblog.ghost.io)"`
 	Alias   string `help:"Alias for this site" short:"a"`
 }
 
-// Run はauth addコマンドを実行します
+// Run executes the auth add command
 func (c *AuthAddCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// APIキーを入力してもらう
+	// Prompt for API key input
 	fmt.Print("Enter Admin API Key (id:secret): ")
 	reader := bufio.NewReader(os.Stdin)
 	apiKey, err := reader.ReadString('\n')
 	if err != nil {
-		return fmt.Errorf("APIキーの読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to read API key: %w", err)
 	}
 	apiKey = strings.TrimSpace(apiKey)
 
-	// APIキーをパース
+	// Parse API key
 	keyID, secret, err := secrets.ParseAdminAPIKey(apiKey)
 	if err != nil {
 		return err
 	}
 
-	// APIキーを検証（サイト情報を取得してみる）
+	// Validate API key (by fetching site info)
 	client, err := ghostapi.NewClient(c.SiteURL, keyID, secret)
 	if err != nil {
 		return err
@@ -75,68 +75,68 @@ func (c *AuthAddCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	site, err := client.GetSite()
 	if err != nil {
-		return fmt.Errorf("APIキーの検証に失敗: %w", err)
+		return fmt.Errorf("failed to validate API key: %w", err)
 	}
 
-	// エイリアスを決定
+	// Determine alias
 	alias := c.Alias
 	if alias == "" {
-		// URLからエイリアスを生成（例: https://myblog.ghost.io -> myblog）
+		// Generate alias from URL (e.g., https://myblog.ghost.io -> myblog)
 		alias = extractAliasFromURL(c.SiteURL)
 	}
 
-	// キーリングに保存
+	// Save to keyring
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
-		return fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return fmt.Errorf("failed to open keyring: %w", err)
 	}
 
 	if err := store.Set(alias, apiKey); err != nil {
 		return err
 	}
 
-	// 設定にサイトを追加
+	// Add site to configuration
 	cfg.AddSite(alias, c.SiteURL)
 	if cfg.DefaultSite == "" {
 		cfg.DefaultSite = alias
 	}
 
-	// 設定を保存
+	// Save configuration
 	if err := cfg.Save(configPath); err != nil {
-		return fmt.Errorf("設定の保存に失敗: %w", err)
+		return fmt.Errorf("failed to save config: %w", err)
 	}
 
 	fmt.Printf("✓ Added site '%s' (%s)\n", alias, site.Title)
 	return nil
 }
 
-// AuthListCmd は認証済みサイトを一覧表示するコマンドです
+// AuthListCmd is the command to list authenticated sites
 type AuthListCmd struct{}
 
-// Run はauth listコマンドを実行します
+// Run executes the auth list command
 func (c *AuthListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// サイト一覧を取得
+	// Get site list
 	if len(cfg.Sites) == 0 {
 		fmt.Println("No sites configured")
 		return nil
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"Alias", "URL", "Default"}
 	var rows [][]string
 	for alias, url := range cfg.Sites {
@@ -150,31 +150,31 @@ func (c *AuthListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// AuthRemoveCmd はサイト認証を削除するコマンドです
+// AuthRemoveCmd is the command to remove site authentication
 type AuthRemoveCmd struct {
 	Alias string `arg:"" help:"Site alias to remove"`
 }
 
-// Run はauth removeコマンドを実行します
+// Run executes the auth remove command
 func (c *AuthRemoveCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// サイトが存在するか確認
+	// Check if site exists
 	if _, ok := cfg.Sites[c.Alias]; !ok {
-		return fmt.Errorf("サイトエイリアス '%s' が見つかりません", c.Alias)
+		return fmt.Errorf("site alias '%s' not found", c.Alias)
 	}
 
-	// 確認（--forceフラグがない場合）
+	// Confirm (if --force flag is not set)
 	if !root.Force {
 		fmt.Printf("Remove site '%s'? (y/N): ", c.Alias)
 		reader := bufio.NewReader(os.Stdin)
@@ -189,46 +189,46 @@ func (c *AuthRemoveCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 	}
 
-	// キーリングから削除
+	// Remove from keyring
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
-		return fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return fmt.Errorf("failed to open keyring: %w", err)
 	}
 
 	if err := store.Delete(c.Alias); err != nil {
 		return err
 	}
 
-	// 設定から削除
+	// Remove from configuration
 	delete(cfg.Sites, c.Alias)
 	if cfg.DefaultSite == c.Alias {
 		cfg.DefaultSite = ""
 	}
 
-	// 設定を保存
+	// Save configuration
 	if err := cfg.Save(configPath); err != nil {
-		return fmt.Errorf("設定の保存に失敗: %w", err)
+		return fmt.Errorf("failed to save config: %w", err)
 	}
 
 	fmt.Printf("✓ Removed site '%s'\n", c.Alias)
 	return nil
 }
 
-// AuthStatusCmd は認証状態を確認するコマンドです
+// AuthStatusCmd is the command to check authentication status
 type AuthStatusCmd struct{}
 
-// Run はauth statusコマンドを実行します
+// Run executes the auth status command
 func (c *AuthStatusCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	if len(cfg.Sites) == 0 {
@@ -244,7 +244,7 @@ func (c *AuthStatusCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// getConfigPath は設定ファイルのパスを返します
+// getConfigPath returns the path to the configuration file
 func getConfigPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -253,13 +253,13 @@ func getConfigPath() (string, error) {
 	return filepath.Join(homeDir, ".config", "gho", "config.json"), nil
 }
 
-// getKeyringDir はキーリングディレクトリのパスを返します
+// getKeyringDir returns the path to the keyring directory
 func getKeyringDir() string {
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, ".config", "gho", "keyring")
 }
 
-// extractAliasFromURL はURLからエイリアスを抽出します
+// extractAliasFromURL extracts an alias from a URL
 func extractAliasFromURL(url string) string {
 	// https://myblog.ghost.io -> myblog
 	url = strings.TrimPrefix(url, "https://")
@@ -271,39 +271,39 @@ func extractAliasFromURL(url string) string {
 	return "site"
 }
 
-// AuthTokensCmd はAPIトークン管理のルートコマンドです
+// AuthTokensCmd is the root command for API token management
 type AuthTokensCmd struct {
 	List   AuthTokensListCmd   `cmd:"" help:"List API tokens"`
 	Delete AuthTokensDeleteCmd `cmd:"" help:"Delete API token"`
 }
 
-// AuthTokensListCmd はAPIトークン一覧を表示するコマンドです
+// AuthTokensListCmd is the command to list API tokens
 type AuthTokensListCmd struct{}
 
-// Run はauth tokens listコマンドを実行します
+// Run executes the auth tokens list command
 func (c *AuthTokensListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// キーリングストアを開く
+	// Open keyring store
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
-		return fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return fmt.Errorf("failed to open keyring: %w", err)
 	}
 
-	// 保存済みのキー一覧を取得
+	// Get list of saved keys
 	aliases, err := store.List()
 	if err != nil {
-		return fmt.Errorf("キー一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list keys: %w", err)
 	}
 
 	if len(aliases) == 0 {
@@ -311,10 +311,10 @@ func (c *AuthTokensListCmd) Run(ctx context.Context, root *RootFlags) error {
 		return nil
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合
+	// For JSON format
 	if root.JSON {
 		type tokenInfo struct {
 			Alias string `json:"alias"`
@@ -340,7 +340,7 @@ func (c *AuthTokensListCmd) Run(ctx context.Context, root *RootFlags) error {
 		return formatter.Print(tokens)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"Alias", "Key ID"}
 	var rows [][]string
 
@@ -359,32 +359,32 @@ func (c *AuthTokensListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// AuthTokensDeleteCmd はAPIトークンを削除するコマンドです
+// AuthTokensDeleteCmd is the command to delete API tokens
 type AuthTokensDeleteCmd struct {
 	Alias string `arg:"" help:"Site alias to delete token for"`
 }
 
-// Run はauth tokens deleteコマンドを実行します
+// Run executes the auth tokens delete command
 func (c *AuthTokensDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// キーリングストアを開く
+	// Open keyring store
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
-		return fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return fmt.Errorf("failed to open keyring: %w", err)
 	}
 
-	// キーリングから削除
+	// Remove from keyring
 	if err := store.Delete(c.Alias); err != nil {
 		return err
 	}
@@ -393,14 +393,14 @@ func (c *AuthTokensDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// AuthCredentialsCmd は認証情報ファイルから設定を追加するコマンドです
+// AuthCredentialsCmd is the command to add configuration from a credentials file
 type AuthCredentialsCmd struct {
 	File string `arg:"" help:"Credentials file path (JSON format)"`
 }
 
-// Run はauth credentialsコマンドを実行します
+// Run executes the auth credentials command
 func (c *AuthCredentialsCmd) Run(ctx context.Context, root *RootFlags) error {
-	// 認証情報ファイルを読み込む
+	// Load credentials file
 	type credentialsFile struct {
 		SiteURL string `json:"site_url"`
 		Alias   string `json:"alias"`
@@ -409,35 +409,35 @@ func (c *AuthCredentialsCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	data, err := os.ReadFile(c.File)
 	if err != nil {
-		return fmt.Errorf("認証情報ファイルの読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to read credentials file: %w", err)
 	}
 
 	var creds credentialsFile
 	if err := json.Unmarshal(data, &creds); err != nil {
-		return fmt.Errorf("認証情報ファイルのパースに失敗: %w", err)
+		return fmt.Errorf("failed to parse credentials file: %w", err)
 	}
 
-	// 必須フィールドのチェック
+	// Check required fields
 	if creds.SiteURL == "" {
-		return fmt.Errorf("site_url が指定されていません")
+		return fmt.Errorf("site_url is not specified")
 	}
 	if creds.APIKey == "" {
-		return fmt.Errorf("api_key が指定されていません")
+		return fmt.Errorf("api_key is not specified")
 	}
 
-	// エイリアスがない場合はURLから生成
+	// Generate alias from URL if not provided
 	alias := creds.Alias
 	if alias == "" {
 		alias = extractAliasFromURL(creds.SiteURL)
 	}
 
-	// APIキーをパース
+	// Parse API key
 	keyID, secret, err := secrets.ParseAdminAPIKey(creds.APIKey)
 	if err != nil {
 		return err
 	}
 
-	// APIキーを検証（サイト情報を取得してみる）
+	// Validate API key (by fetching site info)
 	client, err := ghostapi.NewClient(creds.SiteURL, keyID, secret)
 	if err != nil {
 		return err
@@ -445,40 +445,40 @@ func (c *AuthCredentialsCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	site, err := client.GetSite()
 	if err != nil {
-		return fmt.Errorf("APIキーの検証に失敗: %w", err)
+		return fmt.Errorf("failed to validate API key: %w", err)
 	}
 
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	// 設定を読み込む
+	// Load configuration
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// キーリングに保存
+	// Save to keyring
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
-		return fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return fmt.Errorf("failed to open keyring: %w", err)
 	}
 
 	if err := store.Set(alias, creds.APIKey); err != nil {
 		return err
 	}
 
-	// 設定にサイトを追加
+	// Add site to configuration
 	cfg.AddSite(alias, creds.SiteURL)
 	if cfg.DefaultSite == "" {
 		cfg.DefaultSite = alias
 	}
 
-	// 設定を保存
+	// Save configuration
 	if err := cfg.Save(configPath); err != nil {
-		return fmt.Errorf("設定の保存に失敗: %w", err)
+		return fmt.Errorf("failed to save config: %w", err)
 	}
 
 	fmt.Printf("✓ Added site '%s' (%s)\n", alias, site.Title)

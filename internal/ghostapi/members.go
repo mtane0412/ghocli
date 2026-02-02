@@ -2,7 +2,7 @@
  * members.go
  * Members API
  *
- * Ghost Admin APIのMembers機能を提供します。
+ * Provides Members functionality for the Ghost Admin API.
  */
 
 package ghostapi
@@ -15,11 +15,11 @@ import (
 	"time"
 )
 
-// Member はGhostのメンバー（購読者）を表します
+// Member represents a Ghost member (subscriber)
 type Member struct {
 	ID        string    `json:"id,omitempty"`
 	UUID      string    `json:"uuid,omitempty"`
-	Email     string    `json:"email"`              // 必須フィールド
+	Email     string    `json:"email"`              // Required field
 	Name      string    `json:"name,omitempty"`
 	Note      string    `json:"note,omitempty"`
 	Status    string    `json:"status,omitempty"`   // free, paid, comped
@@ -28,22 +28,22 @@ type Member struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-// Label はメンバーに付与されるラベルを表します
+// Label represents a label assigned to a member
 type Label struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name"`
 	Slug string `json:"slug,omitempty"`
 }
 
-// MemberListOptions はメンバー一覧取得のオプションです
+// MemberListOptions represents options for fetching member list
 type MemberListOptions struct {
-	Limit  int    // 取得件数（デフォルト: 15）
-	Page   int    // ページ番号（デフォルト: 1）
-	Filter string // フィルター条件
-	Order  string // ソート順
+	Limit  int    // Number of items to fetch (default: 15)
+	Page   int    // Page number (default: 1)
+	Filter string // Filter condition
+	Order  string // Sort order
 }
 
-// MemberListResponse はメンバー一覧のレスポンスです
+// MemberListResponse represents a member list response
 type MemberListResponse struct {
 	Members []Member `json:"members"`
 	Meta    struct {
@@ -56,16 +56,16 @@ type MemberListResponse struct {
 	} `json:"meta"`
 }
 
-// MemberResponse はメンバー単体のレスポンスです
+// MemberResponse represents a single member response
 type MemberResponse struct {
 	Members []Member `json:"members"`
 }
 
-// ListMembers はメンバー一覧を取得します
+// ListMembers retrieves a list of members
 func (c *Client) ListMembers(opts MemberListOptions) (*MemberListResponse, error) {
 	path := "/ghost/api/admin/members/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Limit > 0 {
 		params = append(params, fmt.Sprintf("limit=%d", opts.Limit))
@@ -84,115 +84,115 @@ func (c *Client) ListMembers(opts MemberListOptions) (*MemberListResponse, error
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp MemberListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// GetMember は指定されたIDのメンバーを取得します
+// GetMember retrieves a member by ID
 func (c *Client) GetMember(id string) (*Member, error) {
 	path := fmt.Sprintf("/ghost/api/admin/members/%s/", id)
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp MemberResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Members) == 0 {
-		return nil, fmt.Errorf("メンバーが見つかりません: %s", id)
+		return nil, fmt.Errorf("member not found: %s", id)
 	}
 
 	return &resp.Members[0], nil
 }
 
-// CreateMember は新しいメンバーを作成します
+// CreateMember creates a new member
 func (c *Client) CreateMember(member *Member) (*Member, error) {
 	path := "/ghost/api/admin/members/"
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"members": []Member{*member},
 	}
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの生成に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("POST", path, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp MemberResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Members) == 0 {
-		return nil, fmt.Errorf("メンバーの作成に失敗しました")
+		return nil, fmt.Errorf("failed to create member")
 	}
 
 	return &resp.Members[0], nil
 }
 
-// UpdateMember は既存のメンバーを更新します
+// UpdateMember updates an existing member
 func (c *Client) UpdateMember(id string, member *Member) (*Member, error) {
 	path := fmt.Sprintf("/ghost/api/admin/members/%s/", id)
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"members": []Member{*member},
 	}
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの生成に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp MemberResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Members) == 0 {
-		return nil, fmt.Errorf("メンバーの更新に失敗しました")
+		return nil, fmt.Errorf("failed to update member")
 	}
 
 	return &resp.Members[0], nil
 }
 
-// DeleteMember はメンバーを削除します
+// DeleteMember deletes a member
 func (c *Client) DeleteMember(id string) error {
 	path := fmt.Sprintf("/ghost/api/admin/members/%s/", id)
 
-	// リクエストを実行
+	// Execute request
 	_, err := c.doRequest("DELETE", path, nil)
 	if err != nil {
 		return err

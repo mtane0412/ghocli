@@ -1,8 +1,8 @@
 /**
  * fields.go
- * フィールド定義基盤
+ * Field definition infrastructure
  *
- * フィールドセットの定義、パース、バリデーション機能を提供します。
+ * Provides field set definition, parsing, and validation functionality.
  */
 
 package fields
@@ -12,44 +12,44 @@ import (
 	"strings"
 )
 
-// FieldSet はリソースのフィールドセットを表します
+// FieldSet represents a resource field set
 type FieldSet struct {
-	// Default はlist用のデフォルトフィールド
+	// Default is the default fields for list operations
 	Default []string
-	// Detail はget用のデフォルトフィールド
+	// Detail is the default fields for get operations
 	Detail []string
-	// All は全フィールド
+	// All is all available fields
 	All []string
 }
 
-// Parse はカンマ区切りのフィールド指定文字列をパースします
+// Parse parses a comma-separated field specification string
 //
-// 入力例:
+// Input examples:
 //   - "id,title,status" -> []string{"id", "title", "status"}
 //   - "all" -> fieldSet.All
-//   - "" -> nil（デフォルトフィールドを使用することを示す）
+//   - "" -> nil (indicates to use default fields)
 func Parse(input string, fieldSet FieldSet) ([]string, error) {
-	// 空文字列の場合はnilを返す（デフォルトフィールドを使用）
+	// Return nil for empty string (use default fields)
 	if input == "" {
 		return nil, nil
 	}
 
-	// "all"の場合は全フィールドを返す
+	// Return all fields for "all"
 	if input == "all" {
 		result := make([]string, len(fieldSet.All))
 		copy(result, fieldSet.All)
 		return result, nil
 	}
 
-	// カンマ区切りでパース
+	// Parse comma-separated values
 	fields := strings.Split(input, ",")
 
-	// 各フィールドをトリム
+	// Trim each field
 	for i, field := range fields {
 		fields[i] = strings.TrimSpace(field)
 	}
 
-	// バリデーション
+	// Validate
 	if err := Validate(fields, fieldSet.All); err != nil {
 		return nil, err
 	}
@@ -57,15 +57,15 @@ func Parse(input string, fieldSet FieldSet) ([]string, error) {
 	return fields, nil
 }
 
-// Validate は指定されたフィールドが利用可能かどうかを検証します
+// Validate verifies whether the specified fields are available
 func Validate(fields []string, available []string) error {
-	// 利用可能なフィールドをマップに変換
+	// Convert available fields to map
 	availableMap := make(map[string]bool)
 	for _, field := range available {
 		availableMap[field] = true
 	}
 
-	// 各フィールドが利用可能かチェック
+	// Check if each field is available
 	for _, field := range fields {
 		if !availableMap[field] {
 			return fmt.Errorf("unknown field '%s'. Available fields: %s", field, strings.Join(available, ", "))
@@ -75,7 +75,7 @@ func Validate(fields []string, available []string) error {
 	return nil
 }
 
-// ListAvailable は利用可能なフィールド一覧を文字列として返します
+// ListAvailable returns a list of available fields as a string
 func ListAvailable(fieldSet FieldSet) string {
 	return "Specify fields with --fields. Available fields: " + strings.Join(fieldSet.All, ", ")
 }

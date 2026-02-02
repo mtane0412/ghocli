@@ -1,9 +1,9 @@
 /**
  * client.go
- * Ghost Admin APIのHTTPクライアント
+ * HTTP client for Ghost Admin API
  *
- * Ghost Admin APIへのHTTPリクエストを管理します。
- * 各リクエストにはJWTトークンを含むAuthorizationヘッダーが付与されます。
+ * Manages HTTP requests to the Ghost Admin API.
+ * Each request includes an Authorization header containing a JWT token.
  */
 
 package ghostapi
@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-// Client はGhost Admin APIクライアントです
+// Client is the Ghost Admin API client
 type Client struct {
 	baseURL    string
 	keyID      string
@@ -28,7 +28,7 @@ type Client struct {
 	httpClient *http.Client
 }
 
-// Site はGhostサイトの情報を表します
+// Site represents Ghost site information
 type Site struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -36,7 +36,7 @@ type Site struct {
 	Version     string `json:"version"`
 }
 
-// ErrorResponse はGhost APIのエラーレスポンスを表します
+// ErrorResponse represents a Ghost API error response
 type ErrorResponse struct {
 	Errors []struct {
 		Message string `json:"message"`
@@ -44,19 +44,19 @@ type ErrorResponse struct {
 	} `json:"errors"`
 }
 
-// NewClient は新しいGhost Admin APIクライアントを作成します。
+// NewClient creates a new Ghost Admin API client.
 func NewClient(baseURL, keyID, secret string) (*Client, error) {
 	if baseURL == "" {
-		return nil, errors.New("サイトURLが空です")
+		return nil, errors.New("site URL is empty")
 	}
 	if keyID == "" {
-		return nil, errors.New("キーIDが空です")
+		return nil, errors.New("key ID is empty")
 	}
 	if secret == "" {
-		return nil, errors.New("シークレットが空です")
+		return nil, errors.New("secret is empty")
 	}
 
-	// URLの末尾のスラッシュを削除
+	// Remove trailing slash from URL
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	return &Client{
@@ -69,142 +69,142 @@ func NewClient(baseURL, keyID, secret string) (*Client, error) {
 	}, nil
 }
 
-// doRequest はHTTPリクエストを実行し、レスポンスボディを返します。
+// doRequest executes an HTTP request and returns the response body.
 func (c *Client) doRequest(method, path string, body io.Reader) ([]byte, error) {
-	// JWTトークンを生成
+	// Generate JWT token
 	token, err := GenerateJWT(c.keyID, c.secret)
 	if err != nil {
-		return nil, fmt.Errorf("JWTの生成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to generate JWT: %w", err)
 	}
 
-	// リクエストURLを構築
+	// Build request URL
 	url := c.baseURL + path
 
-	// HTTPリクエストを作成
+	// Create HTTP request
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストの作成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// ヘッダーを設定
+	// Set headers
 	req.Header.Set("Authorization", "Ghost "+token)
 	req.Header.Set("Accept", "application/json")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	// リクエストを実行
+	// Execute request
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストの実行に失敗: %w", err)
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// レスポンスボディを読み込む
+	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("レスポンスボディの読み込みに失敗: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// ステータスコードをチェック
+	// Check status code
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		// エラーレスポンスをパース
+		// Parse error response
 		var errResp ErrorResponse
 		if err := json.Unmarshal(respBody, &errResp); err == nil && len(errResp.Errors) > 0 {
-			return nil, fmt.Errorf("APIエラー: %s", errResp.Errors[0].Message)
+			return nil, fmt.Errorf("API error: %s", errResp.Errors[0].Message)
 		}
-		return nil, fmt.Errorf("HTTPエラー: %d", resp.StatusCode)
+		return nil, fmt.Errorf("HTTP error: %d", resp.StatusCode)
 	}
 
 	return respBody, nil
 }
 
-// doMultipartRequest はmultipart/form-dataのHTTPリクエストを実行し、レスポンスボディを返します。
+// doMultipartRequest executes an HTTP request with multipart/form-data and returns the response body.
 func (c *Client) doMultipartRequest(path string, file io.Reader, filename string, fields map[string]string) ([]byte, error) {
-	// JWTトークンを生成
+	// Generate JWT token
 	token, err := GenerateJWT(c.keyID, c.secret)
 	if err != nil {
-		return nil, fmt.Errorf("JWTの生成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to generate JWT: %w", err)
 	}
 
-	// マルチパートフォームを構築
+	// Build multipart form
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	// ファイルフィールドを追加
+	// Add file field
 	part, err := writer.CreateFormFile("file", filename)
 	if err != nil {
-		return nil, fmt.Errorf("ファイルフィールドの作成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to create file field: %w", err)
 	}
 	if _, err := io.Copy(part, file); err != nil {
-		return nil, fmt.Errorf("ファイルのコピーに失敗: %w", err)
+		return nil, fmt.Errorf("failed to copy file: %w", err)
 	}
 
-	// 追加フィールドを追加
+	// Add additional fields
 	for key, val := range fields {
 		if err := writer.WriteField(key, val); err != nil {
-			return nil, fmt.Errorf("フィールド %s の追加に失敗: %w", key, err)
+			return nil, fmt.Errorf("failed to add field %s: %w", key, err)
 		}
 	}
 
-	// マルチパートライターを閉じる
+	// Close multipart writer
 	if err := writer.Close(); err != nil {
-		return nil, fmt.Errorf("マルチパートライターのクローズに失敗: %w", err)
+		return nil, fmt.Errorf("failed to close multipart writer: %w", err)
 	}
 
-	// リクエストURLを構築
+	// Build request URL
 	url := c.baseURL + path
 
-	// HTTPリクエストを作成
+	// Create HTTP request
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストの作成に失敗: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// ヘッダーを設定
+	// Set headers
 	req.Header.Set("Authorization", "Ghost "+token)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// リクエストを実行
+	// Execute request
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストの実行に失敗: %w", err)
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// レスポンスボディを読み込む
+	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("レスポンスボディの読み込みに失敗: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// ステータスコードをチェック
+	// Check status code
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		// エラーレスポンスをパース
+		// Parse error response
 		var errResp ErrorResponse
 		if err := json.Unmarshal(respBody, &errResp); err == nil && len(errResp.Errors) > 0 {
-			return nil, fmt.Errorf("APIエラー: %s", errResp.Errors[0].Message)
+			return nil, fmt.Errorf("API error: %s", errResp.Errors[0].Message)
 		}
-		return nil, fmt.Errorf("HTTPエラー: %d", resp.StatusCode)
+		return nil, fmt.Errorf("HTTP error: %d", resp.StatusCode)
 	}
 
 	return respBody, nil
 }
 
-// GetSite はサイト情報を取得します。
+// GetSite retrieves site information.
 func (c *Client) GetSite() (*Site, error) {
 	respBody, err := c.doRequest("GET", "/ghost/api/admin/site/", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var response struct {
 		Site Site `json:"site"`
 	}
 	if err := json.Unmarshal(respBody, &response); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &response.Site, nil

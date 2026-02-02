@@ -50,66 +50,66 @@ type PagesCmd struct {
 	Copy PagesCopyCmd `cmd:"" help:"ページをコピー"`
 }
 
-// PagesListCmd はページ一覧を取得するコマンドです
+// PagesListCmd is the command to retrieve ページ list
 type PagesListCmd struct {
 	Status string `help:"Filter by status (draft, published, scheduled, all)" short:"S" default:"all"`
 	Limit  int    `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpagesコマンドのlistサブコマンドを実行します
+// Run executes the list subcommand of the pages command
 func (c *PagesListCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.PageFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ページ一覧を取得
+	// Get page list
 	response, err := client.ListPages(ghostapi.ListOptions{
 		Status: c.Status,
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("ページ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("failed to list pages: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Page構造体をmap[string]interface{}に変換
+		// Convert Page struct to map[string]interface{}
 		var pagesData []map[string]interface{}
 		for _, page := range response.Pages {
 			pageMap, err := outfmt.StructToMap(page)
 			if err != nil {
-				return fmt.Errorf("ページデータの変換に失敗: %w", err)
+				return fmt.Errorf("failed to convert page data: %w", err)
 			}
 			pagesData = append(pagesData, pageMap)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, pagesData, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Pages)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Published"}
 	rows := make([][]string, len(response.Pages))
 	for i, page := range response.Pages {
@@ -129,56 +129,56 @@ func (c *PagesListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesInfoCmd はページ情報を表示するコマンドです
+// PagesInfoCmd is the command to show ページ information
 type PagesInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 }
 
-// Run はpagesコマンドのinfoサブコマンドを実行します
+// Run executes the info subcommand of the pages command
 func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
-	// フィールド指定をパース
+	// Parse field specification
 	var selectedFields []string
 	if root.Fields != "" {
 		parsedFields, err := fields.Parse(root.Fields, fields.PageFields)
 		if err != nil {
-			return fmt.Errorf("フィールド指定のパースに失敗: %w", err)
+			return fmt.Errorf("failed to parse field specification: %w", err)
 		}
 		selectedFields = parsedFields
 	}
 
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ページを取得
+	// Get page
 	page, err := client.GetPage(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フィールド指定がある場合はフィルタリングして出力
+	// Filter and output if fields are specified
 	if len(selectedFields) > 0 {
-		// Page構造体をmap[string]interface{}に変換
+		// Convert Page struct to map[string]interface{}
 		pageMap, err := outfmt.StructToMap(page)
 		if err != nil {
-			return fmt.Errorf("ページデータの変換に失敗: %w", err)
+			return fmt.Errorf("failed to convert page data: %w", err)
 		}
 
-		// フィールドフィルタリングして出力
+		// Filter fields and output
 		return outfmt.FilterFields(formatter, []map[string]interface{}{pageMap}, selectedFields)
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(page)
 	}
 
-	// キー/値形式で出力（ヘッダーなし）
+	// Output in key/value format (no headers)
 	rows := [][]string{
 		{"id", page.ID},
 		{"title", page.Title},
@@ -231,7 +231,7 @@ func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// PagesCreateCmd はページを作成するコマンドです
+// PagesCreateCmd is the command to create ページ
 type PagesCreateCmd struct {
 	Title   string `help:"Page title" short:"t" required:""`
 	HTML    string `help:"Page content (HTML)" short:"c"`
@@ -239,15 +239,15 @@ type PagesCreateCmd struct {
 	Status  string `help:"Page status (draft, published)" default:"draft"`
 }
 
-// Run はpagesコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the pages command
 func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 新規ページを作成
+	// Create new page
 	newPage := &ghostapi.Page{
 		Title:   c.Title,
 		HTML:    c.HTML,
@@ -257,18 +257,18 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	createdPage, err := client.CreatePage(newPage)
 	if err != nil {
-		return fmt.Errorf("ページの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ページを作成しました: %s (ID: %s)", createdPage.Title, createdPage.ID))
+		formatter.PrintMessage(fmt.Sprintf("created page: %s (ID: %s)", createdPage.Title, createdPage.ID))
 	}
 
-	// JSON形式の場合はページ情報も出力
+	// Also output page information if JSON format
 	if root.JSON {
 		return formatter.Print(createdPage)
 	}
@@ -276,7 +276,7 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PagesUpdateCmd はページを更新するコマンドです
+// PagesUpdateCmd is the command to update ページ
 type PagesUpdateCmd struct {
 	ID      string `arg:"" help:"Page ID"`
 	Title   string `help:"Page title" short:"t"`
@@ -285,28 +285,28 @@ type PagesUpdateCmd struct {
 	Status  string `help:"Page status (draft, published)"`
 }
 
-// Run はpagesコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the pages command
 func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のページを取得
+	// Get existing page
 	existingPage, err := client.GetPage(c.ID)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// 更新内容を反映
+	// Apply updates
 	updatePage := &ghostapi.Page{
 		Title:     existingPage.Title,
 		Slug:      existingPage.Slug,
 		HTML:      existingPage.HTML,
 		Lexical:   existingPage.Lexical,
 		Status:    existingPage.Status,
-		UpdatedAt: existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt: existingPage.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
 	if c.Title != "" {
@@ -322,21 +322,21 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updatePage.Status = c.Status
 	}
 
-	// ページを更新
+	// Update page
 	updatedPage, err := client.UpdatePage(c.ID, updatePage)
 	if err != nil {
-		return fmt.Errorf("ページの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ページを更新しました: %s (ID: %s)", updatedPage.Title, updatedPage.ID))
+		formatter.PrintMessage(fmt.Sprintf("updated page: %s (ID: %s)", updatedPage.Title, updatedPage.ID))
 	}
 
-	// JSON形式の場合はページ情報も出力
+	// Also output page information if JSON format
 	if root.JSON {
 		return formatter.Print(updatedPage)
 	}
@@ -344,41 +344,41 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PagesDeleteCmd はページを削除するコマンドです
+// PagesDeleteCmd is the command to delete ページ
 type PagesDeleteCmd struct {
 	ID string `arg:"" help:"Page ID"`
 }
 
-// Run はpagesコマンドのdeleteサブコマンドを実行します
+// Run executes the delete subcommand of the pages command
 func (c *PagesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ページ情報を取得して確認メッセージを構築
+	// Get page information to build confirmation message
 	page, err := client.GetPage(c.ID)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete page '%s' (ID: %s)", page.Title, c.ID)
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// ページを削除
+	// Delete page
 	if err := client.DeletePage(c.ID); err != nil {
-		return fmt.Errorf("ページの削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
-	formatter.PrintMessage(fmt.Sprintf("ページを削除しました (ID: %s)", c.ID))
+	// Show success message
+	formatter.PrintMessage(fmt.Sprintf("deleted page (ID: %s)", c.ID))
 
 	return nil
 }
@@ -387,41 +387,41 @@ func (c *PagesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 1: URL取得
 // ========================================
 
-// PagesURLCmd はページのWeb URLを取得するコマンドです
+// PagesURLCmd is the command to get ページ web URL
 type PagesURLCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 	Open     bool   `help:"Open URL in browser" short:"o"`
 }
 
-// Run はpagesコマンドのurlサブコマンドを実行します
+// Run executes the url subcommand of the pages command
 func (c *PagesURLCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ページを取得
+	// Get page
 	page, err := client.GetPage(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// URLを取得
+	// Get URL
 	url := page.URL
 	if url == "" {
-		return fmt.Errorf("ページのURLが取得できませんでした")
+		return fmt.Errorf("could not get page URL")
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// URLを出力
+	// Output URL
 	formatter.PrintMessage(url)
 
-	// --openフラグが指定されている場合はブラウザで開く
+	// Open in browser if --open flag is specified
 	if c.Open {
-		// OSに応じたコマンドでブラウザを開く
+		// Open browser with OS-appropriate command
 		var cmd string
 		switch {
 		case fileExists("/usr/bin/open"): // macOS
@@ -433,7 +433,7 @@ func (c *PagesURLCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 
 		if err := runCommand(cmd, url); err != nil {
-			return fmt.Errorf("ブラウザでURLを開くことに失敗: %w", err)
+			return fmt.Errorf("failed to open URL in browser: %w", err)
 		}
 	}
 
@@ -444,55 +444,55 @@ func (c *PagesURLCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 2: 状態変更
 // ========================================
 
-// PagesPublishCmd はページを公開するコマンドです
+// PagesPublishCmd is the command to publish ページ
 type PagesPublishCmd struct {
 	ID string `arg:"" help:"Page ID"`
 }
 
-// Run はpagesコマンドのpublishサブコマンドを実行します
+// Run executes the publish subcommand of the pages command
 func (c *PagesPublishCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のページを取得
+	// Get existing page
 	existingPage, err := client.GetPage(c.ID)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// すでに公開済みの場合はエラー
+	// Error if already published
 	if existingPage.Status == "published" {
-		return fmt.Errorf("このページはすでに公開されています")
+		return fmt.Errorf("page is already published")
 	}
 
-	// ステータスをpublishedに変更
+	// Change status to published
 	updatePage := &ghostapi.Page{
 		Title:     existingPage.Title,
 		Slug:      existingPage.Slug,
 		HTML:      existingPage.HTML,
 		Lexical:   existingPage.Lexical,
 		Status:    "published",
-		UpdatedAt: existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt: existingPage.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
-	// ページを更新
+	// Update page
 	publishedPage, err := client.UpdatePage(c.ID, updatePage)
 	if err != nil {
-		return fmt.Errorf("ページの公開に失敗: %w", err)
+		return fmt.Errorf("failed to publish page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ページを公開しました: %s (ID: %s)", publishedPage.Title, publishedPage.ID))
+		formatter.PrintMessage(fmt.Sprintf("published page: %s (ID: %s)", publishedPage.Title, publishedPage.ID))
 	}
 
-	// JSON形式の場合はページ情報も出力
+	// Also output page information if JSON format
 	if root.JSON {
 		return formatter.Print(publishedPage)
 	}
@@ -500,55 +500,55 @@ func (c *PagesPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PagesUnpublishCmd はページを下書きに戻すコマンドです
+// PagesUnpublishCmd is the command to unpublish ページ
 type PagesUnpublishCmd struct {
 	ID string `arg:"" help:"Page ID"`
 }
 
-// Run はpagesコマンドのunpublishサブコマンドを実行します
+// Run executes the unpublish subcommand of the pages command
 func (c *PagesUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のページを取得
+	// Get existing page
 	existingPage, err := client.GetPage(c.ID)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// すでに下書きの場合はエラー
+	// Error if already a draft
 	if existingPage.Status == "draft" {
-		return fmt.Errorf("このページはすでに下書きです")
+		return fmt.Errorf("page is already a draft")
 	}
 
-	// ステータスをdraftに変更
+	// Change status to draft
 	updatePage := &ghostapi.Page{
 		Title:     existingPage.Title,
 		Slug:      existingPage.Slug,
 		HTML:      existingPage.HTML,
 		Lexical:   existingPage.Lexical,
 		Status:    "draft",
-		UpdatedAt: existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt: existingPage.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
-	// ページを更新
+	// Update page
 	unpublishedPage, err := client.UpdatePage(c.ID, updatePage)
 	if err != nil {
-		return fmt.Errorf("ページの非公開化に失敗: %w", err)
+		return fmt.Errorf("failed to unpublish page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ページを下書きに戻しました: %s (ID: %s)", unpublishedPage.Title, unpublishedPage.ID))
+		formatter.PrintMessage(fmt.Sprintf("unpublished page: %s (ID: %s)", unpublishedPage.Title, unpublishedPage.ID))
 	}
 
-	// JSON形式の場合はページ情報も出力
+	// Also output page information if JSON format
 	if root.JSON {
 		return formatter.Print(unpublishedPage)
 	}
@@ -560,44 +560,44 @@ func (c *PagesUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 2: catコマンド
 // ========================================
 
-// PagesCatCmd はページの本文コンテンツを表示するコマンドです
+// PagesCatCmd is the command to show ページ content body
 type PagesCatCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 	Format   string `help:"Output format (text, html, lexical)" default:"text"`
 }
 
-// Run はpagesコマンドのcatサブコマンドを実行します
+// Run executes the cat subcommand of the pages command
 func (c *PagesCatCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ページを取得
+	// Get page
 	page, err := client.GetPage(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// フォーマットに応じて出力
+	// Output according to format
 	var content string
 	switch c.Format {
 	case "html":
 		content = page.HTML
 	case "text":
-		// HTMLからテキストへ変換
+		// Convert HTML to text
 		content = html2text.HTML2Text(page.HTML)
 	case "lexical":
 		content = page.Lexical
 	default:
-		return fmt.Errorf("未対応のフォーマット: %s (html, text, lexical のいずれかを指定してください)", c.Format)
+		return fmt.Errorf("unsupported format: %s (html, text, lexical のいずれかを指定してください)", c.Format)
 	}
 
-	// コンテンツを出力
+	// Output content
 	formatter.PrintMessage(content)
 
 	return nil
@@ -607,33 +607,33 @@ func (c *PagesCatCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 8.3: copyコマンド
 // ========================================
 
-// PagesCopyCmd はページをコピーするコマンドです
+// PagesCopyCmd is the command to copy ページ
 type PagesCopyCmd struct {
-	IDOrSlug string `arg:"" help:"コピー元のページID またはスラッグ"`
-	Title    string `help:"新しいタイトル（省略時は '元タイトル (Copy)'）" short:"t"`
+	IDOrSlug string `arg:"" help:"Source page ID or slug"`
+	Title    string `help:"New title (defaults to 'Original Title (Copy)')" short:"t"`
 }
 
-// Run はpagesコマンドのcopyサブコマンドを実行します
+// Run executes the copy subcommand of the pages command
 func (c *PagesCopyCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 元のページを取得
+	// Get original page
 	original, err := client.GetPage(c.IDOrSlug)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// 新しいタイトルを決定
+	// Determine new title
 	newTitle := c.Title
 	if newTitle == "" {
 		newTitle = original.Title + " (Copy)"
 	}
 
-	// 新しいページを作成（ID/UUID/Slug/URL/日時は除外、Statusはdraft固定）
+	// Create new page (exclude ID/UUID/Slug/URL/dates, Status fixed to draft)
 	newPage := &ghostapi.Page{
 		Title:   newTitle,
 		HTML:    original.HTML,
@@ -641,21 +641,21 @@ func (c *PagesCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 		Status:  "draft",
 	}
 
-	// ページを作成
+	// Create page
 	createdPage, err := client.CreatePage(newPage)
 	if err != nil {
-		return fmt.Errorf("ページのコピーに失敗: %w", err)
+		return fmt.Errorf("failed to copy page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ページをコピーしました: %s (ID: %s)", createdPage.Title, createdPage.ID))
+		formatter.PrintMessage(fmt.Sprintf("copied page: %s (ID: %s)", createdPage.Title, createdPage.ID))
 	}
 
-	// JSON形式の場合はページ情報も出力
+	// Also output page information if JSON format
 	if root.JSON {
 		return formatter.Print(createdPage)
 	}
@@ -667,39 +667,39 @@ func (c *PagesCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 1: ステータス別一覧ショートカット
 // ========================================
 
-// PagesDraftsCmd は下書きページ一覧を取得するコマンドです
+// PagesDraftsCmd is the command to retrieve draft ページ list
 type PagesDraftsCmd struct {
 	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpagesコマンドのdraftsサブコマンドを実行します
+// Run executes the drafts subcommand of the pages command
 func (c *PagesDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 下書きページ一覧を取得
+	// Get draft page list
 	response, err := client.ListPages(ghostapi.ListOptions{
 		Status: "draft",
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("下書きページ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("下書きfailed to list pages: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Pages)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Updated"}
 	rows := make([][]string, len(response.Pages))
 	for i, page := range response.Pages {
@@ -715,39 +715,39 @@ func (c *PagesDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesPublishedCmd は公開済みページ一覧を取得するコマンドです
+// PagesPublishedCmd is the command to retrieve published ページ list
 type PagesPublishedCmd struct {
 	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpagesコマンドのpublishedサブコマンドを実行します
+// Run executes the published subcommand of the pages command
 func (c *PagesPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 公開済みページ一覧を取得
+	// Get published page list
 	response, err := client.ListPages(ghostapi.ListOptions{
 		Status: "published",
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("公開済みページ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("公開済みfailed to list pages: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Pages)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Published"}
 	rows := make([][]string, len(response.Pages))
 	for i, page := range response.Pages {
@@ -767,39 +767,39 @@ func (c *PagesPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesScheduledCmd は予約ページ一覧を取得するコマンドです
+// PagesScheduledCmd is the command to retrieve scheduled ページ list
 type PagesScheduledCmd struct {
 	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
 }
 
-// Run はpagesコマンドのscheduledサブコマンドを実行します
+// Run executes the scheduled subcommand of the pages command
 func (c *PagesScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 予約ページ一覧を取得
+	// Get scheduled page list
 	response, err := client.ListPages(ghostapi.ListOptions{
 		Status: "scheduled",
 		Limit:  c.Limit,
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("予約ページ一覧の取得に失敗: %w", err)
+		return fmt.Errorf("予約failed to list pages: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(response.Pages)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created", "Scheduled"}
 	rows := make([][]string, len(response.Pages))
 	for i, page := range response.Pages {
@@ -823,33 +823,33 @@ func (c *PagesScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 3: 予約公開
 // ========================================
 
-// PagesScheduleCmd はページを予約公開に設定するコマンドです
+// PagesScheduleCmd is the command to schedule ページ for publishing
 type PagesScheduleCmd struct {
 	ID string `arg:"" help:"Page ID"`
 	At string `help:"Schedule time (YYYY-MM-DD HH:MM)" required:""`
 }
 
-// Run はpagesコマンドのscheduleサブコマンドを実行します
+// Run executes the schedule subcommand of the pages command
 func (c *PagesScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 既存のページを取得
+	// Get existing page
 	existingPage, err := client.GetPage(c.ID)
 	if err != nil {
-		return fmt.Errorf("ページの取得に失敗: %w", err)
+		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// 日時をパース
+	// Parse datetime
 	publishedAt, err := parseDateTime(c.At)
 	if err != nil {
-		return fmt.Errorf("日時のパースに失敗: %w", err)
+		return fmt.Errorf("failed to parse datetime: %w", err)
 	}
 
-	// ステータスをscheduledに変更し、公開日時を設定
+	// Change status to scheduled and set publish date
 	updatePage := &ghostapi.Page{
 		Title:       existingPage.Title,
 		Slug:        existingPage.Slug,
@@ -857,25 +857,25 @@ func (c *PagesScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
 		Lexical:     existingPage.Lexical,
 		Status:      "scheduled",
 		PublishedAt: &publishedAt,
-		UpdatedAt:   existingPage.UpdatedAt, // サーバーから取得した元のupdated_atを使用（楽観的ロックのため）
+		UpdatedAt:   existingPage.UpdatedAt, // Use original updated_at from server (for optimistic locking)
 	}
 
-	// ページを更新
+	// Update page
 	scheduledPage, err := client.UpdatePage(c.ID, updatePage)
 	if err != nil {
-		return fmt.Errorf("ページの予約公開設定に失敗: %w", err)
+		return fmt.Errorf("failed to schedule page: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("ページを予約公開に設定しました: %s (ID: %s, 公開予定: %s)",
+		formatter.PrintMessage(fmt.Sprintf("scheduled page: %s (ID: %s, scheduled for: %s)",
 			scheduledPage.Title, scheduledPage.ID, publishedAt.Format("2006-01-02 15:04")))
 	}
 
-	// JSON形式の場合はページ情報も出力
+	// Also output page information if JSON format
 	if root.JSON {
 		return formatter.Print(scheduledPage)
 	}
@@ -893,39 +893,39 @@ type PagesBatchCmd struct {
 	Delete  PagesBatchDeleteCmd  `cmd:"" help:"Batch delete pages"`
 }
 
-// PagesBatchPublishCmd は複数ページを一括公開するコマンドです
+// PagesBatchPublishCmd is the command to batch publish ページ
 type PagesBatchPublishCmd struct {
 	IDs []string `arg:"" help:"Page IDs to publish"`
 }
 
-// Run はpages batch publishサブコマンドを実行します
+// Run executes the pages batch publish subcommand
 func (c *PagesBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 各ページを公開
+	// Publish each page
 	successCount := 0
 	for _, id := range c.IDs {
-		// 既存のページを取得
+		// Get existing page
 		existingPage, err := client.GetPage(id)
 		if err != nil {
-			formatter.PrintMessage(fmt.Sprintf("ページの取得に失敗 (ID: %s): %v", id, err))
+			formatter.PrintMessage(fmt.Sprintf("failed to get page (ID: %s): %v", id, err))
 			continue
 		}
 
 		// すでに公開済みの場合はスキップ
 		if existingPage.Status == "published" {
-			formatter.PrintMessage(fmt.Sprintf("スキップ (すでに公開済み): %s (ID: %s)", existingPage.Title, id))
+			formatter.PrintMessage(fmt.Sprintf("skipped (already published): %s (ID: %s)", existingPage.Title, id))
 			continue
 		}
 
-		// ステータスをpublishedに変更
+		// Change status to published
 		updatePage := &ghostapi.Page{
 			Title:     existingPage.Title,
 			Slug:      existingPage.Slug,
@@ -935,58 +935,58 @@ func (c *PagesBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 			UpdatedAt: existingPage.UpdatedAt,
 		}
 
-		// ページを更新
+		// Update page
 		_, err = client.UpdatePage(id, updatePage)
 		if err != nil {
-			formatter.PrintMessage(fmt.Sprintf("ページの公開に失敗 (ID: %s): %v", id, err))
+			formatter.PrintMessage(fmt.Sprintf("failed to publish page (ID: %s): %v", id, err))
 			continue
 		}
 
-		formatter.PrintMessage(fmt.Sprintf("公開しました: %s (ID: %s)", existingPage.Title, id))
+		formatter.PrintMessage(fmt.Sprintf("published: %s (ID: %s)", existingPage.Title, id))
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\n完了: %d件のページを公開しました", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のpublished page", successCount))
 
 	return nil
 }
 
-// PagesBatchDeleteCmd は複数ページを一括削除するコマンドです
+// PagesBatchDeleteCmd is the command to batch delete ページ
 type PagesBatchDeleteCmd struct {
 	IDs []string `arg:"" help:"Page IDs to delete"`
 }
 
-// Run はpages batch deleteサブコマンドを実行します
+// Run executes the pages batch delete subcommand
 func (c *PagesBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 破壊的操作の確認
+	// Confirm destructive operation
 	action := fmt.Sprintf("delete %d pages", len(c.IDs))
 	if err := ConfirmDestructive(ctx, root, action); err != nil {
 		return err
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 各ページを削除
+	// Delete each page
 	successCount := 0
 	for _, id := range c.IDs {
-		// ページを削除
+		// Delete page
 		if err := client.DeletePage(id); err != nil {
-			formatter.PrintMessage(fmt.Sprintf("ページの削除に失敗 (ID: %s): %v", id, err))
+			formatter.PrintMessage(fmt.Sprintf("failed to delete page (ID: %s): %v", id, err))
 			continue
 		}
 
-		formatter.PrintMessage(fmt.Sprintf("削除しました (ID: %s)", id))
+		formatter.PrintMessage(fmt.Sprintf("deleted (ID: %s)", id))
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\n完了: %d件のページを削除しました", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のdeleted page", successCount))
 
 	return nil
 }
@@ -995,34 +995,34 @@ func (c *PagesBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 // Phase 4: ページ検索
 // ========================================
 
-// PagesSearchCmd はページを検索するコマンドです
+// PagesSearchCmd is the command to search ページ
 type PagesSearchCmd struct {
 	Query string `arg:"" help:"Search query"`
 	Limit int    `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 }
 
-// Run はpagesコマンドのsearchサブコマンドを実行します
+// Run executes the search subcommand of the pages command
 func (c *PagesSearchCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// ページ一覧を取得（検索クエリはfilterとして渡す）
+	// Get page list（検索クエリはfilterとして渡す）
 	response, err := client.ListPages(ghostapi.ListOptions{
 		Status: "all",
 		Limit:  c.Limit,
 		Page:   1,
 	})
 	if err != nil {
-		return fmt.Errorf("ページ検索に失敗: %w", err)
+		return fmt.Errorf("failed to search pages: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// クエリに一致するページをフィルタリング（簡易的な実装）
+	// Filter pages matching query (simple implementation)
 	var filteredPages []ghostapi.Page
 	for _, page := range response.Pages {
 		if containsIgnoreCase(page.Title, c.Query) || containsIgnoreCase(page.HTML, c.Query) {
@@ -1030,12 +1030,12 @@ func (c *PagesSearchCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 	}
 
-	// JSON形式の場合はそのまま出力
+	// Output as-is if JSON format
 	if root.JSON {
 		return formatter.Print(filteredPages)
 	}
 
-	// テーブル形式で出力
+	// Output in table format
 	headers := []string{"ID", "Title", "Status", "Created"}
 	rows := make([][]string, len(filteredPages))
 	for i, page := range filteredPages {

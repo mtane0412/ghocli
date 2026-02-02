@@ -1,9 +1,9 @@
 /**
  * config.go
- * ghoの設定ファイル管理
+ * Configuration file management for gho
  *
- * 設定ファイルは ~/.config/gho/config.json に保存され、
- * マルチサイト対応のためのエイリアス機能を提供します。
+ * The configuration file is saved at ~/.config/gho/config.json
+ * and provides alias functionality for multi-site support.
  */
 
 package config
@@ -15,22 +15,22 @@ import (
 	"strings"
 )
 
-// Config はghoの設定を表します
+// Config represents the gho configuration
 type Config struct {
-	// KeyringBackend はキーリングのバックエンド種別（auto/file/keychain等）
+	// KeyringBackend is the keyring backend type (auto/file/keychain, etc.)
 	KeyringBackend string `json:"keyring_backend"`
 
-	// DefaultSite はデフォルトのサイトエイリアス
+	// DefaultSite is the default site alias
 	DefaultSite string `json:"default_site,omitempty"`
 
-	// Sites はエイリアスからサイトURLへのマッピング
+	// Sites is a mapping from alias to site URL
 	Sites map[string]string `json:"sites"`
 }
 
-// Load は指定されたパスから設定ファイルを読み込みます。
-// ファイルが存在しない場合は、デフォルト値を持つ新しい設定を返します。
+// Load reads the configuration file from the specified path.
+// If the file does not exist, it returns a new configuration with default values.
 func Load(path string) (*Config, error) {
-	// ファイルが存在しない場合は、デフォルト設定を返す
+	// If file does not exist, return default config
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return &Config{
 			KeyringBackend: "auto",
@@ -39,19 +39,19 @@ func Load(path string) (*Config, error) {
 		}, nil
 	}
 
-	// ファイルを読み込む
+	// Read file
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	// JSONをパース
+	// Parse JSON
 	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}
 
-	// Sitesがnilの場合は初期化
+	// Initialize Sites if nil
 	if cfg.Sites == nil {
 		cfg.Sites = make(map[string]string)
 	}
@@ -59,25 +59,25 @@ func Load(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-// Save は設定を指定されたパスに保存します。
+// Save writes the configuration to the specified path.
 func (c *Config) Save(path string) error {
-	// ディレクトリが存在しない場合は作成
+	// Create directory if it doesn't exist
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
 
-	// JSONに変換（インデント付き）
+	// Convert to JSON (with indentation)
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	// ファイルに書き込む（0600 = 所有者のみ読み書き可能）
+	// Write to file (0600 = read/write for owner only)
 	return os.WriteFile(path, data, 0600)
 }
 
-// AddSite はサイトエイリアスとURLを設定に追加します。
+// AddSite adds a site alias and URL to the configuration.
 func (c *Config) AddSite(alias, url string) {
 	if c.Sites == nil {
 		c.Sites = make(map[string]string)
@@ -85,16 +85,16 @@ func (c *Config) AddSite(alias, url string) {
 	c.Sites[alias] = url
 }
 
-// GetSiteURL はエイリアスまたはURL文字列からサイトURLを取得します。
-// エイリアスとして登録されている場合は対応するURLを、
-// そうでない場合はURL文字列として扱い、そのまま返します。
+// GetSiteURL retrieves a site URL from an alias or URL string.
+// If registered as an alias, it returns the corresponding URL.
+// Otherwise, it treats it as a URL string and returns it as is.
 func (c *Config) GetSiteURL(aliasOrURL string) (string, bool) {
-	// エイリアスとして登録されているか確認
+	// Check if registered as an alias
 	if url, ok := c.Sites[aliasOrURL]; ok {
 		return url, true
 	}
 
-	// URL文字列として扱う（https://で始まる場合）
+	// Treat as URL string (if it starts with https://)
 	if strings.HasPrefix(aliasOrURL, "https://") || strings.HasPrefix(aliasOrURL, "http://") {
 		return aliasOrURL, true
 	}

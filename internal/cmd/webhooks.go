@@ -24,22 +24,22 @@ type WebhooksCmd struct {
 	Delete WebhooksDeleteCmd `cmd:"" help:"Delete a webhook"`
 }
 
-// WebhooksCreateCmd はWebhookを作成するコマンドです
+// WebhooksCreateCmd is the command to create Webhook
 type WebhooksCreateCmd struct {
 	Event     string `help:"Webhook event (e.g., post.published, member.added)" short:"e" required:""`
 	TargetURL string `help:"Target URL for webhook" short:"t" required:""`
 	Name      string `help:"Webhook name" short:"n"`
 }
 
-// Run はwebhooksコマンドのcreateサブコマンドを実行します
+// Run executes the create subcommand of the webhooks command
 func (c *WebhooksCreateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 新規Webhookを作成
+	// Create new webhook
 	webhook := &ghostapi.Webhook{
 		Event:     c.Event,
 		TargetURL: c.TargetURL,
@@ -48,23 +48,23 @@ func (c *WebhooksCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	created, err := client.CreateWebhook(webhook)
 	if err != nil {
-		return fmt.Errorf("webhookの作成に失敗: %w", err)
+		return fmt.Errorf("failed to create webhook: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("Webhookを作成しました (ID: %s)", created.ID))
-		formatter.PrintMessage(fmt.Sprintf("イベント: %s", created.Event))
+		formatter.PrintMessage(fmt.Sprintf("created webhook (ID: %s)", created.ID))
+		formatter.PrintMessage(fmt.Sprintf("event: %s", created.Event))
 		formatter.PrintMessage(fmt.Sprintf("URL: %s", created.TargetURL))
 		if created.Secret != "" {
-			formatter.PrintMessage(fmt.Sprintf("シークレット: %s", created.Secret))
+			formatter.PrintMessage(fmt.Sprintf("secret: %s", created.Secret))
 		}
 	}
 
-	// JSON形式の場合はWebhook情報も出力
+	// Also output webhook information if JSON format
 	if root.JSON {
 		return formatter.Print(created)
 	}
@@ -72,7 +72,7 @@ func (c *WebhooksCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// WebhooksUpdateCmd はWebhookを更新するコマンドです
+// WebhooksUpdateCmd is the command to update Webhook
 type WebhooksUpdateCmd struct {
 	ID        string `arg:"" help:"Webhook ID"`
 	Event     string `help:"Webhook event" short:"e"`
@@ -80,15 +80,15 @@ type WebhooksUpdateCmd struct {
 	Name      string `help:"Webhook name" short:"n"`
 }
 
-// Run はwebhooksコマンドのupdateサブコマンドを実行します
+// Run executes the update subcommand of the webhooks command
 func (c *WebhooksUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 更新内容を作成（指定されたフィールドのみ）
+	// Create updates (specified fields only)
 	webhook := &ghostapi.Webhook{}
 
 	if c.Event != "" {
@@ -101,23 +101,23 @@ func (c *WebhooksUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		webhook.Name = c.Name
 	}
 
-	// Webhookを更新
+	// Update webhook
 	updated, err := client.UpdateWebhook(c.ID, webhook)
 	if err != nil {
-		return fmt.Errorf("webhookの更新に失敗: %w", err)
+		return fmt.Errorf("failed to update webhook: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
+	// Show success message
 	if !root.JSON {
-		formatter.PrintMessage(fmt.Sprintf("Webhookを更新しました (ID: %s)", updated.ID))
-		formatter.PrintMessage(fmt.Sprintf("イベント: %s", updated.Event))
+		formatter.PrintMessage(fmt.Sprintf("updated webhook (ID: %s)", updated.ID))
+		formatter.PrintMessage(fmt.Sprintf("event: %s", updated.Event))
 		formatter.PrintMessage(fmt.Sprintf("URL: %s", updated.TargetURL))
 	}
 
-	// JSON形式の場合はWebhook情報も出力
+	// Also output webhook information if JSON format
 	if root.JSON {
 		return formatter.Print(updated)
 	}
@@ -125,39 +125,39 @@ func (c *WebhooksUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// WebhooksDeleteCmd はWebhookを削除するコマンドです
+// WebhooksDeleteCmd is the command to delete Webhook
 type WebhooksDeleteCmd struct {
 	ID string `arg:"" help:"Webhook ID"`
 }
 
-// Run はwebhooksコマンドのdeleteサブコマンドを実行します
+// Run executes the delete subcommand of the webhooks command
 func (c *WebhooksDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
-	// APIクライアントを取得
+	// Get API client
 	client, err := getAPIClient(root)
 	if err != nil {
 		return err
 	}
 
-	// 確認なしで削除する場合を除き、確認を求める
+	// Request confirmation unless skipping confirmation
 	if !root.Force {
 		fmt.Printf("本当にWebhook (ID: %s)を削除しますか? [y/N]: ", c.ID)
 		var response string
 		fmt.Scanln(&response)
 		if response != "y" && response != "Y" {
-			return fmt.Errorf("削除がキャンセルされました")
+			return fmt.Errorf("deletion cancelled")
 		}
 	}
 
-	// Webhookを削除
+	// Delete webhook
 	if err := client.DeleteWebhook(c.ID); err != nil {
-		return fmt.Errorf("webhookの削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete webhook: %w", err)
 	}
 
-	// 出力フォーマッターを作成
+	// Create output formatter
 	formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
 
-	// 成功メッセージを表示
-	formatter.PrintMessage(fmt.Sprintf("Webhookを削除しました (ID: %s)", c.ID))
+	// Show success message
+	formatter.PrintMessage(fmt.Sprintf("deleted webhook (ID: %s)", c.ID))
 
 	return nil
 }

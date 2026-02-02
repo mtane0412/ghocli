@@ -1,8 +1,8 @@
 /**
  * prompt.go
- * ユーザー入力プロンプト機能
+ * User input prompt functionality
  *
- * コマンドラインでユーザーに対話的に入力を求める機能を提供する。
+ * Provides functionality to interactively prompt users for input on the command line.
  */
 package input
 
@@ -15,45 +15,45 @@ import (
 	"github.com/mtane0412/gho/internal/ui"
 )
 
-// PromptLine は、os.Stdinから1行の入力を読み取る
+// PromptLine reads a single line of input from os.Stdin
 //
-// ctx: コンテキスト（UIの取得に使用）
-// prompt: ユーザーに表示するプロンプト文字列
+// ctx: Context (used to retrieve UI)
+// prompt: Prompt string to display to the user
 //
-// 戻り値:
-//   - 読み取った行（改行文字を除く）
-//   - エラー（読み取りに失敗した場合）
+// Returns:
+//   - The read line (without line ending characters)
+//   - An error if reading fails
 func PromptLine(ctx context.Context, prompt string) (string, error) {
 	return PromptLineFrom(ctx, prompt, os.Stdin)
 }
 
-// PromptLineFrom は、指定されたio.Readerから1行の入力を読み取る
+// PromptLineFrom reads a single line of input from the specified io.Reader
 //
-// ctx: コンテキスト（UIの取得に使用）
-// prompt: ユーザーに表示するプロンプト文字列
-// r: 入力元のio.Reader
+// ctx: Context (used to retrieve UI)
+// prompt: Prompt string to display to the user
+// r: The input io.Reader
 //
-// 戻り値:
-//   - 読み取った行（改行文字を除く）
-//   - エラー（読み取りに失敗した場合）
+// Returns:
+//   - The read line (without line ending characters)
+//   - An error if reading fails
 func PromptLineFrom(ctx context.Context, prompt string, r io.Reader) (string, error) {
-	// contextからUIを取得し、プロンプトを出力
+	// Get UI from context and output the prompt
 	if u := ui.FromContext(ctx); u != nil {
-		// UIが設定されている場合は、PrintMessageを使用
+		// If UI is set, use PrintMessage
 		u.PrintMessage(prompt)
 	} else {
-		// UIが設定されていない場合は、stderrに直接出力
+		// If UI is not set, output directly to stderr
 		_, _ = fmt.Fprint(os.Stderr, prompt)
 	}
 
-	// 1行読み取り
+	// Read a single line
 	return ReadLine(r)
 }
 
-// PromptPassword は、パスワード入力を促すプロンプトを表示する（TODO: 実装予定）
+// PromptPassword displays a prompt for password input (TODO: implementation pending)
 //
-// この関数は将来的に実装予定。現時点では未実装。
+// This function is planned for future implementation. Currently unimplemented.
 func PromptPassword(ctx context.Context, prompt string) (string, error) {
-	// TODO: terminal.ReadPasswordを使用してパスワード入力を実装
+	// TODO: Implement password input using terminal.ReadPassword
 	return "", fmt.Errorf("PromptPassword is not implemented yet")
 }

@@ -1,8 +1,8 @@
 /**
  * color.go
- * カラー出力機能
+ * Color output functionality
  *
- * --colorフラグとNO_COLOR環境変数に対応したカラー出力制御を提供します。
+ * Provides color output control that supports the --color flag and NO_COLOR environment variable.
  */
 
 package ui
@@ -13,36 +13,36 @@ import (
 	"github.com/muesli/termenv"
 )
 
-// ColorMode はカラー出力のモードを表す型です
+// ColorMode represents the color output mode
 type ColorMode string
 
 const (
-	// ColorAuto はTTYの場合のみカラー出力を有効にします
+	// ColorAuto enables color output only when TTY
 	ColorAuto ColorMode = "auto"
-	// ColorAlways は常にカラー出力を有効にします
+	// ColorAlways always enables color output
 	ColorAlways ColorMode = "always"
-	// ColorNever はカラー出力を無効にします
+	// ColorNever disables color output
 	ColorNever ColorMode = "never"
 )
 
-// ShouldUseColor はカラー出力を使用すべきか判定します
+// ShouldUseColor determines whether color output should be used
 func ShouldUseColor(mode ColorMode) bool {
-	// Neverモードの場合は常にfalse
+	// Always false for Never mode
 	if mode == ColorNever {
 		return false
 	}
 
-	// NO_COLOR環境変数が設定されている場合はfalse
+	// False if NO_COLOR environment variable is set
 	if os.Getenv("NO_COLOR") != "" {
 		return false
 	}
 
-	// Alwaysモードの場合は常にtrue
+	// Always true for Always mode
 	if mode == ColorAlways {
 		return true
 	}
 
-	// Autoモードの場合は、TTYかどうかで判定
+	// For Auto mode, determine based on TTY
 	profile := termenv.NewOutput(os.Stdout).Profile
 	return profile != termenv.Ascii
 }

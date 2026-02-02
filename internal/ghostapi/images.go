@@ -2,7 +2,7 @@
  * images.go
  * Images API
  *
- * Ghost Admin APIのImages機能を提供します。
+ * Provides Images functionality for the Ghost Admin API.
  */
 
 package ghostapi
@@ -13,28 +13,28 @@ import (
 	"io"
 )
 
-// Image はGhostの画像を表します
+// Image represents a Ghost image
 type Image struct {
 	URL string `json:"url"`
 	Ref string `json:"ref,omitempty"`
 }
 
-// ImageUploadOptions は画像アップロードのオプションです
+// ImageUploadOptions represents options for image upload
 type ImageUploadOptions struct {
 	Purpose string // image, profile_image, icon
-	Ref     string // 画像の参照ID
+	Ref     string // Reference ID for the image
 }
 
-// ImageResponse は画像のレスポンスです
+// ImageResponse represents an image response
 type ImageResponse struct {
 	Images []Image `json:"images"`
 }
 
-// UploadImage は画像をアップロードします
+// UploadImage uploads an image
 func (c *Client) UploadImage(file io.Reader, filename string, opts ImageUploadOptions) (*Image, error) {
 	path := "/ghost/api/admin/images/upload/"
 
-	// マルチパートフィールドを構築
+	// Build multipart fields
 	fields := make(map[string]string)
 	if opts.Purpose != "" {
 		fields["purpose"] = opts.Purpose
@@ -43,20 +43,20 @@ func (c *Client) UploadImage(file io.Reader, filename string, opts ImageUploadOp
 		fields["ref"] = opts.Ref
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doMultipartRequest(path, file, filename, fields)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp ImageResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Images) == 0 {
-		return nil, fmt.Errorf("画像のアップロードに失敗しました")
+		return nil, fmt.Errorf("failed to upload image")
 	}
 
 	return &resp.Images[0], nil

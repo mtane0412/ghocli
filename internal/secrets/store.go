@@ -1,9 +1,9 @@
 /**
  * store.go
- * キーリング統合によるAdmin APIキーの安全な保存
+ * Secure storage of Admin API keys via keyring integration
  *
- * 99designs/keyringを使用してOSのキーリングにAPIキーを保存します。
- * macOS: Keychain、Linux: Secret Service、Windows: Credential Managerに対応。
+ * Uses 99designs/keyring to store API keys in OS keyring.
+ * Supports macOS: Keychain, Linux: Secret Service, Windows: Credential Manager.
  */
 
 package secrets
@@ -17,29 +17,29 @@ import (
 	"github.com/99designs/keyring"
 )
 
-// Store はAPIキーを保存・取得するためのストアです
+// Store is a store for saving and retrieving API keys
 type Store struct {
 	ring keyring.Keyring
 }
 
 const (
-	// ServiceName はキーリングに保存する際のサービス名
+	// ServiceName is the service name used when saving to keyring
 	ServiceName = "gho-ghost-admin"
 )
 
-// NewStore は新しいキーリングストアを作成します。
-// backend: "auto", "file", "keychain" など
-// fileDir: backendが"file"の場合のファイル保存先ディレクトリ
+// NewStore creates a new keyring store.
+// backend: "auto", "file", "keychain", etc.
+// fileDir: directory for file storage when backend is "file"
 func NewStore(backend, fileDir string) (*Store, error) {
 	var cfg keyring.Config
 	cfg.ServiceName = ServiceName
 
-	// 環境変数でバックエンドを上書き
+	// Override backend with environment variable
 	if envBackend := os.Getenv("GHO_KEYRING_BACKEND"); envBackend != "" {
 		backend = envBackend
 	}
 
-	// バックエンドタイプを設定
+	// Set backend type
 	switch backend {
 	case "auto":
 		cfg.AllowedBackends = []keyring.BackendType{
@@ -52,11 +52,11 @@ func NewStore(backend, fileDir string) (*Store, error) {
 		cfg.AllowedBackends = []keyring.BackendType{keyring.FileBackend}
 		cfg.FileDir = fileDir
 		cfg.FilePasswordFunc = func(prompt string) (string, error) {
-			// 環境変数からパスワードを取得
+			// Get password from environment variable
 			if pw := os.Getenv("GHO_KEYRING_PASSWORD"); pw != "" {
 				return pw, nil
 			}
-			// パスワードが設定されていない場合は空文字列を返す
+			// Return empty string if password is not set
 			return "", nil
 		}
 	case "keychain":
@@ -66,18 +66,18 @@ func NewStore(backend, fileDir string) (*Store, error) {
 	case "wincred":
 		cfg.AllowedBackends = []keyring.BackendType{keyring.WinCredBackend}
 	default:
-		return nil, fmt.Errorf("不明なバックエンド: %s", backend)
+		return nil, fmt.Errorf("unknown backend: %s", backend)
 	}
 
 	ring, err := keyring.Open(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return nil, fmt.Errorf("failed to open keyring: %w", err)
 	}
 
 	return &Store{ring: ring}, nil
 }
 
-// Set はサイトエイリアスに対してAdmin APIキーを保存します。
+// Set saves an Admin API key for a site alias.
 func (s *Store) Set(alias, apiKey string) error {
 	item := keyring.Item{
 		Key:  alias,
@@ -85,50 +85,50 @@ func (s *Store) Set(alias, apiKey string) error {
 	}
 
 	if err := s.ring.Set(item); err != nil {
-		return fmt.Errorf("APIキーの保存に失敗: %w", err)
+		return fmt.Errorf("failed to save API key: %w", err)
 	}
 
 	return nil
 }
 
-// Get はサイトエイリアスに対応するAdmin APIキーを取得します。
+// Get retrieves the Admin API key for a site alias.
 func (s *Store) Get(alias string) (string, error) {
 	item, err := s.ring.Get(alias)
 	if err != nil {
-		return "", fmt.Errorf("APIキーの取得に失敗: %w", err)
+		return "", fmt.Errorf("failed to get API key: %w", err)
 	}
 
 	return string(item.Data), nil
 }
 
-// Delete はサイトエイリアスに対応するAdmin APIキーを削除します。
+// Delete removes the Admin API key for a site alias.
 func (s *Store) Delete(alias string) error {
 	if err := s.ring.Remove(alias); err != nil {
-		return fmt.Errorf("APIキーの削除に失敗: %w", err)
+		return fmt.Errorf("failed to delete API key: %w", err)
 	}
 
 	return nil
 }
 
-// List はキーリングに保存されているすべてのサイトエイリアスを一覧取得します。
+// List retrieves all site aliases stored in the keyring.
 func (s *Store) List() ([]string, error) {
 	keys, err := s.ring.Keys()
 	if err != nil {
-		return nil, fmt.Errorf("キー一覧の取得に失敗: %w", err)
+		return nil, fmt.Errorf("failed to list keys: %w", err)
 	}
 
 	return keys, nil
 }
 
-// ParseAdminAPIKey はGhost Admin APIキー（id:secret形式）をパースします。
+// ParseAdminAPIKey parses a Ghost Admin API key (id:secret format).
 func ParseAdminAPIKey(apiKey string) (id, secret string, err error) {
 	if apiKey == "" {
-		return "", "", errors.New("APIキーが空です")
+		return "", "", errors.New("API key is empty")
 	}
 
 	parts := strings.SplitN(apiKey, ":", 2)
 	if len(parts) != 2 {
-		return "", "", errors.New("APIキーのフォーマットが不正です（id:secret形式である必要があります）")
+		return "", "", errors.New("invalid API key format (must be id:secret)")
 	}
 
 	return parts[0], parts[1], nil
