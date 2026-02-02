@@ -16,7 +16,7 @@ import (
 
 // TestRootFlags_PlainEnvVar はGHO_PLAIN環境変数が正しく読み込まれることをテストします
 func TestRootFlags_PlainEnvVar(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_PLAIN", "1")
 	defer os.Unsetenv("GHO_PLAIN")
 
@@ -34,7 +34,7 @@ func TestRootFlags_PlainEnvVar(t *testing.T) {
 
 // TestRootFlags_VerboseEnvVar はGHO_VERBOSE環境変数が正しく読み込まれることをテストします
 func TestRootFlags_VerboseEnvVar(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_VERBOSE", "1")
 	defer os.Unsetenv("GHO_VERBOSE")
 
@@ -52,7 +52,7 @@ func TestRootFlags_VerboseEnvVar(t *testing.T) {
 
 // TestRootFlags_PlainFlagOverridesEnv はフラグが環境変数より優先されることをテストします
 func TestRootFlags_PlainFlagOverridesEnv(t *testing.T) {
-	// 環境変数を設定（falseとして解釈される値）
+	// Set environment variable（falseとして解釈される値）
 	os.Setenv("GHO_PLAIN", "0")
 	defer os.Unsetenv("GHO_PLAIN")
 
@@ -70,7 +70,7 @@ func TestRootFlags_PlainFlagOverridesEnv(t *testing.T) {
 
 // TestRootFlags_VerboseFlagOverridesEnv はフラグが環境変数より優先されることをテストします
 func TestRootFlags_VerboseFlagOverridesEnv(t *testing.T) {
-	// 環境変数を設定（falseとして解釈される値）
+	// Set environment variable（falseとして解釈される値）
 	os.Setenv("GHO_VERBOSE", "0")
 	defer os.Unsetenv("GHO_VERBOSE")
 
@@ -88,7 +88,7 @@ func TestRootFlags_VerboseFlagOverridesEnv(t *testing.T) {
 
 // TestRootFlags_ColorEnvVar はGHO_COLOR環境変数が正しく読み込まれることをテストします
 func TestRootFlags_ColorEnvVar(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_COLOR", "never")
 	defer os.Unsetenv("GHO_COLOR")
 
@@ -106,7 +106,7 @@ func TestRootFlags_ColorEnvVar(t *testing.T) {
 
 // TestRootFlags_ColorFlagOverridesEnv はフラグが環境変数より優先されることをテストします
 func TestRootFlags_ColorFlagOverridesEnv(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_COLOR", "never")
 	defer os.Unsetenv("GHO_COLOR")
 
@@ -235,7 +235,7 @@ func TestRootFlags_Fieldsデフォルト値(t *testing.T) {
 
 // TestRootFlags_FieldsEnvVar はGHO_FIELDS環境変数が正しく読み込まれることをテストします
 func TestRootFlags_FieldsEnvVar(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_FIELDS", "id,title,url")
 	defer os.Unsetenv("GHO_FIELDS")
 
@@ -253,7 +253,7 @@ func TestRootFlags_FieldsEnvVar(t *testing.T) {
 
 // TestRootFlags_FieldsFlagOverridesEnv はフラグが環境変数より優先されることをテストします
 func TestRootFlags_FieldsFlagOverridesEnv(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_FIELDS", "id,title")
 	defer os.Unsetenv("GHO_FIELDS")
 

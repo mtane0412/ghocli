@@ -42,7 +42,7 @@ func TestNewClient_無効なURLでエラー(t *testing.T) {
 
 // TestGetSite_サイト情報の取得
 func TestGetSite_サイト情報の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/site/" {
@@ -125,6 +125,6 @@ func TestGetSite_APIエラー(t *testing.T) {
 	// サイト情報を取得（エラーが返されることを期待）
 	_, err = client.GetSite()
 	if err == nil {
-		t.Error("エラーが返されるべきだが、nilが返された")
+		t.Error("expected error but got nil")
 	}
 }

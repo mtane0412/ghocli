@@ -15,7 +15,7 @@ import (
 
 // TestListPosts_投稿一覧の取得
 func TestListPosts_投稿一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/posts/" {
@@ -98,7 +98,7 @@ func TestListPosts_投稿一覧の取得(t *testing.T) {
 
 // TestListPosts_ステータスフィルタ
 func TestListPosts_ステータスフィルタ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クエリパラメータの検証
 		status := r.URL.Query().Get("filter")
@@ -157,7 +157,7 @@ func TestListPosts_ステータスフィルタ(t *testing.T) {
 func TestGetPost_IDで投稿を取得(t *testing.T) {
 	postID := "64fac5417c4c6b0001234567"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/posts/" + postID + "/"
@@ -213,7 +213,7 @@ func TestGetPost_IDで投稿を取得(t *testing.T) {
 func TestGetPost_スラッグで投稿を取得(t *testing.T) {
 	slug := "test-post"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/posts/slug/" + slug + "/"
@@ -264,7 +264,7 @@ func TestGetPost_スラッグで投稿を取得(t *testing.T) {
 
 // TestCreatePost_投稿の作成
 func TestCreatePost_投稿の作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/posts/" {
@@ -336,7 +336,7 @@ func TestCreatePost_投稿の作成(t *testing.T) {
 func TestUpdatePost_投稿の更新(t *testing.T) {
 	postID := "64fac5417c4c6b0001234567"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/posts/" + postID + "/"
@@ -406,7 +406,7 @@ func TestUpdatePost_updated_atを保持して更新(t *testing.T) {
 	postID := "64fac5417c4c6b0001234567"
 	originalUpdatedAt := "2024-01-15T10:00:00Z"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/posts/" + postID + "/"
@@ -476,7 +476,7 @@ func TestUpdatePost_updated_atを保持して更新(t *testing.T) {
 func TestDeletePost_投稿の削除(t *testing.T) {
 	postID := "64fac5417c4c6b0001234567"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/posts/" + postID + "/"

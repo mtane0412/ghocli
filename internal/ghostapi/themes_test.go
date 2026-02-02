@@ -15,7 +15,7 @@ import (
 
 // TestListThemes_テーマ一覧の取得
 func TestListThemes_テーマ一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/themes/" {
@@ -102,7 +102,7 @@ func TestListThemes_テーマ一覧の取得(t *testing.T) {
 
 // TestUploadTheme_テーマのアップロード
 func TestUploadTheme_テーマのアップロード(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/themes/upload/" {
@@ -186,7 +186,7 @@ func TestUploadTheme_テーマのアップロード(t *testing.T) {
 
 // TestActivateTheme_テーマの有効化
 func TestActivateTheme_テーマの有効化(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/themes/custom-theme/activate/"
@@ -240,7 +240,7 @@ func TestActivateTheme_テーマの有効化(t *testing.T) {
 
 // TestDeleteTheme_テーマの削除
 func TestDeleteTheme_テーマの削除(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/themes/custom-theme/"

@@ -1,6 +1,6 @@
 /**
  * output_test.go
- * UI出力機能のテスト
+ * Tests for UI output functionality
  */
 
 package ui
@@ -13,15 +13,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestNewOutput_構造体が存在すること
-func TestNewOutput_構造体が存在すること(t *testing.T) {
+// TestNewOutput_StructExists verifies that NewOutput creates an Output struct
+func TestNewOutput_StructExists(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	output := NewOutput(stdout, stderr)
 	assert.NotNil(t, output)
 }
 
-// TestOutput_PrintData はデータをstdoutに出力することをテストします
+// TestOutput_PrintData tests outputting data to stdout
 func TestOutput_PrintData(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -30,13 +30,13 @@ func TestOutput_PrintData(t *testing.T) {
 	err := output.PrintData("test data")
 	assert.NoError(t, err)
 
-	// データはstdoutに出力される
+	// Data is output to stdout
 	assert.Contains(t, stdout.String(), "test data")
-	// stderrには何も出力されない
+	// Nothing is output to stderr
 	assert.Empty(t, stderr.String())
 }
 
-// TestOutput_PrintMessage は進捗メッセージをstderrに出力することをテストします
+// TestOutput_PrintMessage tests outputting progress messages to stderr
 func TestOutput_PrintMessage(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -44,13 +44,13 @@ func TestOutput_PrintMessage(t *testing.T) {
 
 	output.PrintMessage("test message")
 
-	// メッセージはstderrに出力される
+	// Message is output to stderr
 	assert.Contains(t, stderr.String(), "test message")
-	// stdoutには何も出力されない
+	// Nothing is output to stdout
 	assert.Empty(t, stdout.String())
 }
 
-// TestOutput_PrintError はエラーメッセージをstderrに出力することをテストします
+// TestOutput_PrintError tests outputting error messages to stderr
 func TestOutput_PrintError(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -58,14 +58,14 @@ func TestOutput_PrintError(t *testing.T) {
 
 	output.PrintError("test error")
 
-	// エラーメッセージはstderrに出力される
+	// Error message is output to stderr
 	assert.Contains(t, stderr.String(), "test error")
-	// stdoutには何も出力されない
+	// Nothing is output to stdout
 	assert.Empty(t, stdout.String())
 }
 
-// TestWithUI_contextにUIを埋め込む
-func TestWithUI_contextにUIを埋め込む(t *testing.T) {
+// TestWithUI_EmbedUIInContext tests embedding UI in context
+func TestWithUI_EmbedUIInContext(t *testing.T) {
 	ctx := context.Background()
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -73,22 +73,22 @@ func TestWithUI_contextにUIを埋め込む(t *testing.T) {
 
 	ctx = WithUI(ctx, output)
 
-	// contextからUIを取得できることを確認
+	// Verify UI can be retrieved from context
 	retrieved := FromContext(ctx)
 	assert.NotNil(t, retrieved)
 	assert.Equal(t, output, retrieved)
 }
 
-// TestFromContext_UIが設定されていない場合はnilを返す
-func TestFromContext_UIが設定されていない場合はnilを返す(t *testing.T) {
+// TestFromContext_ReturnsNilWhenUINotSet tests that FromContext returns nil when UI is not set
+func TestFromContext_ReturnsNilWhenUINotSet(t *testing.T) {
 	ctx := context.Background()
 
 	retrieved := FromContext(ctx)
 	assert.Nil(t, retrieved)
 }
 
-// TestFromContext_contextからUIを取得して出力できる
-func TestFromContext_contextからUIを取得して出力できる(t *testing.T) {
+// TestFromContext_GetUIFromContextAndOutput tests retrieving UI from context and outputting
+func TestFromContext_GetUIFromContextAndOutput(t *testing.T) {
 	ctx := context.Background()
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -96,11 +96,11 @@ func TestFromContext_contextからUIを取得して出力できる(t *testing.T)
 
 	ctx = WithUI(ctx, output)
 
-	// contextからUIを取得
+	// Retrieve UI from context
 	ui := FromContext(ctx)
 	assert.NotNil(t, ui)
 
-	// UIを使って出力
+	// Output using UI
 	err := ui.PrintData("test data from context")
 	assert.NoError(t, err)
 	assert.Contains(t, stdout.String(), "test data from context")

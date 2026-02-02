@@ -1,8 +1,8 @@
 /**
  * themes_test.go
- * テーマ管理コマンドのテストコード
+ * Test code for theme management commands
  *
- * Phase 3で追加される新規コマンドのテストを含みます。
+ * Includes tests for new commands added in Phase 3.
  */
 
 package cmd
@@ -11,14 +11,14 @@ import (
 	"testing"
 )
 
-// TestThemesInstallCmd_構造体が存在すること
-func TestThemesInstallCmd_構造体が存在すること(t *testing.T) {
-	// ThemesInstallCmdが定義されていることを確認
+// TestThemesInstallCmd_StructExists verifies that ThemesInstallCmd struct exists
+func TestThemesInstallCmd_StructExists(t *testing.T) {
+	// Verify that ThemesInstallCmd is defined
 	_ = &ThemesInstallCmd{}
 }
 
-// TestThemesDeleteCmd_構造体が存在すること
-func TestThemesDeleteCmd_構造体が存在すること(t *testing.T) {
-	// ThemesDeleteCmdが定義されていることを確認
+// TestThemesDeleteCmd_StructExists verifies that ThemesDeleteCmd struct exists
+func TestThemesDeleteCmd_StructExists(t *testing.T) {
+	// Verify that ThemesDeleteCmd is defined
 	_ = &ThemesDeleteCmd{}
 }

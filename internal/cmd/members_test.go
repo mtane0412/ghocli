@@ -1,8 +1,8 @@
 /**
  * members_test.go
- * メンバー管理コマンドのテストコード
+ * Test code for member management commands
  *
- * Phase 1, 3で追加される新規コマンドのテストを含みます。
+ * Includes tests for new commands added in Phase 1 and 3.
  */
 
 package cmd
@@ -11,38 +11,38 @@ import (
 	"testing"
 )
 
-// TestMembersInfoCmd_構造体が存在すること
-func TestMembersInfoCmd_構造体が存在すること(t *testing.T) {
-	// MembersInfoCmdが定義されていることを確認
+// TestMembersInfoCmd_StructExists verifies that MembersInfoCmd struct exists
+func TestMembersInfoCmd_StructExists(t *testing.T) {
+	// Verify that MembersInfoCmd is defined
 	_ = &MembersInfoCmd{}
 }
 
-// TestMembersPaidCmd_構造体が存在すること
-func TestMembersPaidCmd_構造体が存在すること(t *testing.T) {
-	// MembersPaidCmdが定義されていることを確認
+// TestMembersPaidCmd_StructExists verifies that MembersPaidCmd struct exists
+func TestMembersPaidCmd_StructExists(t *testing.T) {
+	// Verify that MembersPaidCmd is defined
 	_ = &MembersPaidCmd{}
 }
 
-// TestMembersFreeCmd_構造体が存在すること
-func TestMembersFreeCmd_構造体が存在すること(t *testing.T) {
-	// MembersFreeCmdが定義されていることを確認
+// TestMembersFreeCmd_StructExists verifies that MembersFreeCmd struct exists
+func TestMembersFreeCmd_StructExists(t *testing.T) {
+	// Verify that MembersFreeCmd is defined
 	_ = &MembersFreeCmd{}
 }
 
-// TestMembersLabelCmd_構造体が存在すること
-func TestMembersLabelCmd_構造体が存在すること(t *testing.T) {
-	// MembersLabelCmdが定義されていることを確認
+// TestMembersLabelCmd_StructExists verifies that MembersLabelCmd struct exists
+func TestMembersLabelCmd_StructExists(t *testing.T) {
+	// Verify that MembersLabelCmd is defined
 	_ = &MembersLabelCmd{}
 }
 
-// TestMembersUnlabelCmd_構造体が存在すること
-func TestMembersUnlabelCmd_構造体が存在すること(t *testing.T) {
-	// MembersUnlabelCmdが定義されていることを確認
+// TestMembersUnlabelCmd_StructExists verifies that MembersUnlabelCmd struct exists
+func TestMembersUnlabelCmd_StructExists(t *testing.T) {
+	// Verify that MembersUnlabelCmd is defined
 	_ = &MembersUnlabelCmd{}
 }
 
-// TestMembersRecentCmd_構造体が存在すること
-func TestMembersRecentCmd_構造体が存在すること(t *testing.T) {
-	// MembersRecentCmdが定義されていることを確認
+// TestMembersRecentCmd_StructExists verifies that MembersRecentCmd struct exists
+func TestMembersRecentCmd_StructExists(t *testing.T) {
+	// Verify that MembersRecentCmd is defined
 	_ = &MembersRecentCmd{}
 }

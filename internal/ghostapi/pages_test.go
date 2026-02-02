@@ -15,7 +15,7 @@ import (
 
 // TestListPages_ページ一覧の取得
 func TestListPages_ページ一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/pages/" {
@@ -99,7 +99,7 @@ func TestListPages_ページ一覧の取得(t *testing.T) {
 func TestGetPage_IDでページを取得(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
@@ -152,7 +152,7 @@ func TestGetPage_IDでページを取得(t *testing.T) {
 
 // TestCreatePage_ページの作成
 func TestCreatePage_ページの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/pages/" {
@@ -224,7 +224,7 @@ func TestCreatePage_ページの作成(t *testing.T) {
 func TestUpdatePage_ページの更新(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
@@ -293,7 +293,7 @@ func TestUpdatePage_ページの更新(t *testing.T) {
 func TestDeletePage_ページの削除(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
@@ -326,7 +326,7 @@ func TestDeletePage_ページの削除(t *testing.T) {
 func TestGetPage_拡張フィールドのパース(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// レスポンスを返す（拡張フィールドを含む）
 		response := map[string]interface{}{

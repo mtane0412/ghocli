@@ -1,6 +1,6 @@
 /**
  * tiers_test.go
- * ティア管理コマンドのテストコード
+ * Test code for tier management commands
  */
 
 package cmd
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-// TestTiersInfoCmd_構造体が存在すること
-func TestTiersInfoCmd_構造体が存在すること(t *testing.T) {
-	// TiersInfoCmdが定義されていることを確認
+// TestTiersInfoCmd_StructExists verifies that TiersInfoCmd struct exists
+func TestTiersInfoCmd_StructExists(t *testing.T) {
+	// Verify that TiersInfoCmd is defined
 	_ = &TiersInfoCmd{}
 }

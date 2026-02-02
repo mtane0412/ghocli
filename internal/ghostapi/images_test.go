@@ -16,7 +16,7 @@ import (
 
 // TestUploadImage_画像のアップロード
 func TestUploadImage_画像のアップロード(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/images/upload/" {
@@ -104,7 +104,7 @@ func TestUploadImage_画像のアップロード(t *testing.T) {
 
 // TestUploadImage_purposeパラメータ
 func TestUploadImage_purposeパラメータ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// マルチパートフォームをパース
 		err := r.ParseMultipartForm(10 << 20)

@@ -1,8 +1,8 @@
 /**
  * pages_test.go
- * ページ管理コマンドのテストコード
+ * Test code for page management commands
  *
- * Phase 1, 2で追加される新規コマンドのテストを含みます。
+ * Includes tests for new commands added in Phase 1 and 2.
  */
 
 package cmd
@@ -14,142 +14,142 @@ import (
 )
 
 // TestPagesInfoCmd_構造体が存在すること
-func TestPagesInfoCmd_構造体が存在すること(t *testing.T) {
-	// PagesInfoCmdが定義されていることを確認
+func TestPagesInfoCmd_StructExists(t *testing.T) {
+	// Verify that PagesInfoCmd is defined
 	_ = &PagesInfoCmd{}
 }
 
 // TestPagesURLCmd_構造体が存在すること
-func TestPagesURLCmd_構造体が存在すること(t *testing.T) {
-	// PagesURLCmdが定義されていることを確認
+func TestPagesURLCmd_StructExists(t *testing.T) {
+	// Verify that PagesURLCmd is defined
 	_ = &PagesURLCmd{}
 }
 
 // TestPagesPublishCmd_構造体が存在すること
-func TestPagesPublishCmd_構造体が存在すること(t *testing.T) {
-	// PagesPublishCmdが定義されていることを確認
+func TestPagesPublishCmd_StructExists(t *testing.T) {
+	// Verify that PagesPublishCmd is defined
 	_ = &PagesPublishCmd{}
 }
 
 // TestPagesUnpublishCmd_構造体が存在すること
-func TestPagesUnpublishCmd_構造体が存在すること(t *testing.T) {
-	// PagesUnpublishCmdが定義されていることを確認
+func TestPagesUnpublishCmd_StructExists(t *testing.T) {
+	// Verify that PagesUnpublishCmd is defined
 	_ = &PagesUnpublishCmd{}
 }
 
 // TestPagesCatCmd_構造体が存在すること
-func TestPagesCatCmd_構造体が存在すること(t *testing.T) {
-	// PagesCatCmdが定義されていることを確認
+func TestPagesCatCmd_StructExists(t *testing.T) {
+	// Verify that PagesCatCmd is defined
 	_ = &PagesCatCmd{}
 }
 
 // TestPagesCopyCmd_構造体が存在すること
-func TestPagesCopyCmd_構造体が存在すること(t *testing.T) {
-	// PagesCopyCmdが定義されていることを確認
+func TestPagesCopyCmd_StructExists(t *testing.T) {
+	// Verify that PagesCopyCmd is defined
 	_ = &PagesCopyCmd{}
 }
 
 // ========================================
-// Phase 1: ステータス別一覧ショートカット
+// Phase 1: Status list shortcuts
 // ========================================
 
 // TestPagesDraftsCmd_構造体が存在すること
-func TestPagesDraftsCmd_構造体が存在すること(t *testing.T) {
-	// PagesDraftsCmdが定義されていることを確認
+func TestPagesDraftsCmd_StructExists(t *testing.T) {
+	// Verify that PagesDraftsCmd is defined
 	_ = &PagesDraftsCmd{}
 }
 
 // TestPagesPublishedCmd_構造体が存在すること
-func TestPagesPublishedCmd_構造体が存在すること(t *testing.T) {
-	// PagesPublishedCmdが定義されていることを確認
+func TestPagesPublishedCmd_StructExists(t *testing.T) {
+	// Verify that PagesPublishedCmd is defined
 	_ = &PagesPublishedCmd{}
 }
 
 // TestPagesScheduledCmd_構造体が存在すること
-func TestPagesScheduledCmd_構造体が存在すること(t *testing.T) {
-	// PagesScheduledCmdが定義されていることを確認
+func TestPagesScheduledCmd_StructExists(t *testing.T) {
+	// Verify that PagesScheduledCmd is defined
 	_ = &PagesScheduledCmd{}
 }
 
 // ========================================
-// Phase 1: 予約公開
+// Phase 1: Scheduled publishing
 // ========================================
 
 // TestPagesScheduleCmd_構造体が存在すること
-func TestPagesScheduleCmd_構造体が存在すること(t *testing.T) {
-	// PagesScheduleCmdが定義されていることを確認
+func TestPagesScheduleCmd_StructExists(t *testing.T) {
+	// Verify that PagesScheduleCmd is defined
 	_ = &PagesScheduleCmd{}
 }
 
 // ========================================
-// Phase 1: 検索
+// Phase 1: Search
 // ========================================
 
 // TestPagesSearchCmd_構造体が存在すること
-func TestPagesSearchCmd_構造体が存在すること(t *testing.T) {
-	// PagesSearchCmdが定義されていることを確認
+func TestPagesSearchCmd_StructExists(t *testing.T) {
+	// Verify that PagesSearchCmd is defined
 	_ = &PagesSearchCmd{}
 }
 
 // ========================================
-// Phase 1: バッチ操作
+// Phase 1: Batch operations
 // ========================================
 
 // TestPagesBatchPublishCmd_構造体が存在すること
-func TestPagesBatchPublishCmd_構造体が存在すること(t *testing.T) {
-	// PagesBatchPublishCmdが定義されていることを確認
+func TestPagesBatchPublishCmd_StructExists(t *testing.T) {
+	// Verify that PagesBatchPublishCmd is defined
 	_ = &PagesBatchPublishCmd{}
 }
 
 // TestPagesBatchDeleteCmd_構造体が存在すること
-func TestPagesBatchDeleteCmd_構造体が存在すること(t *testing.T) {
-	// PagesBatchDeleteCmdが定義されていることを確認
+func TestPagesBatchDeleteCmd_StructExists(t *testing.T) {
+	// Verify that PagesBatchDeleteCmd is defined
 	_ = &PagesBatchDeleteCmd{}
 }
 
 // TestPagesCat_HTML2Text_シンプルなHTMLをテキストに変換できること
-func TestPagesCat_HTML2Text_シンプルなHTMLをテキストに変換できること(t *testing.T) {
-	// テストケース: シンプルな段落タグ
+func TestPagesCat_HTML2Text_SimpleHTMLToText(t *testing.T) {
+	// Test case: simple paragraph tag
 	html := "<p>Hello</p>"
 	expected := "Hello"
 
-	// HTML→テキスト変換を実行
+	// Execute HTML to text conversion
 	result := html2text.HTML2Text(html)
 
-	// 変換結果を検証
+	// Verify conversion result
 	if result != expected {
-		t.Errorf("HTML→テキスト変換が正しくありません。expected=%q, got=%q", expected, result)
+		t.Errorf("HTML to text conversion is incorrect.expected=%q, got=%q", expected, result)
 	}
 }
 
 // TestPagesCat_HTML2Text_複数のタグを含むHTMLをテキストに変換できること
-func TestPagesCat_HTML2Text_複数のタグを含むHTMLをテキストに変換できること(t *testing.T) {
-	// テストケース: 見出しと段落
+func TestPagesCat_HTML2Text_MultipleTagsHTMLToText(t *testing.T) {
+	// Test case: heading and paragraph
 	html := "<h1>タイトル</h1><p>本文です。</p>"
 	// html2textは見出しと段落の間に改行を入れる（\r\n形式）
 	expected := "タイトル\r\n\r\n本文です。"
 
-	// HTML→テキスト変換を実行
+	// Execute HTML to text conversion
 	result := html2text.HTML2Text(html)
 
-	// 変換結果を検証
+	// Verify conversion result
 	if result != expected {
-		t.Errorf("HTML→テキスト変換が正しくありません。expected=%q, got=%q", expected, result)
+		t.Errorf("HTML to text conversion is incorrect.expected=%q, got=%q", expected, result)
 	}
 }
 
 // TestPagesCat_HTML2Text_リストを含むHTMLをテキストに変換できること
-func TestPagesCat_HTML2Text_リストを含むHTMLをテキストに変換できること(t *testing.T) {
-	// テストケース: 箇条書きリスト
+func TestPagesCat_HTML2Text_ListHTMLToText(t *testing.T) {
+	// Test case: bullet list
 	html := "<ul><li>項目1</li><li>項目2</li></ul>"
-	// html2textはリストを改行区切りでフォーマットする
+	// html2text formats lists with newline separators
 	expected := "\r\n項目1\r\n項目2\r\n"
 
-	// HTML→テキスト変換を実行
+	// Execute HTML to text conversion
 	result := html2text.HTML2Text(html)
 
-	// 変換結果を検証
+	// Verify conversion result
 	if result != expected {
-		t.Errorf("HTML→テキスト変換が正しくありません。expected=%q, got=%q", expected, result)
+		t.Errorf("HTML to text conversion is incorrect.expected=%q, got=%q", expected, result)
 	}
 }

@@ -1,8 +1,8 @@
 /**
  * cmd_test.go
- * コマンド共通機能のテストコード
+ * Test code for common command functionality
  *
- * Phase 5で追加されるフラグエイリアスのテストを含みます。
+ * Includes tests for flag aliases added in Phase 5.
  */
 
 package cmd
@@ -13,162 +13,162 @@ import (
 	"github.com/alecthomas/kong"
 )
 
-// TestLimitAliases はLimitフラグのエイリアス（--max, -n）が正しく機能することを確認します
+// TestLimitAliases verifies that Limit flag aliases (--max, -n) work correctly
 func TestLimitAliases(t *testing.T) {
 	testCases := []struct {
 		name string
 		args []string
 		want int
 	}{
-		{"--limit フラグ", []string{"posts", "list", "--limit=10"}, 10},
-		{"--max エイリアス", []string{"posts", "list", "--max=10"}, 10},
-		{"--n エイリアス", []string{"posts", "list", "--n=10"}, 10},
-		{"-l ショートフラグ", []string{"posts", "list", "-l", "10"}, 10},
+		{"--limit flag", []string{"posts", "list", "--limit=10"}, 10},
+		{"--max alias", []string{"posts", "list", "--max=10"}, 10},
+		{"--n alias", []string{"posts", "list", "--n=10"}, 10},
+		{"-l short flag", []string{"posts", "list", "-l", "10"}, 10},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// CLIを初期化
+			// Initialize CLI
 			cli := &CLI{}
 
-			// Kongパーサーを作成
+			// Create Kong parser
 			parser, err := kong.New(cli,
 				kong.Name("gho"),
-				kong.Exit(func(int) {}), // テスト時は終了しない
+				kong.Exit(func(int) {}), // Don't exit during tests
 			)
 			if err != nil {
-				t.Fatalf("Kongパーサーの作成に失敗: %v", err)
+				t.Fatalf("failed to create Kong parser: %v", err)
 			}
 
-			// コマンドラインをパース
+			// Parse command line
 			_, err = parser.Parse(tc.args)
 			if err != nil {
-				t.Fatalf("コマンドラインのパースに失敗: %v", err)
+				t.Fatalf("failed to parse command line: %v", err)
 			}
 
-			// Limitフィールドが正しく設定されているか確認
+			// Verify Limit field is set correctly
 			if cli.Posts.List.Limit != tc.want {
-				t.Errorf("Limitフィールドが正しく設定されていません: got=%d, want=%d", cli.Posts.List.Limit, tc.want)
+				t.Errorf("Limit field not set correctly: got=%d, want=%d", cli.Posts.List.Limit, tc.want)
 			}
 		})
 	}
 }
 
-// TestFilterAliases はFilterフラグのエイリアス（--where, -w）が正しく機能することを確認します
+// TestFilterAliases verifies that Filter flag aliases (--where, -w) work correctly
 func TestFilterAliases(t *testing.T) {
 	testCases := []struct {
 		name string
 		args []string
 		want string
 	}{
-		{"--filter フラグ", []string{"members", "list", "--filter=status:paid"}, "status:paid"},
-		{"--where エイリアス", []string{"members", "list", "--where=status:paid"}, "status:paid"},
-		{"--w エイリアス", []string{"members", "list", "--w=status:paid"}, "status:paid"},
+		{"--filter flag", []string{"members", "list", "--filter=status:paid"}, "status:paid"},
+		{"--where alias", []string{"members", "list", "--where=status:paid"}, "status:paid"},
+		{"--w alias", []string{"members", "list", "--w=status:paid"}, "status:paid"},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// CLIを初期化
+			// Initialize CLI
 			cli := &CLI{}
 
-			// Kongパーサーを作成
+			// Create Kong parser
 			parser, err := kong.New(cli,
 				kong.Name("gho"),
-				kong.Exit(func(int) {}), // テスト時は終了しない
+				kong.Exit(func(int) {}), // Don't exit during tests
 			)
 			if err != nil {
-				t.Fatalf("Kongパーサーの作成に失敗: %v", err)
+				t.Fatalf("failed to create Kong parser: %v", err)
 			}
 
-			// コマンドラインをパース
+			// Parse command line
 			_, err = parser.Parse(tc.args)
 			if err != nil {
-				t.Fatalf("コマンドラインのパースに失敗: %v", err)
+				t.Fatalf("failed to parse command line: %v", err)
 			}
 
-			// Filterフィールドが正しく設定されているか確認
+			// Verify Filter field is set correctly
 			if cli.Members.List.Filter != tc.want {
-				t.Errorf("Filterフィールドが正しく設定されていません: got=%s, want=%s", cli.Members.List.Filter, tc.want)
+				t.Errorf("Filter field not set correctly: got=%s, want=%s", cli.Members.List.Filter, tc.want)
 			}
 		})
 	}
 }
 
-// TestPagesFlagAliases はPagesコマンドのLimitエイリアスが正しく機能することを確認します
+// TestPagesFlagAliases verifies that Limit aliases work correctly for Pages command
 func TestPagesFlagAliases(t *testing.T) {
 	testCases := []struct {
 		name string
 		args []string
 		want int
 	}{
-		{"--limit フラグ", []string{"pages", "list", "--limit=20"}, 20},
-		{"--max エイリアス", []string{"pages", "list", "--max=20"}, 20},
-		{"--n エイリアス", []string{"pages", "list", "--n=20"}, 20},
+		{"--limit flag", []string{"pages", "list", "--limit=20"}, 20},
+		{"--max alias", []string{"pages", "list", "--max=20"}, 20},
+		{"--n alias", []string{"pages", "list", "--n=20"}, 20},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// CLIを初期化
+			// Initialize CLI
 			cli := &CLI{}
 
-			// Kongパーサーを作成
+			// Create Kong parser
 			parser, err := kong.New(cli,
 				kong.Name("gho"),
-				kong.Exit(func(int) {}), // テスト時は終了しない
+				kong.Exit(func(int) {}), // Don't exit during tests
 			)
 			if err != nil {
-				t.Fatalf("Kongパーサーの作成に失敗: %v", err)
+				t.Fatalf("failed to create Kong parser: %v", err)
 			}
 
-			// コマンドラインをパース
+			// Parse command line
 			_, err = parser.Parse(tc.args)
 			if err != nil {
-				t.Fatalf("コマンドラインのパースに失敗: %v", err)
+				t.Fatalf("failed to parse command line: %v", err)
 			}
 
-			// Limitフィールドが正しく設定されているか確認
+			// Verify Limit field is set correctly
 			if cli.Pages.List.Limit != tc.want {
-				t.Errorf("Pages.List.Limitが正しく設定されていません: got=%d, want=%d", cli.Pages.List.Limit, tc.want)
+				t.Errorf("Pages.List.Limit not set correctly: got=%d, want=%d", cli.Pages.List.Limit, tc.want)
 			}
 		})
 	}
 }
 
-// TestTagsFlagAliases はTagsコマンドのLimitエイリアスが正しく機能することを確認します
+// TestTagsFlagAliases verifies that Limit aliases work correctly for Tags command
 func TestTagsFlagAliases(t *testing.T) {
 	testCases := []struct {
 		name string
 		args []string
 		want int
 	}{
-		{"--limit フラグ", []string{"tags", "list", "--limit=30"}, 30},
-		{"--max エイリアス", []string{"tags", "list", "--max=30"}, 30},
-		{"--n エイリアス", []string{"tags", "list", "--n=30"}, 30},
+		{"--limit flag", []string{"tags", "list", "--limit=30"}, 30},
+		{"--max alias", []string{"tags", "list", "--max=30"}, 30},
+		{"--n alias", []string{"tags", "list", "--n=30"}, 30},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// CLIを初期化
+			// Initialize CLI
 			cli := &CLI{}
 
-			// Kongパーサーを作成
+			// Create Kong parser
 			parser, err := kong.New(cli,
 				kong.Name("gho"),
-				kong.Exit(func(int) {}), // テスト時は終了しない
+				kong.Exit(func(int) {}), // Don't exit during tests
 			)
 			if err != nil {
-				t.Fatalf("Kongパーサーの作成に失敗: %v", err)
+				t.Fatalf("failed to create Kong parser: %v", err)
 			}
 
-			// コマンドラインをパース
+			// Parse command line
 			_, err = parser.Parse(tc.args)
 			if err != nil {
-				t.Fatalf("コマンドラインのパースに失敗: %v", err)
+				t.Fatalf("failed to parse command line: %v", err)
 			}
 
-			// Limitフィールドが正しく設定されているか確認
+			// Verify Limit field is set correctly
 			if cli.Tags.List.Limit != tc.want {
-				t.Errorf("Tags.List.Limitが正しく設定されていません: got=%d, want=%d", cli.Tags.List.Limit, tc.want)
+				t.Errorf("Tags.List.Limit not set correctly: got=%d, want=%d", cli.Tags.List.Limit, tc.want)
 			}
 		})
 	}

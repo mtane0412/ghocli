@@ -14,7 +14,7 @@ import (
 
 // TestListTiers_ティア一覧の取得
 func TestListTiers_ティア一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/tiers/" {
@@ -108,7 +108,7 @@ func TestListTiers_ティア一覧の取得(t *testing.T) {
 
 // TestListTiers_includeパラメータ
 func TestListTiers_includeパラメータ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クエリパラメータの検証
 		if !r.URL.Query().Has("include") {
@@ -172,7 +172,7 @@ func TestListTiers_includeパラメータ(t *testing.T) {
 
 // TestGetTier_IDでティアを取得
 func TestGetTier_IDでティアを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tiers/64fac5417c4c6b0001234567/"
@@ -229,7 +229,7 @@ func TestGetTier_IDでティアを取得(t *testing.T) {
 
 // TestGetTier_スラッグでティアを取得
 func TestGetTier_スラッグでティアを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tiers/slug/free/"
@@ -283,7 +283,7 @@ func TestGetTier_スラッグでティアを取得(t *testing.T) {
 
 // TestCreateTier_ティアの作成
 func TestCreateTier_ティアの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/tiers/" {
@@ -364,7 +364,7 @@ func TestCreateTier_ティアの作成(t *testing.T) {
 
 // TestUpdateTier_ティアの更新
 func TestUpdateTier_ティアの更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tiers/64fac5417c4c6b0001234567/"

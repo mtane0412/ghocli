@@ -14,7 +14,7 @@ import (
 
 // TestListNewsletters_ニュースレター一覧の取得
 func TestListNewsletters_ニュースレター一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/newsletters/" {
@@ -111,7 +111,7 @@ func TestListNewsletters_ニュースレター一覧の取得(t *testing.T) {
 
 // TestListNewsletters_filterパラメータ
 func TestListNewsletters_filterパラメータ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クエリパラメータの検証
 		if !r.URL.Query().Has("filter") {
@@ -172,7 +172,7 @@ func TestListNewsletters_filterパラメータ(t *testing.T) {
 
 // TestGetNewsletter_IDでニュースレターを取得
 func TestGetNewsletter_IDでニュースレターを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/newsletters/64fac5417c4c6b0001234567/"
@@ -232,7 +232,7 @@ func TestGetNewsletter_IDでニュースレターを取得(t *testing.T) {
 
 // TestGetNewsletter_スラッグでニュースレターを取得
 func TestGetNewsletter_スラッグでニュースレターを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/newsletters/slug/main-newsletter/"
@@ -289,7 +289,7 @@ func TestGetNewsletter_スラッグでニュースレターを取得(t *testing.
 
 // TestCreateNewsletter_ニュースレターの作成
 func TestCreateNewsletter_ニュースレターの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/newsletters/" {
@@ -368,7 +368,7 @@ func TestCreateNewsletter_ニュースレターの作成(t *testing.T) {
 
 // TestUpdateNewsletter_ニュースレターの更新
 func TestUpdateNewsletter_ニュースレターの更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/newsletters/64fac5417c4c6b0001234567/"

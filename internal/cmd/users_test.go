@@ -1,6 +1,6 @@
 /**
  * users_test.go
- * ユーザー管理コマンドのテストコード
+ * Test code for user management commands
  */
 
 package cmd
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-// TestUsersInfoCmd_構造体が存在すること
-func TestUsersInfoCmd_構造体が存在すること(t *testing.T) {
-	// UsersInfoCmdが定義されていることを確認
+// TestUsersInfoCmd_StructExists verifies that UsersInfoCmd struct exists
+func TestUsersInfoCmd_StructExists(t *testing.T) {
+	// Verify that UsersInfoCmd is defined
 	_ = &UsersInfoCmd{}
 }

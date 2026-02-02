@@ -1,6 +1,6 @@
 /**
  * auth_test.go
- * authコマンド拡張のテスト
+ * Test code for auth command extensions
  */
 
 package cmd
@@ -9,26 +9,26 @@ import (
 	"testing"
 )
 
-// TestAuthTokensCmd_構造体が存在すること
-func TestAuthTokensCmd_構造体が存在すること(t *testing.T) {
+// TestAuthTokensCmd_StructExists verifies that AuthTokensCmd struct exists
+func TestAuthTokensCmd_StructExists(t *testing.T) {
 	var cmd AuthTokensCmd
 	_ = cmd
 }
 
-// TestAuthTokensListCmd_構造体が存在すること
-func TestAuthTokensListCmd_構造体が存在すること(t *testing.T) {
+// TestAuthTokensListCmd_StructExists verifies that AuthTokensListCmd struct exists
+func TestAuthTokensListCmd_StructExists(t *testing.T) {
 	var cmd AuthTokensListCmd
 	_ = cmd
 }
 
-// TestAuthTokensDeleteCmd_構造体が存在すること
-func TestAuthTokensDeleteCmd_構造体が存在すること(t *testing.T) {
+// TestAuthTokensDeleteCmd_StructExists verifies that AuthTokensDeleteCmd struct exists
+func TestAuthTokensDeleteCmd_StructExists(t *testing.T) {
 	var cmd AuthTokensDeleteCmd
 	_ = cmd
 }
 
-// TestAuthCredentialsCmd_構造体が存在すること
-func TestAuthCredentialsCmd_構造体が存在すること(t *testing.T) {
+// TestAuthCredentialsCmd_StructExists verifies that AuthCredentialsCmd struct exists
+func TestAuthCredentialsCmd_StructExists(t *testing.T) {
 	var cmd AuthCredentialsCmd
 	_ = cmd
 }

@@ -15,7 +15,7 @@ import (
 
 // TestCreateWebhook_Webhookの作成
 func TestCreateWebhook_Webhookの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/webhooks/" {
@@ -103,7 +103,7 @@ func TestCreateWebhook_Webhookの作成(t *testing.T) {
 
 // TestUpdateWebhook_Webhookの更新
 func TestUpdateWebhook_Webhookの更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/webhooks/64fac5417c4c6b0001234567/"
@@ -173,7 +173,7 @@ func TestUpdateWebhook_Webhookの更新(t *testing.T) {
 
 // TestDeleteWebhook_Webhookの削除
 func TestDeleteWebhook_Webhookの削除(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/webhooks/64fac5417c4c6b0001234567/"

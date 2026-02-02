@@ -50,7 +50,7 @@ func TestConfirmDestructive_Forceフラグが無効でも関数は存在する(t
 	ctx := ui.WithUI(context.Background(), output)
 
 	// 実行: この時点では実装が不完全なため、関数が呼び出せることのみ確認
-	// 実際の対話的入力テストは別途実装が必要
+	// actualの対話的入力テストは別途実装が必要
 	_ = ConfirmDestructive(ctx, root, "delete post 'テスト記事'")
 }
 

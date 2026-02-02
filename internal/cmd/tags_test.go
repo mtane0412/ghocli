@@ -1,6 +1,6 @@
 /**
  * tags_test.go
- * タグ管理コマンドのテストコード
+ * Test code for tag management commands
  */
 
 package cmd
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-// TestTagsInfoCmd_構造体が存在すること
-func TestTagsInfoCmd_構造体が存在すること(t *testing.T) {
-	// TagsInfoCmdが定義されていることを確認
+// TestTagsInfoCmd_StructExists verifies that TagsInfoCmd struct exists
+func TestTagsInfoCmd_StructExists(t *testing.T) {
+	// Verify that TagsInfoCmd is defined
 	_ = &TagsInfoCmd{}
 }

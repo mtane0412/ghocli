@@ -14,7 +14,7 @@ import (
 
 // TestListOffers_オファー一覧の取得
 func TestListOffers_オファー一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/offers/" {
@@ -122,7 +122,7 @@ func TestListOffers_オファー一覧の取得(t *testing.T) {
 
 // TestListOffers_filterパラメータ
 func TestListOffers_filterパラメータ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クエリパラメータの検証
 		if !r.URL.Query().Has("filter") {
@@ -190,7 +190,7 @@ func TestListOffers_filterパラメータ(t *testing.T) {
 
 // TestGetOffer_IDでオファーを取得
 func TestGetOffer_IDでオファーを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/offers/64fac5417c4c6b0001234567/"
@@ -256,7 +256,7 @@ func TestGetOffer_IDでオファーを取得(t *testing.T) {
 
 // TestCreateOffer_オファーの作成
 func TestCreateOffer_オファーの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/offers/" {
@@ -346,7 +346,7 @@ func TestCreateOffer_オファーの作成(t *testing.T) {
 
 // TestUpdateOffer_オファーの更新
 func TestUpdateOffer_オファーの更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/offers/64fac5417c4c6b0001234567/"

@@ -11,9 +11,9 @@ import (
 	"testing"
 )
 
-// TestPostFields_全フィールド数 はPostフィールドが定義されていることを確認します
+// TestPostFields_全フィールド数 はPostフィールドis definedします
 func TestPostFields_全フィールド数(t *testing.T) {
-	// PostFieldsが定義されていることを確認
+	// PostFieldsis defined
 	if PostFields.All == nil {
 		t.Fatal("PostFields.Allが定義されていません")
 	}

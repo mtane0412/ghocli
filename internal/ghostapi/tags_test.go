@@ -15,7 +15,7 @@ import (
 
 // TestListTags_タグ一覧の取得
 func TestListTags_タグ一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/tags/" {
@@ -97,7 +97,7 @@ func TestListTags_タグ一覧の取得(t *testing.T) {
 
 // TestListTags_includeパラメータ
 func TestListTags_includeパラメータ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クエリパラメータの検証
 		if !r.URL.Query().Has("include") {
@@ -159,7 +159,7 @@ func TestListTags_includeパラメータ(t *testing.T) {
 
 // TestGetTag_IDでタグを取得
 func TestGetTag_IDでタグを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tags/64fac5417c4c6b0001234567/"
@@ -213,7 +213,7 @@ func TestGetTag_IDでタグを取得(t *testing.T) {
 
 // TestGetTag_スラッグでタグを取得
 func TestGetTag_スラッグでタグを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tags/slug/technology/"
@@ -264,7 +264,7 @@ func TestGetTag_スラッグでタグを取得(t *testing.T) {
 
 // TestCreateTag_タグの作成
 func TestCreateTag_タグの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/tags/" {
@@ -335,7 +335,7 @@ func TestCreateTag_タグの作成(t *testing.T) {
 
 // TestUpdateTag_タグの更新
 func TestUpdateTag_タグの更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tags/64fac5417c4c6b0001234567/"
@@ -397,7 +397,7 @@ func TestUpdateTag_タグの更新(t *testing.T) {
 
 // TestDeleteTag_タグの削除
 func TestDeleteTag_タグの削除(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/tags/64fac5417c4c6b0001234567/"

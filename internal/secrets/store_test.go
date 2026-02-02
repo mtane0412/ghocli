@@ -1,6 +1,6 @@
 /**
  * store_test.go
- * キーリング統合のテストコード
+ * Test code for keyring integration
  */
 
 package secrets
@@ -10,79 +10,79 @@ import (
 	"testing"
 )
 
-// TestStore_SetとGetの基本動作
-func TestStore_SetとGetの基本動作(t *testing.T) {
-	// テスト用のストアを作成（fileバックエンドを使用）
+// TestStore_BasicSetAndGet tests basic Set and Get operations
+func TestStore_BasicSetAndGet(t *testing.T) {
+	// Create test store (using file backend)
 	store, err := NewStore("file", t.TempDir())
 	if err != nil {
-		t.Fatalf("ストアの作成に失敗: %v", err)
+		t.Fatalf("failed to create store: %v", err)
 	}
 
-	// APIキーを保存
+	// Save API key
 	testKey := "64fac5417c4c6b0001234567:89abcdef01234567890123456789abcd01234567890123456789abcdef0123"
 	if err := store.Set("testsite", testKey); err != nil {
-		t.Fatalf("APIキーの保存に失敗: %v", err)
+		t.Fatalf("failed to save API key: %v", err)
 	}
 
-	// APIキーを取得
+	// Retrieve API key
 	retrieved, err := store.Get("testsite")
 	if err != nil {
-		t.Fatalf("APIキーの取得に失敗: %v", err)
+		t.Fatalf("failed to retrieve API key: %v", err)
 	}
 
-	// 保存したキーと取得したキーが一致することを確認
+	// Verify saved and retrieved keys match
 	if retrieved != testKey {
-		t.Errorf("取得したキー = %q; want %q", retrieved, testKey)
+		t.Errorf("retrieved key = %q; want %q", retrieved, testKey)
 	}
 }
 
-// TestStore_存在しないキーの取得
-func TestStore_存在しないキーの取得(t *testing.T) {
+// TestStore_GetNonexistentKey tests retrieving a nonexistent key
+func TestStore_GetNonexistentKey(t *testing.T) {
 	store, err := NewStore("file", t.TempDir())
 	if err != nil {
-		t.Fatalf("ストアの作成に失敗: %v", err)
+		t.Fatalf("failed to create store: %v", err)
 	}
 
-	// 存在しないキーを取得しようとする
+	// Attempt to retrieve nonexistent key
 	_, err = store.Get("nonexistent")
 	if err == nil {
-		t.Error("存在しないキーの取得でエラーが返されなかった")
+		t.Error("expected error when retrieving nonexistent key")
 	}
 }
 
-// TestStore_Deleteでキーを削除
-func TestStore_Deleteでキーを削除(t *testing.T) {
+// TestStore_DeleteKey tests key deletion
+func TestStore_DeleteKey(t *testing.T) {
 	store, err := NewStore("file", t.TempDir())
 	if err != nil {
-		t.Fatalf("ストアの作成に失敗: %v", err)
+		t.Fatalf("failed to create store: %v", err)
 	}
 
-	// APIキーを保存
+	// Save API key
 	testKey := "64fac5417c4c6b0001234567:89abcdef01234567890123456789abcd01234567890123456789abcdef0123"
 	if err := store.Set("testsite", testKey); err != nil {
-		t.Fatalf("APIキーの保存に失敗: %v", err)
+		t.Fatalf("failed to save API key: %v", err)
 	}
 
-	// キーを削除
+	// Delete key
 	if err := store.Delete("testsite"); err != nil {
-		t.Fatalf("APIキーの削除に失敗: %v", err)
+		t.Fatalf("failed to delete API key: %v", err)
 	}
 
-	// 削除後は取得できないことを確認
+	// Verify key cannot be retrieved after deletion
 	_, err = store.Get("testsite")
 	if err == nil {
-		t.Error("削除したキーが取得できてしまった")
+		t.Error("deleted key should not be retrievable")
 	}
 }
 
-// TestStore_Listで保存済みキーを一覧取得
-func TestStore_Listで保存済みキーを一覧取得(t *testing.T) {
+// TestStore_ListSavedKeys tests listing all saved keys
+func TestStore_ListSavedKeys(t *testing.T) {
 	store, err := NewStore("file", t.TempDir())
 	if err != nil {
-		t.Fatalf("ストアの作成に失敗: %v", err)
+		t.Fatalf("failed to create store: %v", err)
 	}
 
-	// 複数のAPIキーを保存
+	// Save multiple API keys
 	keys := map[string]string{
 		"site1": "key1:secret1",
 		"site2": "key2:secret2",
@@ -90,19 +90,19 @@ func TestStore_Listで保存済みキーを一覧取得(t *testing.T) {
 	}
 	for alias, key := range keys {
 		if err := store.Set(alias, key); err != nil {
-			t.Fatalf("APIキーの保存に失敗 (%s): %v", alias, err)
+			t.Fatalf("failed to save API key (%s): %v", alias, err)
 		}
 	}
 
-	// 保存済みのキー一覧を取得
+	// Retrieve list of saved keys
 	aliases, err := store.List()
 	if err != nil {
-		t.Fatalf("キー一覧の取得に失敗: %v", err)
+		t.Fatalf("failed to retrieve key list: %v", err)
 	}
 
-	// すべてのエイリアスが含まれていることを確認
+	// Verify all aliases are included
 	if len(aliases) != len(keys) {
-		t.Errorf("キー数 = %d; want %d", len(aliases), len(keys))
+		t.Errorf("key count = %d; want %d", len(aliases), len(keys))
 	}
 
 	for alias := range keys {
@@ -114,13 +114,13 @@ func TestStore_Listで保存済みキーを一覧取得(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Errorf("エイリアス %q が一覧に含まれていない", alias)
+			t.Errorf("alias %q not found in list", alias)
 		}
 	}
 }
 
-// TestStore_ParseAdminAPIKeyでキーをパース
-func TestStore_ParseAdminAPIKeyでキーをパース(t *testing.T) {
+// TestStore_ParseAdminAPIKey tests parsing Admin API keys
+func TestStore_ParseAdminAPIKey(t *testing.T) {
 	testCases := []struct {
 		name      string
 		input     string
@@ -129,19 +129,19 @@ func TestStore_ParseAdminAPIKeyでキーをパース(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name:       "正しいフォーマット",
+			name:       "valid format",
 			input:      "64fac5417c4c6b0001234567:89abcdef01234567890123456789abcd01234567890123456789abcdef0123",
 			wantID:     "64fac5417c4c6b0001234567",
 			wantSecret: "89abcdef01234567890123456789abcd01234567890123456789abcdef0123",
 			wantErr:    false,
 		},
 		{
-			name:    "コロンなし",
+			name:    "missing colon",
 			input:   "64fac5417c4c6b000123456789abcdef",
 			wantErr: true,
 		},
 		{
-			name:    "空文字列",
+			name:    "empty string",
 			input:   "",
 			wantErr: true,
 		},
@@ -153,13 +153,13 @@ func TestStore_ParseAdminAPIKeyでキーをパース(t *testing.T) {
 
 			if tc.wantErr {
 				if err == nil {
-					t.Error("エラーが返されるべきだが、nilが返された")
+					t.Error("expected error but got nil")
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("予期しないエラー: %v", err)
+				t.Fatalf("unexpected error: %v", err)
 			}
 
 			if id != tc.wantID {
@@ -172,59 +172,59 @@ func TestStore_ParseAdminAPIKeyでキーをパース(t *testing.T) {
 	}
 }
 
-// TestNewStore_GHO_KEYRING_BACKEND はGHO_KEYRING_BACKEND環境変数がバックエンドを上書きすることをテストします
+// TestNewStore_GHO_KEYRING_BACKEND tests that GHO_KEYRING_BACKEND environment variable overrides backend
 func TestNewStore_GHO_KEYRING_BACKEND(t *testing.T) {
-	// 環境変数を設定
+	// Set environment variable
 	os.Setenv("GHO_KEYRING_BACKEND", "file")
 	defer os.Unsetenv("GHO_KEYRING_BACKEND")
 
-	// backend引数に"auto"を渡しても、環境変数でfileが使用されるはず
+	// Even with "auto" as backend argument, environment variable should force "file" backend
 	store, err := NewStore("auto", t.TempDir())
 	if err != nil {
-		t.Fatalf("ストアの作成に失敗: %v", err)
+		t.Fatalf("failed to create store: %v", err)
 	}
 
-	// ストアが正しく作成されていることを確認（基本的な操作が可能）
+	// Verify store is properly created (basic operations work)
 	testKey := "test:key"
 	if err := store.Set("test", testKey); err != nil {
-		t.Fatalf("APIキーの保存に失敗: %v", err)
+		t.Fatalf("failed to save API key: %v", err)
 	}
 
 	retrieved, err := store.Get("test")
 	if err != nil {
-		t.Fatalf("APIキーの取得に失敗: %v", err)
+		t.Fatalf("failed to retrieve API key: %v", err)
 	}
 
 	if retrieved != testKey {
-		t.Errorf("取得したキー = %q; want %q", retrieved, testKey)
+		t.Errorf("retrieved key = %q; want %q", retrieved, testKey)
 	}
 }
 
-// TestNewStore_GHO_KEYRING_PASSWORD はGHO_KEYRING_PASSWORD環境変数がパスワードを提供することをテストします
+// TestNewStore_GHO_KEYRING_PASSWORD tests that GHO_KEYRING_PASSWORD environment variable provides password
 func TestNewStore_GHO_KEYRING_PASSWORD(t *testing.T) {
-	// パスワード環境変数を設定
+	// Set password environment variable
 	testPassword := "test-password"
 	os.Setenv("GHO_KEYRING_PASSWORD", testPassword)
 	defer os.Unsetenv("GHO_KEYRING_PASSWORD")
 
-	// fileバックエンドを使用してストアを作成
+	// Create store using file backend
 	store, err := NewStore("file", t.TempDir())
 	if err != nil {
-		t.Fatalf("ストアの作成に失敗: %v", err)
+		t.Fatalf("failed to create store: %v", err)
 	}
 
-	// ストアが正しく作成されていることを確認（基本的な操作が可能）
+	// Verify store is properly created (basic operations work)
 	testKey := "test:key"
 	if err := store.Set("test", testKey); err != nil {
-		t.Fatalf("APIキーの保存に失敗: %v", err)
+		t.Fatalf("failed to save API key: %v", err)
 	}
 
 	retrieved, err := store.Get("test")
 	if err != nil {
-		t.Fatalf("APIキーの取得に失敗: %v", err)
+		t.Fatalf("failed to retrieve API key: %v", err)
 	}
 
 	if retrieved != testKey {
-		t.Errorf("取得したキー = %q; want %q", retrieved, testKey)
+		t.Errorf("retrieved key = %q; want %q", retrieved, testKey)
 	}
 }

@@ -14,7 +14,7 @@ import (
 
 // TestGetSettings_設定一覧の取得
 func TestGetSettings_設定一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/settings/" {
@@ -82,7 +82,7 @@ func TestGetSettings_設定一覧の取得(t *testing.T) {
 
 // TestUpdateSettings_設定の更新
 func TestUpdateSettings_設定の更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/settings/" {

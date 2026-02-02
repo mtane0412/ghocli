@@ -1,6 +1,6 @@
 /**
  * config_test.go
- * configコマンドのテスト
+ * Test code for config command
  */
 
 package cmd
@@ -9,38 +9,38 @@ import (
 	"testing"
 )
 
-// TestConfigGetCmd_構造体が存在すること
-func TestConfigGetCmd_構造体が存在すること(t *testing.T) {
+// TestConfigGetCmd_StructExists verifies that ConfigGetCmd struct exists
+func TestConfigGetCmd_StructExists(t *testing.T) {
 	var cmd ConfigGetCmd
 	_ = cmd
 }
 
-// TestConfigSetCmd_構造体が存在すること
-func TestConfigSetCmd_構造体が存在すること(t *testing.T) {
+// TestConfigSetCmd_StructExists verifies that ConfigSetCmd struct exists
+func TestConfigSetCmd_StructExists(t *testing.T) {
 	var cmd ConfigSetCmd
 	_ = cmd
 }
 
-// TestConfigUnsetCmd_構造体が存在すること
-func TestConfigUnsetCmd_構造体が存在すること(t *testing.T) {
+// TestConfigUnsetCmd_StructExists verifies that ConfigUnsetCmd struct exists
+func TestConfigUnsetCmd_StructExists(t *testing.T) {
 	var cmd ConfigUnsetCmd
 	_ = cmd
 }
 
-// TestConfigListCmd_構造体が存在すること
-func TestConfigListCmd_構造体が存在すること(t *testing.T) {
+// TestConfigListCmd_StructExists verifies that ConfigListCmd struct exists
+func TestConfigListCmd_StructExists(t *testing.T) {
 	var cmd ConfigListCmd
 	_ = cmd
 }
 
-// TestConfigPathCmd_構造体が存在すること
-func TestConfigPathCmd_構造体が存在すること(t *testing.T) {
+// TestConfigPathCmd_StructExists verifies that ConfigPathCmd struct exists
+func TestConfigPathCmd_StructExists(t *testing.T) {
 	var cmd ConfigPathCmd
 	_ = cmd
 }
 
-// TestConfigKeysCmd_構造体が存在すること
-func TestConfigKeysCmd_構造体が存在すること(t *testing.T) {
+// TestConfigKeysCmd_StructExists verifies that ConfigKeysCmd struct exists
+func TestConfigKeysCmd_StructExists(t *testing.T) {
 	var cmd ConfigKeysCmd
 	_ = cmd
 }

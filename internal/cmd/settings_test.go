@@ -1,6 +1,6 @@
 /**
  * settings_test.go
- * 設定管理コマンドのテストコード
+ * Test code for settings management commands
  */
 
 package cmd
@@ -9,20 +9,20 @@ import (
 	"testing"
 )
 
-// TestSettingsListCmd_構造体が存在すること
-func TestSettingsListCmd_構造体が存在すること(t *testing.T) {
-	// SettingsListCmdが定義されていることを確認
+// TestSettingsListCmd_StructExists verifies that SettingsListCmd struct exists
+func TestSettingsListCmd_StructExists(t *testing.T) {
+	// Verify that SettingsListCmd is defined
 	_ = &SettingsListCmd{}
 }
 
-// TestSettingsGetCmd_構造体が存在すること
-func TestSettingsGetCmd_構造体が存在すること(t *testing.T) {
-	// SettingsGetCmdが定義されていることを確認
+// TestSettingsGetCmd_StructExists verifies that SettingsGetCmd struct exists
+func TestSettingsGetCmd_StructExists(t *testing.T) {
+	// Verify that SettingsGetCmd is defined
 	_ = &SettingsGetCmd{}
 }
 
-// TestSettingsSetCmd_構造体が存在すること
-func TestSettingsSetCmd_構造体が存在すること(t *testing.T) {
-	// SettingsSetCmdが定義されていることを確認
+// TestSettingsSetCmd_StructExists verifies that SettingsSetCmd struct exists
+func TestSettingsSetCmd_StructExists(t *testing.T) {
+	// Verify that SettingsSetCmd is defined
 	_ = &SettingsSetCmd{}
 }

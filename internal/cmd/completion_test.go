@@ -1,6 +1,6 @@
 /**
  * completion_test.go
- * シェル補完機能のテスト
+ * Tests for shell completion functionality
  */
 
 package cmd
@@ -320,7 +320,7 @@ func TestCompletionInternalCmd_Run(t *testing.T) {
 
 // TestCompletionCmd_Run はcompletionコマンドが動作することをテストします
 func TestCompletionCmd_Run(t *testing.T) {
-	// このテストは実際の実行は難しいため、基本的なパース確認のみ
+	// このテストはactualの実行は難しいため、基本的なパース確認のみ
 	var cli CLI
 	parser, err := NewParserForTest(&cli)
 	require.NoError(t, err)

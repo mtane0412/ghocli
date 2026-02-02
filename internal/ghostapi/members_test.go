@@ -15,7 +15,7 @@ import (
 
 // TestListMembers_メンバー一覧の取得
 func TestListMembers_メンバー一覧の取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/members/" {
@@ -102,7 +102,7 @@ func TestListMembers_メンバー一覧の取得(t *testing.T) {
 
 // TestListMembers_filterパラメータ
 func TestListMembers_filterパラメータ(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クエリパラメータの検証
 		if !r.URL.Query().Has("filter") {
@@ -164,7 +164,7 @@ func TestListMembers_filterパラメータ(t *testing.T) {
 
 // TestGetMember_IDでメンバーを取得
 func TestGetMember_IDでメンバーを取得(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/members/64fac5417c4c6b0001234567/"
@@ -219,7 +219,7 @@ func TestGetMember_IDでメンバーを取得(t *testing.T) {
 
 // TestCreateMember_メンバーの作成
 func TestCreateMember_メンバーの作成(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		if r.URL.Path != "/ghost/api/admin/members/" {
@@ -292,7 +292,7 @@ func TestCreateMember_メンバーの作成(t *testing.T) {
 
 // TestUpdateMember_メンバーの更新
 func TestUpdateMember_メンバーの更新(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/members/64fac5417c4c6b0001234567/"
@@ -355,7 +355,7 @@ func TestUpdateMember_メンバーの更新(t *testing.T) {
 
 // TestDeleteMember_メンバーの削除
 func TestDeleteMember_メンバーの削除(t *testing.T) {
-	// テスト用のHTTPサーバーを作成
+	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リクエストの検証
 		expectedPath := "/ghost/api/admin/members/64fac5417c4c6b0001234567/"

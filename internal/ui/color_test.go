@@ -27,7 +27,7 @@ func TestShouldUseColor_AlwaysMode(t *testing.T) {
 
 // TestShouldUseColor_NO_COLOR はNO_COLOR環境変数が設定されている場合にカラー出力が無効になることをテストします
 func TestShouldUseColor_NO_COLOR(t *testing.T) {
-	// NO_COLOR環境変数を設定
+	// NO_COLORSet environment variable
 	os.Setenv("NO_COLOR", "1")
 	defer os.Unsetenv("NO_COLOR")
 
