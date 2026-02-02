@@ -21,8 +21,8 @@ import (
 // PagesCmd はページ管理コマンドです
 type PagesCmd struct {
 	List   PagesListCmd   `cmd:"" help:"List pages"`
-	Get    PagesInfoCmd   `cmd:"" help:"ページの情報を表示"`
-	Cat    PagesCatCmd    `cmd:"" help:"本文コンテンツを表示"`
+	Get    PagesInfoCmd   `cmd:"" help:"Show page information"`
+	Cat    PagesCatCmd    `cmd:"" help:"Show content body"`
 	Create PagesCreateCmd `cmd:"" help:"Create a page"`
 	Update PagesUpdateCmd `cmd:"" help:"Update a page"`
 	Delete PagesDeleteCmd `cmd:"" help:"Delete a page"`
@@ -47,7 +47,7 @@ type PagesCmd struct {
 	Search PagesSearchCmd `cmd:"" help:"Search pages"`
 
 	// Phase 8.3: コピー
-	Copy PagesCopyCmd `cmd:"" help:"ページをコピー"`
+	Copy PagesCopyCmd `cmd:"" help:"Copy a page"`
 }
 
 // PagesListCmd is the command to retrieve ページ list

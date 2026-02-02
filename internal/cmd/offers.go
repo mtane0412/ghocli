@@ -20,7 +20,7 @@ import (
 // OffersCmd はオファー管理コマンドです
 type OffersCmd struct {
 	List   OffersListCmd   `cmd:"" help:"List offers"`
-	Get    OffersInfoCmd   `cmd:"" help:"オファーの情報を表示"`
+	Get    OffersInfoCmd   `cmd:"" help:"Show offer information"`
 	Create OffersCreateCmd `cmd:"" help:"Create an offer"`
 	Update OffersUpdateCmd `cmd:"" help:"Update an offer"`
 

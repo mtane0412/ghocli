@@ -20,7 +20,7 @@ import (
 // NewslettersCmd はニュースレター管理コマンドです
 type NewslettersCmd struct {
 	List   NewslettersListCmd   `cmd:"" help:"List newsletters"`
-	Get    NewslettersInfoCmd   `cmd:"" help:"ニュースレターの情報を表示"`
+	Get    NewslettersInfoCmd   `cmd:"" help:"Show newsletter information"`
 	Create NewslettersCreateCmd `cmd:"" help:"Create a newsletter"`
 	Update NewslettersUpdateCmd `cmd:"" help:"Update a newsletter"`
 }

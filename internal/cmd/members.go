@@ -20,7 +20,7 @@ import (
 // MembersCmd はメンバー管理コマンドです
 type MembersCmd struct {
 	List   MembersListCmd   `cmd:"" help:"List members"`
-	Get    MembersInfoCmd   `cmd:"" help:"メンバーの情報を表示"`
+	Get    MembersInfoCmd   `cmd:"" help:"Show member information"`
 	Create MembersCreateCmd `cmd:"" help:"Create a member"`
 	Update MembersUpdateCmd `cmd:"" help:"Update a member"`
 	Delete MembersDeleteCmd `cmd:"" help:"Delete a member"`
