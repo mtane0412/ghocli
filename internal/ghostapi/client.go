@@ -16,6 +16,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	neturl "net/url"
 	"strings"
 	"time"
 )
@@ -71,6 +72,16 @@ func NewClient(baseURL, keyID, secret string) (*Client, error) {
 
 // doRequest executes an HTTP request and returns the response body.
 func (c *Client) doRequest(method, path string, body io.Reader) ([]byte, error) {
+	return c.doRequestWithOptions(method, path, body, nil)
+}
+
+// RequestOptions contains optional parameters for requests
+type RequestOptions struct {
+	QueryParams map[string]string
+}
+
+// doRequestWithOptions executes an HTTP request with optional parameters and returns the response body.
+func (c *Client) doRequestWithOptions(method, path string, body io.Reader, opts *RequestOptions) ([]byte, error) {
 	// Generate JWT token
 	token, err := GenerateJWT(c.keyID, c.secret)
 	if err != nil {
@@ -78,10 +89,30 @@ func (c *Client) doRequest(method, path string, body io.Reader) ([]byte, error) 
 	}
 
 	// Build request URL
-	url := c.baseURL + path
+	requestURL := c.baseURL + path
+
+	// Add query parameters if provided
+	// url.Valuesを使用してクエリパラメータを適切にエンコードする
+	// （特殊文字、日本語、スペースなどを正しくエスケープ）
+	if opts != nil && len(opts.QueryParams) > 0 {
+		values := neturl.Values{}
+		for key, val := range opts.QueryParams {
+			if val != "" {
+				values.Set(key, val)
+			}
+		}
+		if len(values) > 0 {
+			// URLにクエリパラメータが既に含まれているかチェック
+			if strings.Contains(requestURL, "?") {
+				requestURL += "&" + values.Encode()
+			} else {
+				requestURL += "?" + values.Encode()
+			}
+		}
+	}
 
 	// Create HTTP request
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequest(method, requestURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -153,10 +184,10 @@ func (c *Client) doMultipartRequest(path string, file io.Reader, filename string
 	}
 
 	// Build request URL
-	url := c.baseURL + path
+	requestURL := c.baseURL + path
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", url, body)
+	req, err := http.NewRequest("POST", requestURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
