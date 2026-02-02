@@ -88,7 +88,7 @@ brews:
       email: bot@goreleaser.com
 
     # formulaの配置ディレクトリ（tapのルートに配置）
-    folder: Formula
+    directory: Formula
 
     # 説明
     description: "Ghost Admin API CLI Tool"
