@@ -9,10 +9,12 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/mtane0412/gho/internal/config"
+	"github.com/mtane0412/gho/internal/errfmt"
 	"github.com/mtane0412/gho/internal/ghostapi"
 	"github.com/mtane0412/gho/internal/outfmt"
 	"github.com/mtane0412/gho/internal/secrets"
@@ -69,7 +71,7 @@ func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
 	// 設定を読み込む
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("設定の読み込みに失敗: %w", err)
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// サイトURLを決定
@@ -78,14 +80,14 @@ func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
 		siteURL = cfg.DefaultSite
 	}
 	if siteURL == "" {
-		return nil, fmt.Errorf("サイトが指定されていません。-s フラグでサイトを指定するか、デフォルトサイトを設定してください")
+		return nil, errors.New(errfmt.FormatSiteError())
 	}
 
 	// エイリアスの場合はURLに変換
 	if url, ok := cfg.GetSiteURL(siteURL); ok {
 		siteURL = url
 	} else {
-		return nil, fmt.Errorf("サイト '%s' が見つかりません", siteURL)
+		return nil, fmt.Errorf("site '%s' not found", siteURL)
 	}
 
 	// エイリアスを逆引き
@@ -97,18 +99,18 @@ func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
 		}
 	}
 	if alias == "" {
-		return nil, fmt.Errorf("サイトURLに対応するエイリアスが見つかりません")
+		return nil, fmt.Errorf("alias not found for site URL")
 	}
 
 	// キーリングからAPIキーを取得
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
-		return nil, fmt.Errorf("キーリングのオープンに失敗: %w", err)
+		return nil, fmt.Errorf("failed to open keyring: %w", err)
 	}
 
 	apiKey, err := store.Get(alias)
 	if err != nil {
-		return nil, fmt.Errorf("APIキーの取得に失敗: %w", err)
+		return nil, errors.New(errfmt.FormatAuthError(alias))
 	}
 
 	// APIキーをパース
