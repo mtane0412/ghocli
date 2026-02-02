@@ -1,241 +1,277 @@
-# gho - Ghost Admin API CLI
+# gho — Ghost in your terminal.
 
-A CLI tool for Ghost Admin API with the user experience of gog-cli.
+Fast, script-friendly CLI for Ghost Admin API. JSON-first output, multiple sites, and secure credential storage built in.
+
+> **Inspired by [gogcli](https://github.com/steipete/gogcli)** — This project is heavily influenced by gogcli's design philosophy and user experience. The motivation was simple: "I wanted a Ghost version of gogcli."
 
 ## Features
 
-- Execute Ghost Admin API operations from the command line
-- Secure API key storage using OS keyrings (macOS Keychain, Linux Secret Service, Windows Credential Manager)
-- Multi-site support (alias functionality)
-- Output in JSON/Table/TSV formats
-- Robust implementation through TDD (Test-Driven Development)
+**Content Management**
+- **Posts** — list, search, create, update, delete, publish, unpublish, schedule, drafts, copy
+- **Pages** — full CRUD operations, content export
+- **Tags** — manage tags with visibility control (public/internal)
 
-## Implementation Status
+**User & Member Management**
+- **Members** — manage subscribers with filters, labels, and notes
+- **Users** — view and update staff users with role information
+- **Newsletters** — create and manage newsletters with sender configuration
 
-✅ **Phase 1-7 Complete** - All major Ghost Admin API features implemented
+**Monetization**
+- **Tiers** — manage membership tiers (free/paid) with pricing
+- **Offers** — create discount codes and promotions (percentage/fixed amount)
 
-**Implemented Features**:
-- Authentication Management (Auth)
-- Site Information (Site)
-- Post Management (Posts)
-- Page Management (Pages)
-- Tag Management (Tags)
-- Image Management (Images)
-- Member Management (Members)
-- User Management (Users)
-- Newsletters (Newsletters)
-- Tiers (Tiers)
-- Offers (Offers)
-- Theme Management (Themes)
-- Webhook Management (Webhooks)
+**Site Management**
+- **Images** — upload images with purpose specification (profile_image, icon, etc.)
+- **Themes** — list, upload, and activate themes
+- **Webhooks** — create, update, and delete webhooks for events
+- **Settings** — view site settings and configuration
 
-See [`docs/PROJECT_STATUS.md`](./docs/PROJECT_STATUS.md) for details.
+**Developer Experience**
+- **Multiple sites** — manage multiple Ghost sites with aliases
+- **Secure storage** — OS keyring integration (Keychain, Secret Service, Credential Manager)
+- **Output formats** — JSON, Table, TSV (Plain) for scripting
+- **Batch operations** — combine with `jq` for powerful automation
 
 ## Installation
 
+### Build from Source
+
 ```bash
-# Build from source
 git clone https://github.com/mtane0412/gho.git
 cd gho
 make build
+```
 
-# Or
+The binary will be created as `./gho` in the project directory.
+
+### Go Install
+
+```bash
 go install github.com/mtane0412/gho/cmd/gho@latest
 ```
 
-## Usage
+Make sure `$GOPATH/bin` is in your `PATH`.
 
-### Authentication Setup
+## Quick Start
+
+### 1. Get Admin API Key
+
+Navigate to your Ghost Admin panel:
+1. Go to **Settings** → **Integrations**
+2. Click **Add custom integration**
+3. Name it (e.g., "CLI Access")
+4. Copy the **Admin API Key**
+
+### 2. Add Authentication
 
 ```bash
-# Register Ghost Admin API key
 gho auth add https://your-blog.ghost.io
+# Paste your Admin API key when prompted
+```
 
-# List registered sites
+### 3. Run Your First Command
+
+```bash
+gho posts list
+```
+
+That's it! You're ready to manage your Ghost site from the terminal.
+
+## Authentication & Secrets
+
+### Keyring Backends
+
+gho stores credentials securely using your operating system's keyring:
+
+- **macOS**: Keychain
+- **Linux**: Secret Service (GNOME Keyring, KWallet)
+- **Windows**: Credential Manager
+
+### Environment Variables
+
+Configure keyring behavior with environment variables:
+
+```bash
+# Force a specific backend
+export GHO_KEYRING_BACKEND=keychain  # or: file, secretservice, wincred, auto
+
+# Set password for file-based backend
+export GHO_KEYRING_PASSWORD="your-secure-password"
+```
+
+### Multiple Sites
+
+Manage multiple Ghost sites with aliases:
+
+```bash
+# Add sites with custom aliases
+gho auth add https://blog.example.com --alias myblog
+gho auth add https://news.example.com --alias news
+
+# List all registered sites
 gho auth list
+
+# Use specific site
+gho -s myblog posts list
+gho -s news posts list
 
 # Check authentication status
 gho auth status
+gho auth status -s myblog
+```
 
-# Remove site authentication
-gho auth remove <alias>
+## Configuration
+
+### Config File
+
+Configuration is stored at `~/.config/gho/config.json`.
+
+### Available Settings
+
+```bash
+# View all configuration keys
+gho config keys
+
+# Get a specific value
+gho config get default_site
+
+# Set a value
+gho config set default_site myblog
+
+# Unset a value
+gho config unset default_site
+
+# List all current settings
+gho config list
+
+# Show config file path
+gho config path
+```
+
+### Site Selection Priority
+
+When running commands, gho selects the site in this order:
+1. `--site` flag
+2. `GHO_SITE` environment variable
+3. `default_site` config value
+
+## Commands
+
+### Authentication
+
+```bash
+gho auth add <url>              # Add new site
+gho auth list                   # List registered sites
+gho auth remove <alias>         # Remove site
+gho auth status                 # Check authentication status
+gho auth tokens                 # List stored tokens
+gho auth credentials            # Show credentials (admin-only)
+```
+
+### Configuration
+
+```bash
+gho config get <key>            # Get config value
+gho config set <key> <value>    # Set config value
+gho config unset <key>          # Unset config value
+gho config list                 # List all settings
+gho config path                 # Show config file path
+gho config keys                 # Show available keys
 ```
 
 ### Site Information
 
 ```bash
-# Get site information
-gho site
-
-# Get information for a specific site
-gho -s myblog site
-
-# Output in JSON format
-gho site --json
+gho site                        # Get site information
+gho site --json                 # Output as JSON
 ```
 
 ### Posts
 
 ```bash
-# List posts
-gho posts list
+# List & Search
+gho posts list                  # List all posts
+gho posts list --status draft   # Filter by status (draft/published/scheduled)
+gho posts list --limit 10       # Limit results
+gho posts search <query>        # Search posts by keyword
+gho posts drafts                # List draft posts only
+gho posts url <url>             # Get post by URL
 
-# Filter by status
-gho posts list --status draft
-gho posts list --status published
-gho posts list --status scheduled
+# View
+gho posts info <id-or-slug>     # Get post details
+gho posts cat <id-or-slug>      # Display post content
+gho posts cat <id> --format text    # Display as plain text
+gho posts cat <id> --format lexical # Display as Lexical JSON
 
-# Limit number of results
-gho posts list --limit 10
-
-# Get post details (by ID or Slug)
-gho posts info <id-or-slug>
-
-# Display post content
-gho posts cat <id-or-slug>
-gho posts cat <id-or-slug> --format text    # Display as text
-gho posts cat <id-or-slug> --format lexical # Display as Lexical JSON
-
-# Create new post
-gho posts create --title "Title" --html "Content" --status draft
-
-# Update post
+# Create & Update
+gho posts create --title "Title" --html "Content"
+gho posts create --title "New Post" --status draft
 gho posts update <id> --title "New Title"
 gho posts update <id> --html "New Content"
+gho posts copy <id-or-slug>     # Copy post as new draft
+gho posts copy <id> --title "Copy of Original"
 
-# Delete post
-gho posts delete <id>
+# Publishing
+gho posts publish <id>          # Publish immediately
+gho posts unpublish <id>        # Unpublish to draft
+gho posts schedule <id> "2026-12-31T23:59:59Z"  # Schedule publication
 
-# Publish post
-gho posts publish <id>
+# Delete
+gho posts delete <id>           # Delete post
+gho posts delete <id> --force   # Skip confirmation
 
-# Copy post (create as new draft)
-gho posts copy <id-or-slug>
-gho posts copy <id-or-slug> --title "New Title"
+# Batch Operations
+gho posts batch create --file posts.json
+gho posts batch update --file updates.json
+gho posts batch delete --file ids.json
 ```
 
 ### Pages
 
 ```bash
-# List pages
-gho pages list
-
-# Filter by status
-gho pages list --status draft
-gho pages list --status published
-gho pages list --status scheduled
-
-# Limit number of results
-gho pages list --limit 10
-
-# Get page details (by ID or Slug)
-gho pages info <id-or-slug>
-
-# Display page content
-gho pages cat <id-or-slug>
-gho pages cat <id-or-slug> --format text    # Display as text
-gho pages cat <id-or-slug> --format lexical # Display as Lexical JSON
-
-# Create new page
+gho pages list                  # List all pages
+gho pages list --status draft   # Filter by status
+gho pages info <id-or-slug>     # Get page details
+gho pages cat <id-or-slug>      # Display page content
 gho pages create --title "Title" --html "Content"
-
-# Update page
 gho pages update <id> --title "New Title"
-gho pages update <id> --html "New Content"
-
-# Delete page
-gho pages delete <id>
-
-# Copy page (create as new draft)
-gho pages copy <id-or-slug>
-gho pages copy <id-or-slug> --title "New Title"
+gho pages delete <id>           # Delete page
+gho pages copy <id-or-slug>     # Copy page as new draft
 ```
 
 ### Tags
 
 ```bash
-# List tags
-gho tags list
-
-# Limit number of results
-gho tags list --limit 10
-
-# Get tag details (by ID or Slug)
-gho tags info <id-or-slug>
-gho tags info slug:technology
-
-# Create new tag
-gho tags create --name "Technology" --description "Technical articles"
-
-# Specify tag visibility
+gho tags list                   # List all tags
+gho tags info <id-or-slug>      # Get tag details
+gho tags info slug:technology   # Get tag by slug
+gho tags create --name "Tech" --description "Technical posts"
 gho tags create --name "Internal" --visibility internal
-
-# Update tag
-gho tags update <id> --name "Tech" --description "New description"
-
-# Delete tag
-gho tags delete <id>
-```
-
-### Images
-
-```bash
-# Upload image
-gho images upload path/to/image.jpg
-
-# Upload with purpose
-gho images upload avatar.png --purpose profile_image
-gho images upload icon.png --purpose icon
-
-# Specify reference ID
-gho images upload banner.jpg --ref post-123
+gho tags update <id> --name "Technology"
+gho tags delete <id>            # Delete tag
 ```
 
 ### Members
 
 ```bash
-# List members
-gho members list
-
-# Limit number of results
-gho members list --limit 10
-
-# Apply filter
-gho members list --filter "status:paid"
-
-# Get member details
-gho members info <id>
-
-# Create new member
-gho members create --email "user@example.com" --name "Taro Yamada"
-
-# Create member with labels
+gho members list                # List all members
+gho members list --limit 10     # Limit results
+gho members list --filter "status:paid"  # Apply filter
+gho members info <id>           # Get member details
+gho members create --email "user@example.com" --name "John Doe"
 gho members create --email "user@example.com" --labels "VIP,Premium"
-
-# Update member
-gho members update <id> --name "Hanako Tanaka" --note "Important customer"
-
-# Delete member
-gho members delete <id>
+gho members update <id> --name "Jane Doe" --note "Important customer"
+gho members delete <id>         # Delete member
 ```
 
 ### Users
 
 ```bash
-# List users
-gho users list
-
-# Include role information
-gho users list --include roles
-
-# Include post count
-gho users list --include count.posts
-
-# Get user details (by ID or Slug)
-gho users info <id-or-slug>
-gho users info slug:john-doe
-
-# Update user information
+gho users list                  # List all users
+gho users list --include roles  # Include role information
+gho users list --include count.posts  # Include post count
+gho users info <id-or-slug>     # Get user details
+gho users info slug:john-doe    # Get user by slug
 gho users update <id> --name "New Name" --bio "New bio"
 gho users update <id> --location "Tokyo" --website "https://example.com"
 ```
@@ -243,23 +279,12 @@ gho users update <id> --location "Tokyo" --website "https://example.com"
 ### Newsletters
 
 ```bash
-# List newsletters
-gho newsletters list
-
-# Apply filter
+gho newsletters list            # List all newsletters
 gho newsletters list --filter "status:active"
-
-# Get newsletter details (by ID or Slug)
 gho newsletters info <id-or-slug>
 gho newsletters info slug:weekly-newsletter
-
-# Create new newsletter
-gho newsletters create --name "Weekly Newsletter" --description "Delivered every Friday"
-
-# Create with sender information
-gho newsletters create --name "Monthly Letter" --sender-name "Editorial Team" --sender-email "editor@example.com"
-
-# Update newsletter
+gho newsletters create --name "Weekly" --description "Delivered every Friday"
+gho newsletters create --name "Monthly" --sender-name "Editorial" --sender-email "editor@example.com"
 gho newsletters update <id> --name "New Name"
 gho newsletters update <id> --visibility paid --subscribe-on-signup=false
 ```
@@ -267,26 +292,13 @@ gho newsletters update <id> --visibility paid --subscribe-on-signup=false
 ### Tiers
 
 ```bash
-# List tiers
-gho tiers list
-
-# Include price information
+gho tiers list                  # List all tiers
 gho tiers list --include monthly_price,yearly_price
-
-# Get tier details (by ID or Slug)
 gho tiers info <id-or-slug>
 gho tiers info slug:premium
-
-# Create new tier (free plan)
 gho tiers create --name "Free Plan" --type free
-
-# Create paid tier
 gho tiers create --name "Premium" --type paid --monthly-price 1000 --yearly-price 10000 --currency JPY
-
-# Create tier with benefits
 gho tiers create --name "VIP" --type paid --monthly-price 3000 --benefits "Priority Support" --benefits "Exclusive Content"
-
-# Update tier
 gho tiers update <id> --name "New Premium"
 gho tiers update <id> --monthly-price 1200 --yearly-price 12000
 ```
@@ -294,76 +306,67 @@ gho tiers update <id> --monthly-price 1200 --yearly-price 12000
 ### Offers
 
 ```bash
-# List offers
-gho offers list
-
-# Apply filter
+gho offers list                 # List all offers
 gho offers list --filter "status:active"
-
-# Get offer details
 gho offers info <id>
-
-# Create percentage discount offer
-gho offers create --name "New Member Discount" --code "WELCOME2024" --type percent --amount 20 --tier-id <tier-id>
-
-# Create fixed amount discount offer
-gho offers create --name "500 Yen Off" --code "SAVE500" --type fixed --amount 500 --currency JPY --tier-id <tier-id>
-
-# Create limited time offer
-gho offers create --name "3 Month Discount" --code "TRIAL3M" --type percent --amount 50 --duration repeating --duration-in-months 3 --tier-id <tier-id>
-
-# Update offer
-gho offers update <id> --name "New Registration Campaign"
+gho offers create --name "Welcome" --code "WELCOME2024" --type percent --amount 20 --tier-id <tier-id>
+gho offers create --name "500 Off" --code "SAVE500" --type fixed --amount 500 --currency JPY --tier-id <tier-id>
+gho offers create --name "3 Month" --code "TRIAL3M" --type percent --amount 50 --duration repeating --duration-in-months 3 --tier-id <tier-id>
+gho offers update <id> --name "New Campaign"
 gho offers update <id> --amount 30
+```
+
+### Images
+
+```bash
+gho images upload path/to/image.jpg
+gho images upload avatar.png --purpose profile_image
+gho images upload icon.png --purpose icon
+gho images upload banner.jpg --ref post-123
 ```
 
 ### Themes
 
 ```bash
-# List themes
-gho themes list
-
-# Upload theme
-gho themes upload path/to/theme.zip
-
-# Activate theme
-gho themes activate casper
+gho themes list                 # List installed themes
+gho themes upload theme.zip     # Upload and install theme
+gho themes activate casper      # Activate theme by name
 ```
 
 ### Webhooks
 
 ```bash
-# Create webhook
 gho webhooks create --event post.published --target-url https://example.com/webhook
-
-# Create webhook with name
 gho webhooks create --event member.added --target-url https://example.com/webhook --name "Member notification"
-
-# Update webhook
 gho webhooks update <id> --target-url https://new-example.com/webhook
-
-# Delete webhook
 gho webhooks delete <id>
+```
+
+### Settings
+
+```bash
+gho settings list               # List all settings
+gho settings info <key>         # Get specific setting
 ```
 
 ## Output Formats
 
-gho supports three output formats:
+gho supports three output formats optimized for different use cases.
 
-### Table Format (Default)
+### Table (Default)
 
-Outputs in human-readable format.
+Human-readable format with aligned columns.
 
-**info commands (single item)**:
+**Single item:**
 ```bash
 $ gho site
 title        My Blog
-description  A technical blog about...
-url          https://hanatane.net/
+description  A technical blog about programming
+url          https://blog.example.com/
 version      6.8
 ```
 
-**list commands (multiple items)**:
+**Multiple items:**
 ```bash
 $ gho posts list --limit 3
 ID                        TITLE                     STATUS     CREATED     PUBLISHED
@@ -371,105 +374,189 @@ ID                        TITLE                     STATUS     CREATED     PUBLI
 696ce7244921c40001f017ed  Dev Environment 2026      published  2026-01-18  2026-01-28
 ```
 
-### Plain Format (TSV)
+### Plain (TSV)
 
-Tab-separated format suitable for scripting and pipelines.
+Tab-separated values for scripting and pipelines.
 
 ```bash
-$ gho site --plain
-title	My Blog
-description	A technical blog about...
-url	https://hanatane.net/
-version	6.8
-
 $ gho posts list --plain --limit 2
 ID	TITLE	STATUS	CREATED	PUBLISHED
 697b61d44921c40001f01aa3	Cannot/Don't Use CLI	draft	2026-01-29
 696ce7244921c40001f017ed	Dev Environment 2026	published	2026-01-18	2026-01-28
+
+$ gho posts list --plain | cut -f2  # Extract titles only
 ```
 
-### JSON Format
+### JSON
 
-Format suitable for programmatic processing and API integration.
+Structured data for programmatic processing.
 
 ```bash
 $ gho site --json
 {
   "site": {
     "title": "My Blog",
-    "description": "A technical blog about...",
-    "url": "https://hanatane.net/",
+    "description": "A technical blog about programming",
+    "url": "https://blog.example.com/",
     "version": "6.8"
   }
 }
+
+$ gho posts list --json --limit 1 | jq '.posts[0].title'
+"Cannot/Don't Use CLI"
 ```
 
-## Global Options
+## Examples
 
-The following options are available for all commands:
+### Search and List Posts
 
 ```bash
-# Output in JSON format
-gho posts list --json
+# Find posts about "docker"
+gho posts search docker --json | jq '.posts[] | {title, slug, status}'
 
-# Output in TSV format (for script integration)
-gho posts list --plain
+# List all draft posts
+gho posts drafts --json | jq '.posts[] | .title'
 
-# Specify site
-gho -s myblog posts list
-
-# Skip confirmation (create/update/delete commands)
-gho posts delete <id> --force
-gho newsletters create --name "Test" --force
-gho tiers update <id> --name "New Name" --force
-
-# Display verbose logs
-gho -v posts list
+# Get published posts from last 30 days
+gho posts list --status published --json | jq '.posts[] | select(.published_at > (now - 2592000))'
 ```
 
-## Architecture
+### Batch Operations with jq
 
-gho is implemented based on gogcli's design patterns with the following characteristics:
+```bash
+# Get all post IDs
+gho posts list --json | jq -r '.posts[].id'
 
-### Design Principles
+# Export all published post titles and URLs
+gho posts list --status published --json | \
+  jq -r '.posts[] | [.title, .url] | @tsv' > posts.tsv
 
-- **Context propagation**: All commands use context to safely propagate output mode and UI instances
-- **Exit code management**: Proper exit code control through ExitError type
-- **TDD**: Robust implementation through Test-Driven Development
-- **Type safety**: Maximum utilization of Go's type system
+# Bulk update: add tag to all draft posts
+gho posts drafts --json | \
+  jq -r '.posts[].id' | \
+  xargs -I {} gho posts update {} --tags "draft-review"
 
-### Main Components
+# Create posts from JSON file
+cat posts.json | \
+  jq -c '.[]' | \
+  while read post; do
+    gho posts create \
+      --title "$(echo $post | jq -r .title)" \
+      --html "$(echo $post | jq -r .content)" \
+      --status draft
+  done
+```
 
-- **internal/cmd**: Command implementations (all commands have `Run(ctx context.Context, root *RootFlags) error` signature)
-- **internal/outfmt**: Output format management (JSON/Table/Plain)
-- **internal/ui**: UI output management (stdout/stderr separation)
-- **internal/ghostapi**: Ghost Admin API client
-- **internal/secrets**: OS keyring integration
-- **internal/config**: Configuration file management
+### Multi-Site Management
 
-For details, see:
-- [Design Unification Progress](./docs/gogcli-alignment-status.md)
-- [Remaining Tasks Implementation Guide](./docs/remaining-tasks-guide.md)
+```bash
+# Add multiple sites
+gho auth add https://blog.example.com --alias blog
+gho auth add https://news.example.com --alias news
+
+# Set default site
+gho config set default_site blog
+
+# Run commands on different sites
+gho posts list                    # Uses default (blog)
+gho -s news posts list            # Uses news site
+GHO_SITE=news gho members list    # Environment variable
+
+# Compare post counts across sites
+echo "Blog: $(gho -s blog posts list --json | jq '.posts | length')"
+echo "News: $(gho -s news posts list --json | jq '.posts | length')"
+```
+
+### Automated Publishing Workflow
+
+```bash
+#!/bin/bash
+# Publish all scheduled posts that are ready
+
+# Get current timestamp
+NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Find and publish ready posts
+gho posts list --status scheduled --json | \
+  jq -r --arg now "$NOW" '.posts[] | select(.published_at <= $now) | .id' | \
+  xargs -I {} gho posts publish {} --force
+
+echo "✅ Published all ready posts"
+```
+
+## Global Flags
+
+These flags work with all commands:
+
+| Flag | Short | Environment Variable | Description |
+|------|-------|---------------------|-------------|
+| `--site <alias>` | `-s` | `GHO_SITE` | Specify site alias or URL |
+| `--json` | | `GHO_JSON=1` | Output as JSON |
+| `--plain` | | `GHO_PLAIN=1` | Output as TSV (tab-separated) |
+| `--fields <list>` | `-F` | `GHO_FIELDS` | Select specific fields to display |
+| `--force` | `-f` | | Skip confirmation prompts |
+| `--no-input` | | `GHO_NO_INPUT=1` | Non-interactive mode (fail if input required) |
+| `--verbose` | `-v` | `GHO_VERBOSE=1` | Enable verbose logging |
+| `--color <mode>` | | `GHO_COLOR` | Color output (auto/always/never) |
+
+### Examples
+
+```bash
+# Combine flags
+gho -s myblog posts list --json --fields id,title,status
+
+# Use environment variables
+export GHO_SITE=myblog
+export GHO_JSON=1
+gho posts list
+
+# Force mode for automation
+gho posts delete abc123 --force
+gho newsletters create --name "Test" --force
+```
+
+## Shell Completions
+
+Generate shell completion scripts for faster typing.
+
+### Bash
+
+```bash
+# Generate completion script
+gho completion bash > /etc/bash_completion.d/gho
+
+# Or for user-level installation
+gho completion bash > ~/.local/share/bash-completion/completions/gho
+```
+
+### Zsh
+
+```bash
+# Generate completion script
+gho completion zsh > "${fpath[1]}/_gho"
+
+# Then reload your shell
+source ~/.zshrc
+```
+
+### Fish
+
+```bash
+gho completion fish > ~/.config/fish/completions/gho.fish
+```
+
+### PowerShell
+
+```powershell
+gho completion powershell | Out-String | Invoke-Expression
+```
 
 ## Development
 
-### Run Tests
+### Prerequisites
 
-```bash
-make test
-```
-
-### Run Lint
-
-```bash
-make lint
-```
-
-### Type Check
-
-```bash
-make type-check
-```
+- Go 1.23 or later
+- Make
 
 ### Build
 
@@ -477,6 +564,88 @@ make type-check
 make build
 ```
 
+The binary will be created as `./gho`.
+
+### Run Tests
+
+```bash
+make test
+```
+
+### Run Linter
+
+```bash
+make lint
+```
+
+Requires [golangci-lint](https://golangci-lint.run/) to be installed.
+
+### Type Check
+
+```bash
+make type-check
+```
+
+### Test Coverage
+
+```bash
+make test-coverage
+```
+
+Opens coverage report in your browser at `coverage.html`.
+
+### All Quality Checks
+
+```bash
+make lint
+make type-check
+make test
+```
+
+## Architecture
+
+### Design Philosophy
+
+gho is **heavily inspired by [gogcli](https://github.com/steipete/gogcli)**, a CLI tool for Google services. The entire architecture, coding patterns, and user experience design follow gogcli's proven approach.
+
+**Why gogcli?**
+- Excellent UX with JSON/Table/Plain output modes
+- Clean architecture with context propagation
+- Robust error handling and exit code management
+- Script-friendly design that works well with Unix pipes
+
+gho applies these same principles to the Ghost Admin API, aiming to provide the same level of polish and usability that gogcli brings to Google services.
+
+### Core Design Principles
+
+- **Context propagation**: All commands use Go context for clean dependency injection
+- **Exit code management**: Proper exit codes through `ExitError` type
+- **Output format abstraction**: Unified interface for JSON/Table/Plain formats
+- **TDD**: Comprehensive test coverage with Test-Driven Development
+- **Type safety**: Leveraging Go's type system for correctness
+- **Script-friendly**: Designed to work seamlessly in automation and pipelines
+
+### Project Structure
+
+- `internal/cmd/` — Command implementations
+- `internal/outfmt/` — Output format handlers (JSON/Table/Plain)
+- `internal/ui/` — UI output (stdout/stderr separation)
+- `internal/ghostapi/` — Ghost Admin API client
+- `internal/secrets/` — OS keyring integration
+- `internal/config/` — Configuration management
+
+For more details:
+- [Project Status](./docs/PROJECT_STATUS.md)
+- [gogcli Alignment Status](./docs/gogcli-alignment-status.md)
+- [Implementation Guide](./docs/remaining-tasks-guide.md)
+
 ## License
 
 MIT
+
+## Links
+
+- [GitHub Repository](https://github.com/mtane0412/gho)
+- [Ghost Admin API Documentation](https://ghost.org/docs/admin-api/)
+- [Issue Tracker](https://github.com/mtane0412/gho/issues)
+- [gogcli](https://github.com/steipete/gogcli) — The project that inspired gho's design
