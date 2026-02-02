@@ -48,6 +48,16 @@ func NewStore(backend, fileDir string) (*Store, error) {
 			keyring.WinCredBackend,
 			keyring.FileBackend,
 		}
+		// Set file directory for fallback
+		cfg.FileDir = fileDir
+		cfg.FilePasswordFunc = func(prompt string) (string, error) {
+			// Get password from environment variable
+			if pw := os.Getenv("GHO_KEYRING_PASSWORD"); pw != "" {
+				return pw, nil
+			}
+			// Return empty string if password is not set
+			return "", nil
+		}
 	case "file":
 		cfg.AllowedBackends = []keyring.BackendType{keyring.FileBackend}
 		cfg.FileDir = fileDir
