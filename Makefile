@@ -1,54 +1,54 @@
 # Makefile for gho
 
-# ビルド情報
+# Build information
 VERSION ?= dev
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)
 
-# デフォルトターゲット
+# Default target
 .PHONY: all
 all: build
 
-# ビルド
+# Build
 .PHONY: build
 build:
 	go build -ldflags "$(LDFLAGS)" -o gho ./cmd/gho
 
-# テスト実行
+# Run tests
 .PHONY: test
 test:
 	go test -v ./...
 
-# カバレッジ付きテスト
+# Run tests with coverage
 .PHONY: test-coverage
 test-coverage:
 	go test -v -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 
-# Lint実行（golangci-lintが必要）
+# Run lint (requires golangci-lint)
 .PHONY: lint
 lint:
 	@which golangci-lint > /dev/null || (echo "golangci-lint not found. Install: https://golangci-lint.run/usage/install/" && exit 1)
 	golangci-lint run
 
-# 型チェック
+# Type check
 .PHONY: type-check
 type-check:
 	go vet ./...
 
-# クリーンアップ
+# Cleanup
 .PHONY: clean
 clean:
 	rm -f gho
 	rm -f coverage.out coverage.html
 
-# インストール
+# Install
 .PHONY: install
 install:
 	go install -ldflags "$(LDFLAGS)" ./cmd/gho
 
-# ヘルプ
+# Help
 .PHONY: help
 help:
 	@echo "gho Makefile"
