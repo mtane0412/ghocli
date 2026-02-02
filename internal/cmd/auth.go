@@ -16,10 +16,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mtane0412/gho/internal/config"
-	"github.com/mtane0412/gho/internal/ghostapi"
-	"github.com/mtane0412/gho/internal/outfmt"
-	"github.com/mtane0412/gho/internal/secrets"
+	"github.com/mtane0412/ghocli/internal/config"
+	"github.com/mtane0412/ghocli/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/outfmt"
+	"github.com/mtane0412/ghocli/internal/secrets"
 )
 
 // AuthCmd is the root command for authentication management

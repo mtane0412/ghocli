@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mtane0412/gho/internal/fields"
-	"github.com/mtane0412/gho/internal/ghostapi"
-	"github.com/mtane0412/gho/internal/outfmt"
+	"github.com/mtane0412/ghocli/internal/fields"
+	"github.com/mtane0412/ghocli/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
 // TagsCmd はタグ管理コマンドです

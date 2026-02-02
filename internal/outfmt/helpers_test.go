@@ -8,7 +8,7 @@ package outfmt
 import (
 	"testing"
 
-	"github.com/mtane0412/gho/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/ghostapi"
 )
 
 // TestFormatAuthors_著者一覧のフォーマット

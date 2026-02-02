@@ -1,4 +1,4 @@
-module github.com/mtane0412/gho
+module github.com/mtane0412/ghocli
 
 go 1.25.5
 
@@ -6,7 +6,9 @@ require (
 	github.com/99designs/keyring v1.2.2
 	github.com/alecthomas/kong v1.13.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/k3a/html2text v1.3.0
 	github.com/mattn/go-runewidth v0.0.19
+	github.com/muesli/termenv v0.16.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/term v0.39.0
 )
@@ -20,11 +22,9 @@ require (
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
-	github.com/k3a/html2text v1.3.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
-	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/sys v0.40.0 // indirect

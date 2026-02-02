@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mtane0412/gho/internal/outfmt"
+	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
 // ThemesCmd はテーマ管理コマンドです

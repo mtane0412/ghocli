@@ -13,9 +13,9 @@ import (
 	"os"
 
 	"github.com/k3a/html2text"
-	"github.com/mtane0412/gho/internal/fields"
-	"github.com/mtane0412/gho/internal/ghostapi"
-	"github.com/mtane0412/gho/internal/outfmt"
+	"github.com/mtane0412/ghocli/internal/fields"
+	"github.com/mtane0412/ghocli/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
 // PagesCmd はページ管理コマンドです

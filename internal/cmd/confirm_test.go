@@ -11,7 +11,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtane0412/gho/internal/ui"
+	"github.com/mtane0412/ghocli/internal/ui"
 )
 
 // TestConfirmDestructive_Forceフラグが有効な場合は確認をスキップ

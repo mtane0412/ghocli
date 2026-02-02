@@ -34,11 +34,18 @@ Fast, script-friendly CLI for Ghost Admin API. JSON-first output, multiple sites
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+brew tap mtane0412/ghocli
+brew install gho
+```
+
 ### Build from Source
 
 ```bash
-git clone https://github.com/mtane0412/gho.git
-cd gho
+git clone https://github.com/mtane0412/ghocli.git
+cd ghocli
 make build
 ```
 
@@ -47,7 +54,7 @@ The binary will be created as `./gho` in the project directory.
 ### Go Install
 
 ```bash
-go install github.com/mtane0412/gho/cmd/gho@latest
+go install github.com/mtane0412/ghocli/cmd/gho@latest
 ```
 
 Make sure `$GOPATH/bin` is in your `PATH`.

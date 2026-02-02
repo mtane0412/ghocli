@@ -13,8 +13,8 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
-	"github.com/mtane0412/gho/internal/outfmt"
-	"github.com/mtane0412/gho/internal/ui"
+	"github.com/mtane0412/ghocli/internal/outfmt"
+	"github.com/mtane0412/ghocli/internal/ui"
 )
 
 // RootFlags はすべてのコマンドで共通のフラグです
