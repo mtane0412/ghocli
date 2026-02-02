@@ -16,6 +16,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	neturl "net/url"
 	"strings"
 	"time"
 )
@@ -88,28 +89,30 @@ func (c *Client) doRequestWithOptions(method, path string, body io.Reader, opts 
 	}
 
 	// Build request URL
-	url := c.baseURL + path
+	requestURL := c.baseURL + path
 
 	// Add query parameters if provided
+	// url.Valuesを使用してクエリパラメータを適切にエンコードする
+	// （特殊文字、日本語、スペースなどを正しくエスケープ）
 	if opts != nil && len(opts.QueryParams) > 0 {
-		params := []string{}
+		values := neturl.Values{}
 		for key, val := range opts.QueryParams {
 			if val != "" {
-				params = append(params, fmt.Sprintf("%s=%s", key, val))
+				values.Set(key, val)
 			}
 		}
-		if len(params) > 0 {
+		if len(values) > 0 {
 			// URLにクエリパラメータが既に含まれているかチェック
-			if strings.Contains(url, "?") {
-				url += "&" + strings.Join(params, "&")
+			if strings.Contains(requestURL, "?") {
+				requestURL += "&" + values.Encode()
 			} else {
-				url += "?" + strings.Join(params, "&")
+				requestURL += "?" + values.Encode()
 			}
 		}
 	}
 
 	// Create HTTP request
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequest(method, requestURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -181,10 +184,10 @@ func (c *Client) doMultipartRequest(path string, file io.Reader, filename string
 	}
 
 	// Build request URL
-	url := c.baseURL + path
+	requestURL := c.baseURL + path
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", url, body)
+	req, err := http.NewRequest("POST", requestURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

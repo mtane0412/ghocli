@@ -128,3 +128,188 @@ func TestGetSite_APIエラー(t *testing.T) {
 		t.Error("expected error but got nil")
 	}
 }
+
+// TestDoRequestWithOptions_日本語を含むクエリパラメータがエンコードされる
+func TestDoRequestWithOptions_日本語を含むクエリパラメータがエンコードされる(t *testing.T) {
+	// HTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// クエリパラメータの検証
+		query := r.URL.Query()
+		title := query.Get("title")
+		if title != "テスト投稿" {
+			t.Errorf("title = %q; want %q", title, "テスト投稿")
+		}
+
+		// レスポンスを返す
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// クエリパラメータ付きでリクエスト実行
+	opts := &RequestOptions{
+		QueryParams: map[string]string{
+			"title": "テスト投稿",
+		},
+	}
+	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
+	if err != nil {
+		t.Fatalf("リクエスト実行に失敗: %v", err)
+	}
+}
+
+// TestDoRequestWithOptions_アンパサンドを含むクエリパラメータがエンコードされる
+func TestDoRequestWithOptions_アンパサンドを含むクエリパラメータがエンコードされる(t *testing.T) {
+	// HTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// クエリパラメータの検証
+		query := r.URL.Query()
+		value := query.Get("value")
+		if value != "foo&bar" {
+			t.Errorf("value = %q; want %q", value, "foo&bar")
+		}
+
+		// レスポンスを返す
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// クエリパラメータ付きでリクエスト実行
+	opts := &RequestOptions{
+		QueryParams: map[string]string{
+			"value": "foo&bar",
+		},
+	}
+	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
+	if err != nil {
+		t.Fatalf("リクエスト実行に失敗: %v", err)
+	}
+}
+
+// TestDoRequestWithOptions_イコールを含むクエリパラメータがエンコードされる
+func TestDoRequestWithOptions_イコールを含むクエリパラメータがエンコードされる(t *testing.T) {
+	// HTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// クエリパラメータの検証
+		query := r.URL.Query()
+		value := query.Get("value")
+		if value != "foo=bar" {
+			t.Errorf("value = %q; want %q", value, "foo=bar")
+		}
+
+		// レスポンスを返す
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// クエリパラメータ付きでリクエスト実行
+	opts := &RequestOptions{
+		QueryParams: map[string]string{
+			"value": "foo=bar",
+		},
+	}
+	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
+	if err != nil {
+		t.Fatalf("リクエスト実行に失敗: %v", err)
+	}
+}
+
+// TestDoRequestWithOptions_スペースを含むクエリパラメータがエンコードされる
+func TestDoRequestWithOptions_スペースを含むクエリパラメータがエンコードされる(t *testing.T) {
+	// HTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// クエリパラメータの検証
+		query := r.URL.Query()
+		value := query.Get("value")
+		if value != "foo bar" {
+			t.Errorf("value = %q; want %q", value, "foo bar")
+		}
+
+		// レスポンスを返す
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// クエリパラメータ付きでリクエスト実行
+	opts := &RequestOptions{
+		QueryParams: map[string]string{
+			"value": "foo bar",
+		},
+	}
+	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
+	if err != nil {
+		t.Fatalf("リクエスト実行に失敗: %v", err)
+	}
+}
+
+// TestDoRequestWithOptions_複数のクエリパラメータがエンコードされる
+func TestDoRequestWithOptions_複数のクエリパラメータがエンコードされる(t *testing.T) {
+	// HTTPサーバーを作成
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// クエリパラメータの検証
+		query := r.URL.Query()
+		name := query.Get("name")
+		value := query.Get("value")
+		if name != "山田太郎" {
+			t.Errorf("name = %q; want %q", name, "山田太郎")
+		}
+		if value != "foo&bar=baz" {
+			t.Errorf("value = %q; want %q", value, "foo&bar=baz")
+		}
+
+		// レスポンスを返す
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// 複数のクエリパラメータ付きでリクエスト実行
+	opts := &RequestOptions{
+		QueryParams: map[string]string{
+			"name":  "山田太郎",
+			"value": "foo&bar=baz",
+		},
+	}
+	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
+	if err != nil {
+		t.Fatalf("リクエスト実行に失敗: %v", err)
+	}
+}
