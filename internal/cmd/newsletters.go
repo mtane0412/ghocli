@@ -1,9 +1,9 @@
 /**
  * newsletters.go
- * ニュースレター管理コマンド
+ * Newsletter management commands
  *
- * Ghostニュースレターの管理機能を提供します。
- * Create/Update操作には確認機構が適用されます。
+ * Provides functionality for managing Ghost newsletters.
+ * Create/Update operations require confirmation.
  */
 
 package cmd
@@ -17,7 +17,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// NewslettersCmd はニュースレター管理コマンドです
+// NewslettersCmd is the newsletter management command
 type NewslettersCmd struct {
 	List   NewslettersListCmd   `cmd:"" help:"List newsletters"`
 	Get    NewslettersInfoCmd   `cmd:"" help:"Show newsletter information"`
@@ -25,7 +25,7 @@ type NewslettersCmd struct {
 	Update NewslettersUpdateCmd `cmd:"" help:"Update a newsletter"`
 }
 
-// NewslettersListCmd is the command to retrieve ニュースレター list
+// NewslettersListCmd is the command to retrieve newsletter list
 type NewslettersListCmd struct {
 	Limit  int    `help:"Number of newsletters to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
@@ -75,7 +75,7 @@ func (c *NewslettersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// NewslettersInfoCmd is the command to show ニュースレター information
+// NewslettersInfoCmd is the command to show newsletter information
 type NewslettersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Newsletter ID or slug (use 'slug:newsletter-name' format for slug)"`
 }
@@ -123,7 +123,7 @@ func (c *NewslettersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// NewslettersCreateCmd is the command to create ニュースレター
+// NewslettersCreateCmd is the command to create newsletter
 type NewslettersCreateCmd struct {
 	Name              string `help:"Newsletter name" short:"n" required:""`
 	Description       string `help:"Newsletter description" short:"d"`
@@ -178,7 +178,7 @@ func (c *NewslettersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// NewslettersUpdateCmd is the command to update ニュースレター
+// NewslettersUpdateCmd is the command to update newsletter
 type NewslettersUpdateCmd struct {
 	ID                string `arg:"" help:"Newsletter ID"`
 	Name              string `help:"Newsletter name" short:"n"`

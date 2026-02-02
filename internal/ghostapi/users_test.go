@@ -15,16 +15,16 @@ import (
 	"time"
 )
 
-// TestListUsers_ユーザー一覧の取得 は基本的なユーザー一覧取得をテストします
-func TestListUsers_ユーザー一覧の取得(t *testing.T) {
+// TestListUsers_GetUserList tests basic user list retrieval
+func TestListUsers_GetUserList(t *testing.T) {
 	// Create test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method and path
 		if r.Method != "GET" {
-			t.Errorf("expectedメソッド: GET, actual: %s", r.Method)
+			t.Errorf("expected method: GET, actual: %s", r.Method)
 		}
 		if r.URL.Path != "/ghost/api/admin/users/" {
-			t.Errorf("expectedパス: /ghost/api/admin/users/, actual: %s", r.URL.Path)
+			t.Errorf("expected path: /ghost/api/admin/users/, actual: %s", r.URL.Path)
 		}
 
 		// Return test response
@@ -32,15 +32,15 @@ func TestListUsers_ユーザー一覧の取得(t *testing.T) {
 			Users: []User{
 				{
 					ID:    "user1",
-					Name:  "山田太郎",
-					Slug:  "yamada-taro",
-					Email: "yamada@example.com",
+					Name:  "John Smith",
+					Slug:  "john-smith",
+					Email: "john@example.com",
 				},
 				{
 					ID:    "user2",
-					Name:  "田中花子",
-					Slug:  "tanaka-hanako",
-					Email: "tanaka@example.com",
+					Name:  "Alice Johnson",
+					Slug:  "alice-johnson",
+					Email: "alice@example.com",
 				},
 			},
 		}
@@ -60,7 +60,7 @@ func TestListUsers_ユーザー一覧の取得(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ユーザー一覧を取得
+	// Get user list
 	resp, err2 := client.ListUsers(UserListOptions{})
 	if err2 != nil {
 		t.Fatalf("failed to retrieve user list: %v", err2)
@@ -68,32 +68,32 @@ func TestListUsers_ユーザー一覧の取得(t *testing.T) {
 
 	// Verify response
 	if len(resp.Users) != 2 {
-		t.Errorf("expectedユーザー数: 2, actual: %d", len(resp.Users))
+		t.Errorf("expected number of users: 2, actual: %d", len(resp.Users))
 	}
 
-	// 1件目のユーザーを検証
-	if resp.Users[0].Name != "山田太郎" {
-		t.Errorf("expected名前: 山田太郎, actual: %s", resp.Users[0].Name)
+	// Verify first user
+	if resp.Users[0].Name != "John Smith" {
+		t.Errorf("expected name: John Smith, actual: %s", resp.Users[0].Name)
 	}
-	if resp.Users[0].Email != "yamada@example.com" {
-		t.Errorf("expectedメールアドレス: yamada@example.com, actual: %s", resp.Users[0].Email)
+	if resp.Users[0].Email != "john@example.com" {
+		t.Errorf("expected email address: john@example.com, actual: %s", resp.Users[0].Email)
 	}
 }
 
-// TestListUsers_オプション付き はクエリパラメータ付きのユーザー一覧取得をテストします
-func TestListUsers_オプション付き(t *testing.T) {
+// TestListUsers_WithOptions tests user list retrieval with query parameters
+func TestListUsers_WithOptions(t *testing.T) {
 	// Create test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify query parameters
 		query := r.URL.Query()
 		if query.Get("limit") != "5" {
-			t.Errorf("expectedlimit: 5, actual: %s", query.Get("limit"))
+			t.Errorf("expected limit: 5, actual: %s", query.Get("limit"))
 		}
 		if query.Get("page") != "2" {
-			t.Errorf("expectedpage: 2, actual: %s", query.Get("page"))
+			t.Errorf("expected page: 2, actual: %s", query.Get("page"))
 		}
 		if query.Get("include") != "roles,count.posts" {
-			t.Errorf("expectedinclude: roles,count.posts, actual: %s", query.Get("include"))
+			t.Errorf("expected include: roles,count.posts, actual: %s", query.Get("include"))
 		}
 
 		// Return test response
@@ -101,9 +101,9 @@ func TestListUsers_オプション付き(t *testing.T) {
 			Users: []User{
 				{
 					ID:    "user3",
-					Name:  "佐藤一郎",
-					Slug:  "sato-ichiro",
-					Email: "sato@example.com",
+					Name:  "Bob Williams",
+					Slug:  "bob-williams",
+					Email: "bob@example.com",
 					Roles: []Role{
 						{ID: "role1", Name: "Author"},
 					},
@@ -126,7 +126,7 @@ func TestListUsers_オプション付き(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// オプション付きでユーザー一覧を取得
+	// Get user list with options
 	opts := UserListOptions{
 		Limit:   5,
 		Page:    2,
@@ -139,26 +139,26 @@ func TestListUsers_オプション付き(t *testing.T) {
 
 	// Verify response
 	if len(resp.Users) != 1 {
-		t.Errorf("expectedユーザー数: 1, actual: %d", len(resp.Users))
+		t.Errorf("expected number of users: 1, actual: %d", len(resp.Users))
 	}
 	if resp.Meta.Pagination.Page != 2 {
-		t.Errorf("expectedページ: 2, actual: %d", resp.Meta.Pagination.Page)
+		t.Errorf("expected page: 2, actual: %d", resp.Meta.Pagination.Page)
 	}
 	if len(resp.Users[0].Roles) != 1 {
-		t.Errorf("expectedロール数: 1, actual: %d", len(resp.Users[0].Roles))
+		t.Errorf("expected number of roles: 1, actual: %d", len(resp.Users[0].Roles))
 	}
 }
 
-// TestGetUser_IDでユーザーを取得 はIDでユーザーを取得するテストです
-func TestGetUser_IDでユーザーを取得(t *testing.T) {
+// TestGetUser_GetByID tests retrieving a user by ID
+func TestGetUser_GetByID(t *testing.T) {
 	// Create test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method and path
 		if r.Method != "GET" {
-			t.Errorf("expectedメソッド: GET, actual: %s", r.Method)
+			t.Errorf("expected method: GET, actual: %s", r.Method)
 		}
 		if r.URL.Path != "/ghost/api/admin/users/user123/" {
-			t.Errorf("expectedパス: /ghost/api/admin/users/user123/, actual: %s", r.URL.Path)
+			t.Errorf("expected path: /ghost/api/admin/users/user123/, actual: %s", r.URL.Path)
 		}
 
 		// Return test response
@@ -166,11 +166,11 @@ func TestGetUser_IDでユーザーを取得(t *testing.T) {
 			Users: []User{
 				{
 					ID:           "user123",
-					Name:         "鈴木次郎",
-					Slug:         "suzuki-jiro",
-					Email:        "suzuki@example.com",
-					Bio:          "エンジニア",
-					Location:     "東京",
+					Name:         "Charlie Brown",
+					Slug:         "charlie-brown",
+					Email:        "charlie@example.com",
+					Bio:          "Engineer",
+					Location:     "Tokyo",
 					Website:      "https://example.com",
 					ProfileImage: "https://example.com/profile.jpg",
 					CreatedAt:    time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -190,7 +190,7 @@ func TestGetUser_IDでユーザーを取得(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ユーザーを取得
+	// Get user
 	user, err2 := client.GetUser("user123")
 	if err2 != nil {
 		t.Fatalf("failed to retrieve user: %v", err2)
@@ -198,29 +198,29 @@ func TestGetUser_IDでユーザーを取得(t *testing.T) {
 
 	// Verify response
 	if user.ID != "user123" {
-		t.Errorf("expectedID: user123, actual: %s", user.ID)
+		t.Errorf("expected ID: user123, actual: %s", user.ID)
 	}
-	if user.Name != "鈴木次郎" {
-		t.Errorf("expected名前: 鈴木次郎, actual: %s", user.Name)
+	if user.Name != "Charlie Brown" {
+		t.Errorf("expected name: Charlie Brown, actual: %s", user.Name)
 	}
-	if user.Email != "suzuki@example.com" {
-		t.Errorf("expectedメールアドレス: suzuki@example.com, actual: %s", user.Email)
+	if user.Email != "charlie@example.com" {
+		t.Errorf("expected email address: charlie@example.com, actual: %s", user.Email)
 	}
-	if user.Bio != "エンジニア" {
-		t.Errorf("expected自己紹介: エンジニア, actual: %s", user.Bio)
+	if user.Bio != "Engineer" {
+		t.Errorf("expected bio: Engineer, actual: %s", user.Bio)
 	}
 }
 
-// TestGetUser_スラッグでユーザーを取得 はスラッグでユーザーを取得するテストです
-func TestGetUser_スラッグでユーザーを取得(t *testing.T) {
+// TestGetUser_GetBySlug tests retrieving a user by slug
+func TestGetUser_GetBySlug(t *testing.T) {
 	// Create test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method and path
 		if r.Method != "GET" {
-			t.Errorf("expectedメソッド: GET, actual: %s", r.Method)
+			t.Errorf("expected method: GET, actual: %s", r.Method)
 		}
-		if r.URL.Path != "/ghost/api/admin/users/slug/suzuki-jiro/" {
-			t.Errorf("expectedパス: /ghost/api/admin/users/slug/suzuki-jiro/, actual: %s", r.URL.Path)
+		if r.URL.Path != "/ghost/api/admin/users/slug/charlie-brown/" {
+			t.Errorf("expected path: /ghost/api/admin/users/slug/charlie-brown/, actual: %s", r.URL.Path)
 		}
 
 		// Return test response
@@ -228,9 +228,9 @@ func TestGetUser_スラッグでユーザーを取得(t *testing.T) {
 			Users: []User{
 				{
 					ID:    "user123",
-					Name:  "鈴木次郎",
-					Slug:  "suzuki-jiro",
-					Email: "suzuki@example.com",
+					Name:  "Charlie Brown",
+					Slug:  "charlie-brown",
+					Email: "charlie@example.com",
 				},
 			},
 		}
@@ -246,47 +246,47 @@ func TestGetUser_スラッグでユーザーを取得(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// スラッグでユーザーを取得
-	user, err2 := client.GetUser("slug:suzuki-jiro")
+	// Get user by slug
+	user, err2 := client.GetUser("slug:charlie-brown")
 	if err2 != nil {
 		t.Fatalf("failed to retrieve user: %v", err2)
 	}
 
 	// Verify response
-	if user.Slug != "suzuki-jiro" {
-		t.Errorf("expectedスラッグ: suzuki-jiro, actual: %s", user.Slug)
+	if user.Slug != "charlie-brown" {
+		t.Errorf("expected slug: charlie-brown, actual: %s", user.Slug)
 	}
-	if user.Name != "鈴木次郎" {
-		t.Errorf("expected名前: 鈴木次郎, actual: %s", user.Name)
+	if user.Name != "Charlie Brown" {
+		t.Errorf("expected name: Charlie Brown, actual: %s", user.Name)
 	}
 }
 
-// TestUpdateUser_ユーザーの更新 はユーザー更新をテストします
-func TestUpdateUser_ユーザーの更新(t *testing.T) {
+// TestUpdateUser_UpdateUser tests updating a user
+func TestUpdateUser_UpdateUser(t *testing.T) {
 	// Create test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request method and path
 		if r.Method != "PUT" {
-			t.Errorf("expectedメソッド: PUT, actual: %s", r.Method)
+			t.Errorf("expected method: PUT, actual: %s", r.Method)
 		}
 		if r.URL.Path != "/ghost/api/admin/users/user123/" {
-			t.Errorf("expectedパス: /ghost/api/admin/users/user123/, actual: %s", r.URL.Path)
+			t.Errorf("expected path: /ghost/api/admin/users/user123/, actual: %s", r.URL.Path)
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗しました: %v", err)
+			t.Fatalf("failed to parse request body: %v", err)
 		}
 
 		users, ok := reqBody["users"].([]interface{})
 		if !ok || len(users) == 0 {
-			t.Fatal("リクエストボディにusersが含まれていません")
+			t.Fatal("request body does not contain users")
 		}
 
 		user := users[0].(map[string]interface{})
-		if user["name"] != "更新後の名前" {
-			t.Errorf("expected名前: 更新後の名前, actual: %v", user["name"])
+		if user["name"] != "Updated Name" {
+			t.Errorf("expected name: Updated Name, actual: %v", user["name"])
 		}
 
 		// Return test response
@@ -294,11 +294,11 @@ func TestUpdateUser_ユーザーの更新(t *testing.T) {
 			Users: []User{
 				{
 					ID:       "user123",
-					Name:     "更新後の名前",
+					Name:     "Updated Name",
 					Slug:     "updated-slug",
 					Email:    "updated@example.com",
-					Bio:      "更新後の自己紹介",
-					Location: "大阪",
+					Bio:      "Updated Bio",
+					Location: "Osaka",
 					Website:  "https://updated.example.com",
 				},
 			},
@@ -315,12 +315,12 @@ func TestUpdateUser_ユーザーの更新(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ユーザーを更新
+	// Update user
 	updateData := &User{
-		Name:     "更新後の名前",
+		Name:     "Updated Name",
 		Slug:     "updated-slug",
-		Bio:      "更新後の自己紹介",
-		Location: "大阪",
+		Bio:      "Updated Bio",
+		Location: "Osaka",
 		Website:  "https://updated.example.com",
 	}
 	user, err2 := client.UpdateUser("user123", updateData)
@@ -329,22 +329,22 @@ func TestUpdateUser_ユーザーの更新(t *testing.T) {
 	}
 
 	// Verify response
-	if user.Name != "更新後の名前" {
-		t.Errorf("expected名前: 更新後の名前, actual: %s", user.Name)
+	if user.Name != "Updated Name" {
+		t.Errorf("expected name: Updated Name, actual: %s", user.Name)
 	}
-	if user.Bio != "更新後の自己紹介" {
-		t.Errorf("expected自己紹介: 更新後の自己紹介, actual: %s", user.Bio)
+	if user.Bio != "Updated Bio" {
+		t.Errorf("expected bio: Updated Bio, actual: %s", user.Bio)
 	}
-	if user.Location != "大阪" {
-		t.Errorf("expected場所: 大阪, actual: %s", user.Location)
+	if user.Location != "Osaka" {
+		t.Errorf("expected location: Osaka, actual: %s", user.Location)
 	}
 }
 
-// TestGetUser_ユーザーが見つからない はユーザーが見つからない場合のエラー処理をテストします
-func TestGetUser_ユーザーが見つからない(t *testing.T) {
+// TestGetUser_UserNotFound tests error handling when user is not found
+func TestGetUser_UserNotFound(t *testing.T) {
 	// Create test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 空のレスポンスを返す
+		// Return empty response
 		resp := UserResponse{
 			Users: []User{},
 		}
@@ -360,16 +360,16 @@ func TestGetUser_ユーザーが見つからない(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ユーザーを取得（エラーが返ることを期待）
+	// Get user (expect error to be returned)
 	_, err2 := client.GetUser("nonexistent")
 	if err2 == nil {
-		t.Fatal("エラーが期待されましたが、エラーが返されませんでした")
+		t.Fatal("Expected error but no error was returned")
 	}
 }
 
-// TestListUsers_APIエラー はAPIエラー時の処理をテストします
-func TestListUsers_APIエラー(t *testing.T) {
-	// Create test HTTP server（エラーを返す）
+// TestListUsers_APIError tests error handling when API returns an error
+func TestListUsers_APIError(t *testing.T) {
+	// Create test HTTP server (return error)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"errors":[{"message":"Internal Server Error"}]}`))
@@ -382,9 +382,9 @@ func TestListUsers_APIエラー(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ユーザー一覧を取得（エラーが返ることを期待）
+	// Get user list (expect error to be returned)
 	_, err2 := client.ListUsers(UserListOptions{})
 	if err2 == nil {
-		t.Fatal("エラーが期待されましたが、エラーが返されませんでした")
+		t.Fatal("Expected error but no error was returned")
 	}
 }

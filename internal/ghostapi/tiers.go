@@ -2,8 +2,8 @@
  * tiers.go
  * Tiers API
  *
- * Ghost Admin APIのTiers機能を提供します。
- * Create/Update操作には確認機構が適用されます。
+ * Provides Tiers functionality for the Ghost Admin API.
+ * Create/Update operations are subject to confirmation mechanisms.
  */
 
 package ghostapi
@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// Tier はGhostのティアを表します
+// Tier represents a Ghost tier
 type Tier struct {
 	ID             string    `json:"id,omitempty"`
 	Name           string    `json:"name,omitempty"`
@@ -26,7 +26,7 @@ type Tier struct {
 	Type           string    `json:"type,omitempty"`          // free, paid
 	Visibility     string    `json:"visibility,omitempty"`    // public, none
 	WelcomePageURL string    `json:"welcome_page_url,omitempty"`
-	MonthlyPrice   int       `json:"monthly_price,omitempty"` // 最小通貨単位
+	MonthlyPrice   int       `json:"monthly_price,omitempty"` // smallest currency unit
 	YearlyPrice    int       `json:"yearly_price,omitempty"`
 	Currency       string    `json:"currency,omitempty"`
 	Benefits       []string  `json:"benefits,omitempty"`
@@ -34,15 +34,15 @@ type Tier struct {
 	UpdatedAt      time.Time `json:"updated_at,omitempty"`
 }
 
-// TierListOptions はティア一覧取得のオプションです
+// TierListOptions represents options for fetching tier list
 type TierListOptions struct {
-	Limit   int    // 取得件数（デフォルト: 15）
-	Page    int    // ページ番号（デフォルト: 1）
-	Include string // 含める追加情報（monthly_price, yearly_price, benefits など）
-	Filter  string // フィルター条件
+	Limit   int    // Number of items to fetch (default: 15)
+	Page    int    // Page number (default: 1)
+	Include string // Additional information to include (monthly_price, yearly_price, benefits, etc.)
+	Filter  string // Filter condition
 }
 
-// TierListResponse はティア一覧のレスポンスです
+// TierListResponse represents a tier list response
 type TierListResponse struct {
 	Tiers []Tier `json:"tiers"`
 	Meta  struct {
@@ -55,16 +55,16 @@ type TierListResponse struct {
 	} `json:"meta"`
 }
 
-// TierResponse はティア単体のレスポンスです
+// TierResponse represents a single tier response
 type TierResponse struct {
 	Tiers []Tier `json:"tiers"`
 }
 
-// ListTiers はティア一覧を取得します
+// ListTiers retrieves a list of tiers
 func (c *Client) ListTiers(opts TierListOptions) (*TierListResponse, error) {
 	path := "/ghost/api/admin/tiers/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Limit > 0 {
 		params = append(params, fmt.Sprintf("limit=%d", opts.Limit))
@@ -83,27 +83,27 @@ func (c *Client) ListTiers(opts TierListOptions) (*TierListResponse, error) {
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TierListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// GetTier は指定されたIDまたはスラッグのティアを取得します
-// idOrSlugが "slug:" で始まる場合はスラッグとして扱います
+// GetTier retrieves a tier by ID or slug
+// If idOrSlug starts with "slug:", it will be treated as a slug
 func (c *Client) GetTier(idOrSlug string) (*Tier, error) {
 	var path string
 
-	// スラッグかIDかを判定
+	// Determine if it's a slug or ID
 	if strings.HasPrefix(idOrSlug, "slug:") {
 		slug := strings.TrimPrefix(idOrSlug, "slug:")
 		path = fmt.Sprintf("/ghost/api/admin/tiers/slug/%s/", slug)
@@ -111,86 +111,86 @@ func (c *Client) GetTier(idOrSlug string) (*Tier, error) {
 		path = fmt.Sprintf("/ghost/api/admin/tiers/%s/", idOrSlug)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TierResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Tiers) == 0 {
-		return nil, fmt.Errorf("ティアが見つかりません: %s", idOrSlug)
+		return nil, fmt.Errorf("tier not found: %s", idOrSlug)
 	}
 
 	return &resp.Tiers[0], nil
 }
 
-// CreateTier は新しいティアを作成します
+// CreateTier creates a new tier
 func (c *Client) CreateTier(tier *Tier) (*Tier, error) {
 	path := "/ghost/api/admin/tiers/"
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"tiers": []interface{}{tier},
 	}
 
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("POST", path, bytes.NewReader(reqBodyJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TierResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Tiers) == 0 {
-		return nil, fmt.Errorf("ティアの作成に失敗しました")
+		return nil, fmt.Errorf("failed to create tier")
 	}
 
 	return &resp.Tiers[0], nil
 }
 
-// UpdateTier は既存のティアを更新します
+// UpdateTier updates an existing tier
 func (c *Client) UpdateTier(id string, tier *Tier) (*Tier, error) {
 	path := fmt.Sprintf("/ghost/api/admin/tiers/%s/", id)
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"tiers": []interface{}{tier},
 	}
 
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(reqBodyJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp TierResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Tiers) == 0 {
-		return nil, fmt.Errorf("ティアの更新に失敗しました")
+		return nil, fmt.Errorf("failed to update tier")
 	}
 
 	return &resp.Tiers[0], nil

@@ -1,8 +1,8 @@
 /**
  * posts_test.go
- * Post用フィールド定義のテスト
+ * Tests for Post field definitions
  *
- * Post用のフィールドセット定義のテストを提供します。
+ * Provides tests for Post field set definitions.
  */
 
 package fields
@@ -11,61 +11,61 @@ import (
 	"testing"
 )
 
-// TestPostFields_全フィールド数 はPostフィールドis definedします
-func TestPostFields_全フィールド数(t *testing.T) {
-	// PostFieldsis defined
+// TestPostFields_TotalFieldCount verifies the total number of Post fields
+func TestPostFields_TotalFieldCount(t *testing.T) {
+	// Verify PostFields is defined
 	if PostFields.All == nil {
-		t.Fatal("PostFields.Allが定義されていません")
+		t.Fatal("PostFields.All is not defined")
 	}
 
-	// 全フィールド数が40個以上あることを確認（計画通り）
+	// Verify there are at least 40 fields (as planned)
 	if len(PostFields.All) < 40 {
-		t.Errorf("PostFieldsの全フィールド数が不足: got=%d, want>=40", len(PostFields.All))
+		t.Errorf("Insufficient total fields in PostFields: got=%d, want>=40", len(PostFields.All))
 	}
 }
 
-// TestPostFields_基本フィールド は基本フィールドが含まれることを確認します
-func TestPostFields_基本フィールド(t *testing.T) {
-	// 基本フィールド
+// TestPostFields_BasicFields verifies that basic fields are included
+func TestPostFields_BasicFields(t *testing.T) {
+	// Basic fields
 	basicFields := []string{"id", "uuid", "title", "slug", "status", "url"}
 
-	// 各基本フィールドがAllに含まれることを確認
+	// Verify each basic field is included in All
 	for _, field := range basicFields {
 		if !contains(PostFields.All, field) {
-			t.Errorf("PostFields.Allに'%s'が含まれていません", field)
+			t.Errorf("PostFields.All does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_コンテンツフィールド はコンテンツ系フィールドが含まれることを確認します
-func TestPostFields_コンテンツフィールド(t *testing.T) {
-	// コンテンツフィールド
+// TestPostFields_ContentFields verifies that content-related fields are included
+func TestPostFields_ContentFields(t *testing.T) {
+	// Content fields
 	contentFields := []string{"html", "lexical", "excerpt", "custom_excerpt"}
 
-	// 各コンテンツフィールドがAllに含まれることを確認
+	// Verify each content field is included in All
 	for _, field := range contentFields {
 		if !contains(PostFields.All, field) {
-			t.Errorf("PostFields.Allに'%s'が含まれていません", field)
+			t.Errorf("PostFields.All does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_画像フィールド は画像系フィールドが含まれることを確認します
-func TestPostFields_画像フィールド(t *testing.T) {
-	// 画像フィールド
+// TestPostFields_ImageFields verifies that image-related fields are included
+func TestPostFields_ImageFields(t *testing.T) {
+	// Image fields
 	imageFields := []string{"feature_image", "feature_image_alt", "feature_image_caption", "og_image", "twitter_image"}
 
-	// 各画像フィールドがAllに含まれることを確認
+	// Verify each image field is included in All
 	for _, field := range imageFields {
 		if !contains(PostFields.All, field) {
-			t.Errorf("PostFields.Allに'%s'が含まれていません", field)
+			t.Errorf("PostFields.All does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_SEOフィールド はSEO系フィールドが含まれることを確認します
-func TestPostFields_SEOフィールド(t *testing.T) {
-	// SEOフィールド
+// TestPostFields_SEOFields verifies that SEO-related fields are included
+func TestPostFields_SEOFields(t *testing.T) {
+	// SEO fields
 	seoFields := []string{
 		"meta_title", "meta_description",
 		"og_title", "og_description",
@@ -73,76 +73,76 @@ func TestPostFields_SEOフィールド(t *testing.T) {
 		"canonical_url",
 	}
 
-	// 各SEOフィールドがAllに含まれることを確認
+	// Verify each SEO field is included in All
 	for _, field := range seoFields {
 		if !contains(PostFields.All, field) {
-			t.Errorf("PostFields.Allに'%s'が含まれていません", field)
+			t.Errorf("PostFields.All does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_日時フィールド は日時系フィールドが含まれることを確認します
-func TestPostFields_日時フィールド(t *testing.T) {
-	// 日時フィールド
+// TestPostFields_DateFields verifies that date-related fields are included
+func TestPostFields_DateFields(t *testing.T) {
+	// Date fields
 	dateFields := []string{"created_at", "updated_at", "published_at"}
 
-	// 各日時フィールドがAllに含まれることを確認
+	// Verify each date field is included in All
 	for _, field := range dateFields {
 		if !contains(PostFields.All, field) {
-			t.Errorf("PostFields.Allに'%s'が含まれていません", field)
+			t.Errorf("PostFields.All does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_制御フィールド は制御系フィールドが含まれることを確認します
-func TestPostFields_制御フィールド(t *testing.T) {
-	// 制御フィールド
+// TestPostFields_ControlFields verifies that control-related fields are included
+func TestPostFields_ControlFields(t *testing.T) {
+	// Control fields
 	controlFields := []string{"visibility", "featured", "email_only"}
 
-	// 各制御フィールドがAllに含まれることを確認
+	// Verify each control field is included in All
 	for _, field := range controlFields {
 		if !contains(PostFields.All, field) {
-			t.Errorf("PostFields.Allに'%s'が含まれていません", field)
+			t.Errorf("PostFields.All does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_デフォルトフィールド はデフォルトフィールドが適切に設定されていることを確認します
-func TestPostFields_デフォルトフィールド(t *testing.T) {
-	// Defaultフィールドが設定されていることを確認
+// TestPostFields_DefaultFields verifies that default fields are properly configured
+func TestPostFields_DefaultFields(t *testing.T) {
+	// Verify Default fields are set
 	if PostFields.Default == nil {
-		t.Fatal("PostFields.Defaultが定義されていません")
+		t.Fatal("PostFields.Default is not defined")
 	}
 
-	// デフォルトフィールド数が適切（5-10個程度）
+	// Verify default field count is appropriate (5-10 fields)
 	if len(PostFields.Default) < 3 || len(PostFields.Default) > 10 {
-		t.Errorf("PostFields.Defaultのフィールド数が不適切: got=%d", len(PostFields.Default))
+		t.Errorf("Inappropriate number of PostFields.Default fields: got=%d", len(PostFields.Default))
 	}
 
-	// 基本フィールドがDefaultに含まれることを確認
+	// Verify basic fields are included in Default
 	requiredDefaults := []string{"id", "title", "status"}
 	for _, field := range requiredDefaults {
 		if !contains(PostFields.Default, field) {
-			t.Errorf("PostFields.Defaultに'%s'が含まれていません", field)
+			t.Errorf("PostFields.Default does not contain '%s'", field)
 		}
 	}
 }
 
-// TestPostFields_詳細フィールド は詳細フィールドが適切に設定されていることを確認します
-func TestPostFields_詳細フィールド(t *testing.T) {
-	// Detailフィールドが設定されていることを確認
+// TestPostFields_DetailFields verifies that detail fields are properly configured
+func TestPostFields_DetailFields(t *testing.T) {
+	// Verify Detail fields are set
 	if PostFields.Detail == nil {
-		t.Fatal("PostFields.Detailが定義されていません")
+		t.Fatal("PostFields.Detail is not defined")
 	}
 
-	// 詳細フィールド数がDefaultより多いことを確認
+	// Verify detail field count is greater than Default
 	if len(PostFields.Detail) <= len(PostFields.Default) {
-		t.Errorf("PostFields.DetailがDefaultより多くありません: Detail=%d, Default=%d",
+		t.Errorf("PostFields.Detail is not greater than Default: Detail=%d, Default=%d",
 			len(PostFields.Detail), len(PostFields.Default))
 	}
 }
 
-// ヘルパー関数: スライスに要素が含まれるかチェック
+// Helper function: Check if an item is contained in a slice
 func contains(slice []string, item string) bool {
 	for _, s := range slice {
 		if s == item {

@@ -1,8 +1,8 @@
 /**
  * pages.go
- * ページ管理コマンド
+ * Page management commands
  *
- * Ghostページの作成、更新、削除機能を提供します。
+ * Provides functionality for creating, updating, and deleting Ghost pages.
  */
 
 package cmd
@@ -20,7 +20,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// PagesCmd はページ管理コマンドです
+// PagesCmd is the page management command
 type PagesCmd struct {
 	List   PagesListCmd   `cmd:"" help:"List pages"`
 	Get    PagesInfoCmd   `cmd:"" help:"Show page information"`
@@ -29,30 +29,30 @@ type PagesCmd struct {
 	Update PagesUpdateCmd `cmd:"" help:"Update a page"`
 	Delete PagesDeleteCmd `cmd:"" help:"Delete a page"`
 
-	// Phase 1: ステータス別一覧ショートカット
+	// Phase 1: Status-based list shortcuts
 	Drafts    PagesDraftsCmd    `cmd:"" help:"List draft pages"`
 	Published PagesPublishedCmd `cmd:"" help:"List published pages"`
 	Scheduled PagesScheduledCmd `cmd:"" help:"List scheduled pages"`
 
-	// Phase 1: URL取得
+	// Phase 1: URL retrieval
 	URL PagesURLCmd `cmd:"" help:"Get page URL"`
 
-	// Phase 2: 状態変更
+	// Phase 2: State changes
 	Publish   PagesPublishCmd   `cmd:"" help:"Publish a page"`
 	Unpublish PagesUnpublishCmd `cmd:"" help:"Unpublish a page"`
 
-	// Phase 3: 予約公開
+	// Phase 3: Scheduled publishing
 	Schedule PagesScheduleCmd `cmd:"" help:"Schedule a page"`
 
-	// Phase 4: バッチ操作
+	// Phase 4: Batch operations
 	Batch  PagesBatchCmd  `cmd:"" help:"Batch operations"`
 	Search PagesSearchCmd `cmd:"" help:"Search pages"`
 
-	// Phase 8.3: コピー
+	// Phase 8.3: Copy
 	Copy PagesCopyCmd `cmd:"" help:"Copy a page"`
 }
 
-// PagesListCmd is the command to retrieve ページ list
+// PagesListCmd is the command to retrieve page list
 type PagesListCmd struct {
 	Status string `help:"Filter by status (draft, published, scheduled, all)" short:"S" default:"all"`
 	Limit  int    `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
@@ -131,7 +131,7 @@ func (c *PagesListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesInfoCmd is the command to show ページ information
+// PagesInfoCmd is the command to show page information
 type PagesInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 }
@@ -188,37 +188,37 @@ func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 		{"status", page.Status},
 	}
 
-	// visibilityを追加
+	// Add visibility
 	if page.Visibility != "" {
 		rows = append(rows, []string{"visibility", page.Visibility})
 	}
 
-	// urlを追加
+	// Add url
 	if page.URL != "" {
 		rows = append(rows, []string{"url", page.URL})
 	}
 
-	// authorsを追加（存在する場合のみ）
+	// Add authors (if present)
 	if len(page.Authors) > 0 {
 		rows = append(rows, []string{"authors", outfmt.FormatAuthors(page.Authors)})
 	}
 
-	// tagsを追加（存在する場合のみ）
+	// Add tags (if present)
 	if len(page.Tags) > 0 {
 		rows = append(rows, []string{"tags", outfmt.FormatTags(page.Tags)})
 	}
 
-	// featuredを追加（trueの場合のみ）
+	// Add featured (if true)
 	if page.Featured {
 		rows = append(rows, []string{"featured", "true"})
 	}
 
-	// excerptを追加（存在する場合のみ、140文字で切り詰め）
+	// Add excerpt (if present, truncated to 140 characters)
 	if page.Excerpt != "" {
 		rows = append(rows, []string{"excerpt", outfmt.TruncateExcerpt(page.Excerpt, 140)})
 	}
 
-	// 日時フィールド
+	// Date/time fields
 	rows = append(rows, []string{"created", page.CreatedAt.Format("2006-01-02 15:04:05")})
 	rows = append(rows, []string{"updated", page.UpdatedAt.Format("2006-01-02 15:04:05")})
 
@@ -233,7 +233,7 @@ func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// PagesCreateCmd is the command to create ページ
+// PagesCreateCmd is the command to create page
 type PagesCreateCmd struct {
 	Title    string `help:"Page title" short:"t" required:""`
 	HTML     string `help:"Page content (HTML)" short:"c"`
@@ -251,11 +251,11 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// コンテンツとフォーマットの決定
+	// Determine content and format
 	var htmlContent string
 	var format input.ContentFormat
 
-	// ファイル指定の場合はフォーマット自動検出
+	// Auto-detect format when file is specified
 	if c.File != "" {
 		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
 		if err != nil {
@@ -263,29 +263,29 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 		format = detectedFormat
 
-		// フォーマットに応じて処理
+		// Process according to format
 		switch format {
 		case input.FormatMarkdown:
-			// Markdown→HTML変換
+			// Convert Markdown to HTML
 			htmlContent, err = markdown.ConvertToHTML(fileContent)
 			if err != nil {
 				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
 			}
 		case input.FormatHTML:
-			// HTMLはそのまま使用
+			// Use HTML as-is
 			htmlContent = fileContent
 		case input.FormatLexical:
-			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			// Use Lexical JSON as-is (set to c.Lexical)
 			c.Lexical = fileContent
 		default:
-			// 不明な形式の場合はHTMLとして扱う
+			// Treat as HTML for unknown formats
 			htmlContent = fileContent
 		}
 	} else {
-		// インラインコンテンツの処理
+		// Process inline content
 		htmlContent = c.HTML
 
-		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		// Convert Markdown to HTML if Markdown flag is specified
 		if c.Markdown != "" {
 			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
 			if err != nil {
@@ -302,16 +302,16 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		Status:  c.Status,
 	}
 
-	// HTMLコンテンツが指定されている場合は、自動的にsource=htmlを適用
+	// Automatically apply source=html when HTML content is specified
 	var createdPage *ghostapi.Page
 	if htmlContent != "" && c.Lexical == "" {
-		// HTMLをサーバー側でLexical形式に変換
+		// Convert HTML to Lexical format on server side
 		opts := ghostapi.CreateOptions{
 			Source: "html",
 		}
 		createdPage, err = client.CreatePageWithOptions(newPage, opts)
 	} else {
-		// Lexical形式またはコンテンツなしの場合は通常の作成
+		// Normal creation for Lexical format or no content
 		createdPage, err = client.CreatePage(newPage)
 	}
 
@@ -335,7 +335,7 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PagesUpdateCmd is the command to update ページ
+// PagesUpdateCmd is the command to update page
 type PagesUpdateCmd struct {
 	ID       string `arg:"" help:"Page ID"`
 	Title    string `help:"Page title" short:"t"`
@@ -360,11 +360,11 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return fmt.Errorf("failed to get page: %w", err)
 	}
 
-	// コンテンツとフォーマットの決定
+	// Determine content and format
 	var htmlContent string
 	var format input.ContentFormat
 
-	// ファイル指定の場合はフォーマット自動検出
+	// Auto-detect format when file is specified
 	if c.File != "" {
 		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
 		if err != nil {
@@ -372,29 +372,29 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 		format = detectedFormat
 
-		// フォーマットに応じて処理
+		// Process according to format
 		switch format {
 		case input.FormatMarkdown:
-			// Markdown→HTML変換
+			// Convert Markdown to HTML
 			htmlContent, err = markdown.ConvertToHTML(fileContent)
 			if err != nil {
 				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
 			}
 		case input.FormatHTML:
-			// HTMLはそのまま使用
+			// Use HTML as-is
 			htmlContent = fileContent
 		case input.FormatLexical:
-			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			// Use Lexical JSON as-is (set to c.Lexical)
 			c.Lexical = fileContent
 		default:
-			// 不明な形式の場合はHTMLとして扱う
+			// Treat as HTML for unknown formats
 			htmlContent = fileContent
 		}
 	} else {
-		// インラインコンテンツの処理
+		// Process inline content
 		htmlContent = c.HTML
 
-		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		// Convert Markdown to HTML if Markdown flag is specified
 		if c.Markdown != "" {
 			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
 			if err != nil {
@@ -426,16 +426,16 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updatePage.Status = c.Status
 	}
 
-	// HTMLコンテンツが更新される場合は、自動的にsource=htmlを適用
+	// Automatically apply source=html when HTML content is updated
 	var updatedPage *ghostapi.Page
 	if htmlContent != "" && c.Lexical == "" {
-		// HTMLをサーバー側でLexical形式に変換
+		// Convert HTML to Lexical format on server side
 		opts := ghostapi.CreateOptions{
 			Source: "html",
 		}
 		updatedPage, err = client.UpdatePageWithOptions(c.ID, updatePage, opts)
 	} else {
-		// Lexical形式またはHTMLの更新なしの場合は通常の更新
+		// Normal update for Lexical format or no HTML update
 		updatedPage, err = client.UpdatePage(c.ID, updatePage)
 	}
 
@@ -459,7 +459,7 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PagesDeleteCmd is the command to delete ページ
+// PagesDeleteCmd is the command to delete page
 type PagesDeleteCmd struct {
 	ID string `arg:"" help:"Page ID"`
 }
@@ -499,10 +499,10 @@ func (c *PagesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 1: URL取得
+// Phase 1: URL retrieval
 // ========================================
 
-// PagesURLCmd is the command to get ページ web URL
+// PagesURLCmd is the command to get page web URL
 type PagesURLCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 	Open     bool   `help:"Open URL in browser" short:"o"`
@@ -556,10 +556,10 @@ func (c *PagesURLCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 2: 状態変更
+// Phase 2: State changes
 // ========================================
 
-// PagesPublishCmd is the command to publish ページ
+// PagesPublishCmd is the command to publish page
 type PagesPublishCmd struct {
 	ID string `arg:"" help:"Page ID"`
 }
@@ -615,7 +615,7 @@ func (c *PagesPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PagesUnpublishCmd is the command to unpublish ページ
+// PagesUnpublishCmd is the command to unpublish page
 type PagesUnpublishCmd struct {
 	ID string `arg:"" help:"Page ID"`
 }
@@ -672,10 +672,10 @@ func (c *PagesUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 2: catコマンド
+// Phase 2: cat command
 // ========================================
 
-// PagesCatCmd is the command to show ページ content body
+// PagesCatCmd is the command to show page content body
 type PagesCatCmd struct {
 	IDOrSlug string `arg:"" help:"Page ID or slug"`
 	Format   string `help:"Output format (text, html, lexical)" default:"text"`
@@ -709,7 +709,7 @@ func (c *PagesCatCmd) Run(ctx context.Context, root *RootFlags) error {
 	case "lexical":
 		content = page.Lexical
 	default:
-		return fmt.Errorf("unsupported format: %s (html, text, lexical のいずれかを指定してください)", c.Format)
+		return fmt.Errorf("unsupported format: %s (please specify one of: html, text, lexical)", c.Format)
 	}
 
 	// Output content
@@ -719,10 +719,10 @@ func (c *PagesCatCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 8.3: copyコマンド
+// Phase 8.3: copy command
 // ========================================
 
-// PagesCopyCmd is the command to copy ページ
+// PagesCopyCmd is the command to copy page
 type PagesCopyCmd struct {
 	IDOrSlug string `arg:"" help:"Source page ID or slug"`
 	Title    string `help:"New title (defaults to 'Original Title (Copy)')" short:"t"`
@@ -779,10 +779,10 @@ func (c *PagesCopyCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 1: ステータス別一覧ショートカット
+// Phase 1: Status-based list shortcuts
 // ========================================
 
-// PagesDraftsCmd is the command to retrieve draft ページ list
+// PagesDraftsCmd is the command to retrieve draft page list
 type PagesDraftsCmd struct {
 	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
@@ -803,7 +803,7 @@ func (c *PagesDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("下書きfailed to list pages: %w", err)
+		return fmt.Errorf("failed to list pages: %w", err)
 	}
 
 	// Create output formatter
@@ -830,7 +830,7 @@ func (c *PagesDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesPublishedCmd is the command to retrieve published ページ list
+// PagesPublishedCmd is the command to retrieve published page list
 type PagesPublishedCmd struct {
 	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
@@ -851,7 +851,7 @@ func (c *PagesPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("公開済みfailed to list pages: %w", err)
+		return fmt.Errorf("failed to list pages: %w", err)
 	}
 
 	// Create output formatter
@@ -882,7 +882,7 @@ func (c *PagesPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PagesScheduledCmd is the command to retrieve scheduled ページ list
+// PagesScheduledCmd is the command to retrieve scheduled page list
 type PagesScheduledCmd struct {
 	Limit int `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
@@ -903,7 +903,7 @@ func (c *PagesScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("予約failed to list pages: %w", err)
+		return fmt.Errorf("failed to list pages: %w", err)
 	}
 
 	// Create output formatter
@@ -935,10 +935,10 @@ func (c *PagesScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 3: 予約公開
+// Phase 3: Scheduled publishing
 // ========================================
 
-// PagesScheduleCmd is the command to schedule ページ for publishing
+// PagesScheduleCmd is the command to schedule page for publishing
 type PagesScheduleCmd struct {
 	ID string `arg:"" help:"Page ID"`
 	At string `help:"Schedule time (YYYY-MM-DD HH:MM)" required:""`
@@ -999,16 +999,16 @@ func (c *PagesScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 4: バッチ操作
+// Phase 4: Batch operations
 // ========================================
 
-// PagesBatchCmd はバッチ操作コマンドです
+// PagesBatchCmd is the batch operations command
 type PagesBatchCmd struct {
 	Publish PagesBatchPublishCmd `cmd:"" help:"Batch publish pages"`
 	Delete  PagesBatchDeleteCmd  `cmd:"" help:"Batch delete pages"`
 }
 
-// PagesBatchPublishCmd is the command to batch publish ページ
+// PagesBatchPublishCmd is the command to batch publish pages
 type PagesBatchPublishCmd struct {
 	IDs []string `arg:"" help:"Page IDs to publish"`
 }
@@ -1034,7 +1034,7 @@ func (c *PagesBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 			continue
 		}
 
-		// すでに公開済みの場合はスキップ
+		// Skip if already published
 		if existingPage.Status == "published" {
 			formatter.PrintMessage(fmt.Sprintf("skipped (already published): %s (ID: %s)", existingPage.Title, id))
 			continue
@@ -1061,12 +1061,12 @@ func (c *PagesBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のpublished page", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: published %d pages", successCount))
 
 	return nil
 }
 
-// PagesBatchDeleteCmd is the command to batch delete ページ
+// PagesBatchDeleteCmd is the command to batch delete pages
 type PagesBatchDeleteCmd struct {
 	IDs []string `arg:"" help:"Page IDs to delete"`
 }
@@ -1101,16 +1101,16 @@ func (c *PagesBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のdeleted page", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: deleted %d pages", successCount))
 
 	return nil
 }
 
 // ========================================
-// Phase 4: ページ検索
+// Phase 4: Page search
 // ========================================
 
-// PagesSearchCmd is the command to search ページ
+// PagesSearchCmd is the command to search pages
 type PagesSearchCmd struct {
 	Query string `arg:"" help:"Search query"`
 	Limit int    `help:"Number of pages to retrieve" short:"l" aliases:"max,n" default:"15"`
@@ -1124,7 +1124,7 @@ func (c *PagesSearchCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// Get page list（検索クエリはfilterとして渡す）
+	// Get page list (search query is passed as filter)
 	response, err := client.ListPages(ghostapi.ListOptions{
 		Status: "all",
 		Limit:  c.Limit,

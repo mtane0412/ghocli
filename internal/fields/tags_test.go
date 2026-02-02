@@ -1,24 +1,24 @@
 /**
  * tags_test.go
- * Tag用フィールド定義のテストコード
+ * Test code for Tag field definitions
  */
 
 package fields
 
 import "testing"
 
-// TestTagFields_全フィールド数 はTagFieldsが期待する数のフィールドを持つことを確認します
-func TestTagFields_全フィールド数(t *testing.T) {
-	// Tag構造体のフィールド数は7個
+// TestTagFields_TotalFieldCount verifies that TagFields has the expected number of fields
+func TestTagFields_TotalFieldCount(t *testing.T) {
+	// Tag struct has 7 fields
 	expectedCount := 7
 	if len(TagFields.All) != expectedCount {
-		t.Errorf("TagFields.Allのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(TagFields.All))
+		t.Errorf("Incorrect number of TagFields.All fields. expected=%d, got=%d", expectedCount, len(TagFields.All))
 	}
 }
 
-// TestTagFields_基本フィールド はTagFieldsが基本フィールドを含むことを確認します
-func TestTagFields_基本フィールド(t *testing.T) {
-	// 基本フィールドが存在することを確認
+// TestTagFields_BasicFields verifies that TagFields contains basic fields
+func TestTagFields_BasicFields(t *testing.T) {
+	// Verify basic fields exist
 	expectedFields := []string{"id", "name", "slug", "visibility"}
 
 	fieldMap := make(map[string]bool)
@@ -28,14 +28,14 @@ func TestTagFields_基本フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("基本フィールド '%s' が見つかりません", expected)
+			t.Errorf("Basic field '%s' not found", expected)
 		}
 	}
 }
 
-// TestTagFields_詳細フィールド はTagFieldsが詳細フィールドを含むことを確認します
-func TestTagFields_詳細フィールド(t *testing.T) {
-	// 詳細フィールドが存在することを確認
+// TestTagFields_DetailFields verifies that TagFields contains detail fields
+func TestTagFields_DetailFields(t *testing.T) {
+	// Verify detail fields exist
 	expectedFields := []string{"description", "created_at", "updated_at"}
 
 	fieldMap := make(map[string]bool)
@@ -45,20 +45,20 @@ func TestTagFields_詳細フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("詳細フィールド '%s' が見つかりません", expected)
+			t.Errorf("Detail field '%s' not found", expected)
 		}
 	}
 }
 
-// TestTagFields_デフォルトフィールド はTagFields.Defaultが期待するフィールドを含むことを確認します
-func TestTagFields_デフォルトフィールド(t *testing.T) {
-	// Defaultフィールドは5個
+// TestTagFields_DefaultFields verifies that TagFields.Default contains the expected fields
+func TestTagFields_DefaultFields(t *testing.T) {
+	// Default fields should be 5
 	expectedCount := 5
 	if len(TagFields.Default) != expectedCount {
-		t.Errorf("TagFields.Defaultのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(TagFields.Default))
+		t.Errorf("Incorrect number of TagFields.Default fields. expected=%d, got=%d", expectedCount, len(TagFields.Default))
 	}
 
-	// 必須フィールドが含まれることを確認
+	// Verify required fields are included
 	expectedFields := []string{"id", "name", "slug"}
 	fieldMap := make(map[string]bool)
 	for _, field := range TagFields.Default {
@@ -67,20 +67,20 @@ func TestTagFields_デフォルトフィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("Defaultフィールド '%s' が見つかりません", expected)
+			t.Errorf("Default field '%s' not found", expected)
 		}
 	}
 }
 
-// TestTagFields_詳細表示フィールド はTagFields.Detailが期待するフィールドを含むことを確認します
-func TestTagFields_詳細表示フィールド(t *testing.T) {
-	// Detailフィールドは7個（全フィールド）
+// TestTagFields_DetailDisplayFields verifies that TagFields.Detail contains the expected fields
+func TestTagFields_DetailDisplayFields(t *testing.T) {
+	// Detail fields should be 7 (all fields)
 	expectedCount := 7
 	if len(TagFields.Detail) != expectedCount {
-		t.Errorf("TagFields.Detailのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(TagFields.Detail))
+		t.Errorf("Incorrect number of TagFields.Detail fields. expected=%d, got=%d", expectedCount, len(TagFields.Detail))
 	}
 
-	// descriptionとupdated_atが含まれることを確認
+	// Verify description and updated_at are included
 	expectedFields := []string{"description", "updated_at"}
 	fieldMap := make(map[string]bool)
 	for _, field := range TagFields.Detail {
@@ -89,7 +89,7 @@ func TestTagFields_詳細表示フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("Detailフィールド '%s' が見つかりません", expected)
+			t.Errorf("Detail field '%s' not found", expected)
 		}
 	}
 }

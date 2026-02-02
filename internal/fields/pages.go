@@ -1,12 +1,12 @@
 /**
  * pages.go
- * Page用フィールド定義
+ * Page field definitions
  *
- * Ghost Admin APIのPageリソースはPostと同じスキーマを持つため、
- * PostFieldsのエイリアスとして定義します。
+ * Since Ghost Admin API Page resources have the same schema as Posts,
+ * defined as an alias to PostFields.
  */
 
 package fields
 
-// PageFields はPage用のフィールドセットです（Postと同一）
+// PageFields is the field set for Page resources (identical to Post)
 var PageFields = PostFields

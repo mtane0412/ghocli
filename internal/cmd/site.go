@@ -1,8 +1,8 @@
 /**
  * site.go
- * サイト情報取得コマンド
+ * Site information retrieval command
  *
- * Ghost サイトの基本情報を取得して表示します。
+ * Retrieves and displays basic information about a Ghost site.
  */
 
 package cmd
@@ -60,21 +60,21 @@ func (c *SiteCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// getAPIClient はAPIクライアントを取得します
+// getAPIClient retrieves an API client
 func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
-	// 設定ファイルパスを取得
+	// Get config file path
 	configPath, err := getConfigPath()
 	if err != nil {
 		return nil, err
 	}
 
-	// 設定を読み込む
+	// Load config
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// サイトURLを決定
+	// Determine site URL
 	siteURL := root.Site
 	if siteURL == "" {
 		siteURL = cfg.DefaultSite
@@ -83,14 +83,14 @@ func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
 		return nil, errors.New(errfmt.FormatSiteError())
 	}
 
-	// エイリアスの場合はURLに変換
+	// Convert alias to URL if applicable
 	if url, ok := cfg.GetSiteURL(siteURL); ok {
 		siteURL = url
 	} else {
 		return nil, fmt.Errorf("site '%s' not found", siteURL)
 	}
 
-	// エイリアスを逆引き
+	// Reverse lookup alias
 	alias := ""
 	for a, u := range cfg.Sites {
 		if u == siteURL {
@@ -102,7 +102,7 @@ func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
 		return nil, fmt.Errorf("alias not found for site URL")
 	}
 
-	// キーリングからAPIキーを取得
+	// Get API key from keyring
 	store, err := secrets.NewStore(cfg.KeyringBackend, getKeyringDir())
 	if err != nil {
 		return nil, fmt.Errorf("failed to open keyring: %w", err)
@@ -113,12 +113,12 @@ func getAPIClient(root *RootFlags) (*ghostapi.Client, error) {
 		return nil, errors.New(errfmt.FormatAuthError(alias))
 	}
 
-	// APIキーをパース
+	// Parse API key
 	keyID, secret, err := secrets.ParseAdminAPIKey(apiKey)
 	if err != nil {
 		return nil, err
 	}
 
-	// APIクライアントを作成
+	// Create API client
 	return ghostapi.NewClient(siteURL, keyID, secret)
 }

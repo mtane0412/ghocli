@@ -1,6 +1,6 @@
 /**
  * root_test.go
- * root.goの環境変数統合テスト
+ * Integration tests for environment variables in root.go
  */
 
 package cmd
@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestRootFlags_PlainEnvVar はGHO_PLAIN環境変数が正しく読み込まれることをテストします
+// TestRootFlags_PlainEnvVar verifies that GHO_PLAIN environment variable is correctly loaded
 func TestRootFlags_PlainEnvVar(t *testing.T) {
 	// Set environment variable
 	os.Setenv("GHO_PLAIN", "1")
 	defer os.Unsetenv("GHO_PLAIN")
 
-	// CLIをパース（posts listコマンドを使用）
+	// Parse CLI (using posts list command)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -28,17 +28,17 @@ func TestRootFlags_PlainEnvVar(t *testing.T) {
 	_, err = parser.Parse([]string{"posts", "list"})
 	require.NoError(t, err)
 
-	// GHO_PLAINが設定されているので、Plainがtrueになるはず
-	assert.True(t, cli.Plain, "GHO_PLAIN環境変数が設定されている場合、Plainがtrueになるべき")
+	// Since GHO_PLAIN is set, Plain should be true
+	assert.True(t, cli.Plain, "When GHO_PLAIN environment variable is set, Plain should be true")
 }
 
-// TestRootFlags_VerboseEnvVar はGHO_VERBOSE環境変数が正しく読み込まれることをテストします
+// TestRootFlags_VerboseEnvVar verifies that GHO_VERBOSE environment variable is correctly loaded
 func TestRootFlags_VerboseEnvVar(t *testing.T) {
 	// Set environment variable
 	os.Setenv("GHO_VERBOSE", "1")
 	defer os.Unsetenv("GHO_VERBOSE")
 
-	// CLIをパース（posts listコマンドを使用）
+	// Parse CLI (using posts list command)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -46,17 +46,17 @@ func TestRootFlags_VerboseEnvVar(t *testing.T) {
 	_, err = parser.Parse([]string{"posts", "list"})
 	require.NoError(t, err)
 
-	// GHO_VERBOSEが設定されているので、Verboseがtrueになるはず
-	assert.True(t, cli.Verbose, "GHO_VERBOSE環境変数が設定されている場合、Verboseがtrueになるべき")
+	// Since GHO_VERBOSE is set, Verbose should be true
+	assert.True(t, cli.Verbose, "When GHO_VERBOSE environment variable is set, Verbose should be true")
 }
 
-// TestRootFlags_PlainFlagOverridesEnv はフラグが環境変数より優先されることをテストします
+// TestRootFlags_PlainFlagOverridesEnv verifies that flag takes precedence over environment variable
 func TestRootFlags_PlainFlagOverridesEnv(t *testing.T) {
-	// Set environment variable（falseとして解釈される値）
+	// Set environment variable (value interpreted as false)
 	os.Setenv("GHO_PLAIN", "0")
 	defer os.Unsetenv("GHO_PLAIN")
 
-	// CLIをパース（--plainフラグを指定）
+	// Parse CLI (with --plain flag specified)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -64,17 +64,17 @@ func TestRootFlags_PlainFlagOverridesEnv(t *testing.T) {
 	_, err = parser.Parse([]string{"--plain", "posts", "list"})
 	require.NoError(t, err)
 
-	// フラグが環境変数より優先されるので、Plainがtrueになるはず
-	assert.True(t, cli.Plain, "--plainフラグは環境変数より優先されるべき")
+	// Since flag takes precedence over environment variable, Plain should be true
+	assert.True(t, cli.Plain, "--plain flag should take precedence over environment variable")
 }
 
-// TestRootFlags_VerboseFlagOverridesEnv はフラグが環境変数より優先されることをテストします
+// TestRootFlags_VerboseFlagOverridesEnv verifies that flag takes precedence over environment variable
 func TestRootFlags_VerboseFlagOverridesEnv(t *testing.T) {
-	// Set environment variable（falseとして解釈される値）
+	// Set environment variable (value interpreted as false)
 	os.Setenv("GHO_VERBOSE", "0")
 	defer os.Unsetenv("GHO_VERBOSE")
 
-	// CLIをパース（-vフラグを指定）
+	// Parse CLI (with -v flag specified)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -82,17 +82,17 @@ func TestRootFlags_VerboseFlagOverridesEnv(t *testing.T) {
 	_, err = parser.Parse([]string{"-v", "posts", "list"})
 	require.NoError(t, err)
 
-	// フラグが環境変数より優先されるので、Verboseがtrueになるはず
-	assert.True(t, cli.Verbose, "-vフラグは環境変数より優先されるべき")
+	// Since flag takes precedence over environment variable, Verbose should be true
+	assert.True(t, cli.Verbose, "-v flag should take precedence over environment variable")
 }
 
-// TestRootFlags_ColorEnvVar はGHO_COLOR環境変数が正しく読み込まれることをテストします
+// TestRootFlags_ColorEnvVar verifies that GHO_COLOR environment variable is correctly loaded
 func TestRootFlags_ColorEnvVar(t *testing.T) {
 	// Set environment variable
 	os.Setenv("GHO_COLOR", "never")
 	defer os.Unsetenv("GHO_COLOR")
 
-	// CLIをパース（posts listコマンドを使用）
+	// Parse CLI (using posts list command)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -100,17 +100,17 @@ func TestRootFlags_ColorEnvVar(t *testing.T) {
 	_, err = parser.Parse([]string{"posts", "list"})
 	require.NoError(t, err)
 
-	// GHO_COLORが設定されているので、Colorが"never"になるはず
-	assert.Equal(t, "never", cli.Color, "GHO_COLOR環境変数が設定されている場合、Colorが正しく設定されるべき")
+	// Since GHO_COLOR is set, Color should be "never"
+	assert.Equal(t, "never", cli.Color, "When GHO_COLOR environment variable is set, Color should be set correctly")
 }
 
-// TestRootFlags_ColorFlagOverridesEnv はフラグが環境変数より優先されることをテストします
+// TestRootFlags_ColorFlagOverridesEnv verifies that flag takes precedence over environment variable
 func TestRootFlags_ColorFlagOverridesEnv(t *testing.T) {
 	// Set environment variable
 	os.Setenv("GHO_COLOR", "never")
 	defer os.Unsetenv("GHO_COLOR")
 
-	// CLIをパース（--color=alwaysフラグを指定）
+	// Parse CLI (with --color=always flag specified)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -118,16 +118,16 @@ func TestRootFlags_ColorFlagOverridesEnv(t *testing.T) {
 	_, err = parser.Parse([]string{"--color=always", "posts", "list"})
 	require.NoError(t, err)
 
-	// フラグが環境変数より優先されるので、Colorが"always"になるはず
-	assert.Equal(t, "always", cli.Color, "--colorフラグは環境変数より優先されるべき")
+	// Since flag takes precedence over environment variable, Color should be "always"
+	assert.Equal(t, "always", cli.Color, "--color flag should take precedence over environment variable")
 }
 
-// TestRootFlags_ColorDefault はデフォルト値が"auto"であることをテストします
+// TestRootFlags_ColorDefault verifies that default value is "auto"
 func TestRootFlags_ColorDefault(t *testing.T) {
-	// 環境変数を削除
+	// Unset environment variable
 	os.Unsetenv("GHO_COLOR")
 
-	// CLIをパース
+	// Parse CLI
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -135,64 +135,64 @@ func TestRootFlags_ColorDefault(t *testing.T) {
 	_, err = parser.Parse([]string{"posts", "list"})
 	require.NoError(t, err)
 
-	// デフォルト値は"auto"になるはず
-	assert.Equal(t, "auto", cli.Color, "デフォルト値は'auto'であるべき")
+	// Default value should be "auto"
+	assert.Equal(t, "auto", cli.Color, "Default value should be 'auto'")
 }
 
-// TestExecute_ヘルプメッセージが表示される
-// Kongは--helpでos.Exit(0)を呼び出すため、このテストはスキップする
-func TestExecute_ヘルプメッセージが表示される(t *testing.T) {
-	t.Skip("Kongは--helpでos.Exit(0)を呼び出すため、テストできない")
+// TestExecute_HelpMessage verifies help message is displayed
+// Kong calls os.Exit(0) with --help, so this test is skipped
+func TestExecute_HelpMessage(t *testing.T) {
+	t.Skip("Cannot test because Kong calls os.Exit(0) with --help")
 }
 
-// TestExecute_バージョン表示
-// Kongは--versionでos.Exit(0)を呼び出すため、このテストはスキップする
-func TestExecute_バージョン表示(t *testing.T) {
-	t.Skip("Kongは--versionでos.Exit(0)を呼び出すため、テストできない")
+// TestExecute_VersionDisplay verifies version is displayed
+// Kong calls os.Exit(0) with --version, so this test is skipped
+func TestExecute_VersionDisplay(t *testing.T) {
+	t.Skip("Cannot test because Kong calls os.Exit(0) with --version")
 }
 
-// TestExecute_不正なコマンド
-func TestExecute_不正なコマンド(t *testing.T) {
-	// 存在しないコマンドを渡す
+// TestExecute_InvalidCommand verifies behavior with invalid command
+func TestExecute_InvalidCommand(t *testing.T) {
+	// Pass non-existent command
 	args := []string{"gho", "invalid-command"}
 
-	// エラーを返すべき
+	// Should return error
 	err := Execute(args)
 	if err == nil {
 		t.Error("Execute(invalid-command) returned nil, want error")
 	}
 
-	// 終了コードは0以外
+	// Exit code should be non-zero
 	code := ExitCode(err)
 	if code == 0 {
 		t.Error("Execute(invalid-command) exit code = 0, want non-zero")
 	}
 }
 
-// TestExecute_近似コマンド提案 はレーベンシュタイン距離が2以下のコマンドを提案することをテストします
-func TestExecute_近似コマンド提案(t *testing.T) {
+// TestExecute_SimilarCommandSuggestion verifies that commands with Levenshtein distance of 2 or less are suggested
+func TestExecute_SimilarCommandSuggestion(t *testing.T) {
 	testCases := []struct {
 		name            string
 		args            []string
 		wantErrorString string
 	}{
 		{
-			name:            "themesのタイポをthemesと提案",
+			name:            "suggest themes for typo of themes",
 			args:            []string{"gho", "themse"},
 			wantErrorString: "did you mean \"themes\"?",
 		},
 		{
-			name:            "postsのタイポをpostsと提案",
+			name:            "suggest posts for typo of posts",
 			args:            []string{"gho", "postss"},
 			wantErrorString: "did you mean \"posts\"?",
 		},
 		{
-			name:            "authのタイポをauthと提案",
+			name:            "suggest auth for typo of auth",
 			args:            []string{"gho", "auht"},
 			wantErrorString: "did you mean \"auth\"?",
 		},
 		{
-			name:            "完全に不明なコマンドは提案なし",
+			name:            "no suggestion for completely unknown command",
 			args:            []string{"gho", "unknowncommand"},
 			wantErrorString: "unexpected argument",
 		},
@@ -200,46 +200,46 @@ func TestExecute_近似コマンド提案(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// コマンドを実行
+			// Execute command
 			err := Execute(tc.args)
 
-			// エラーが返されるべき
+			// Error should be returned
 			require.Error(t, err, "Execute(%v) should return error", tc.args)
 
-			// エラーメッセージに期待する文字列が含まれるべき
+			// Error message should contain expected string
 			assert.Contains(t, err.Error(), tc.wantErrorString,
 				"Execute(%v) error message should contain %q", tc.args, tc.wantErrorString)
 		})
 	}
 }
 
-// TestRootFlags_Fieldsフィールド はRootFlagsにFieldsフィールドが存在することを確認します
-func TestRootFlags_Fieldsフィールド(t *testing.T) {
-	// RootFlagsインスタンスを作成
+// TestRootFlags_FieldsField verifies that Fields field exists in RootFlags
+func TestRootFlags_FieldsField(t *testing.T) {
+	// Create RootFlags instance
 	flags := &RootFlags{
 		Fields: "id,title,status",
 	}
 
-	// Fieldsフィールドが設定されることを確認
-	assert.Equal(t, "id,title,status", flags.Fields, "Fieldsフィールドが正しく設定されるべき")
+	// Verify that Fields field is set
+	assert.Equal(t, "id,title,status", flags.Fields, "Fields field should be set correctly")
 }
 
-// TestRootFlags_Fieldsデフォルト値 はFieldsのデフォルト値を確認します
-func TestRootFlags_Fieldsデフォルト値(t *testing.T) {
-	// RootFlagsインスタンスを作成（デフォルト値）
+// TestRootFlags_FieldsDefault verifies the default value of Fields
+func TestRootFlags_FieldsDefault(t *testing.T) {
+	// Create RootFlags instance (with default value)
 	flags := &RootFlags{}
 
-	// Fieldsのデフォルト値が空文字列であることを確認
-	assert.Equal(t, "", flags.Fields, "Fieldsのデフォルト値は空文字列であるべき")
+	// Verify that default value of Fields is empty string
+	assert.Equal(t, "", flags.Fields, "Default value of Fields should be empty string")
 }
 
-// TestRootFlags_FieldsEnvVar はGHO_FIELDS環境変数が正しく読み込まれることをテストします
+// TestRootFlags_FieldsEnvVar verifies that GHO_FIELDS environment variable is correctly loaded
 func TestRootFlags_FieldsEnvVar(t *testing.T) {
 	// Set environment variable
 	os.Setenv("GHO_FIELDS", "id,title,url")
 	defer os.Unsetenv("GHO_FIELDS")
 
-	// CLIをパース（posts listコマンドを使用）
+	// Parse CLI (using posts list command)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -247,17 +247,17 @@ func TestRootFlags_FieldsEnvVar(t *testing.T) {
 	_, err = parser.Parse([]string{"posts", "list"})
 	require.NoError(t, err)
 
-	// GHO_FIELDSが設定されているので、Fieldsが"id,title,url"になるはず
-	assert.Equal(t, "id,title,url", cli.Fields, "GHO_FIELDS環境変数が設定されている場合、Fieldsが正しく設定されるべき")
+	// Since GHO_FIELDS is set, Fields should be "id,title,url"
+	assert.Equal(t, "id,title,url", cli.Fields, "When GHO_FIELDS environment variable is set, Fields should be set correctly")
 }
 
-// TestRootFlags_FieldsFlagOverridesEnv はフラグが環境変数より優先されることをテストします
+// TestRootFlags_FieldsFlagOverridesEnv verifies that flag takes precedence over environment variable
 func TestRootFlags_FieldsFlagOverridesEnv(t *testing.T) {
 	// Set environment variable
 	os.Setenv("GHO_FIELDS", "id,title")
 	defer os.Unsetenv("GHO_FIELDS")
 
-	// CLIをパース（--fieldsフラグを指定）
+	// Parse CLI (with --fields flag specified)
 	var cli CLI
 	parser, err := kong.New(&cli)
 	require.NoError(t, err)
@@ -265,19 +265,19 @@ func TestRootFlags_FieldsFlagOverridesEnv(t *testing.T) {
 	_, err = parser.Parse([]string{"--fields=id,title,status,url", "posts", "list"})
 	require.NoError(t, err)
 
-	// フラグが環境変数より優先されるので、Fieldsが"id,title,status,url"になるはず
-	assert.Equal(t, "id,title,status,url", cli.Fields, "--fieldsフラグは環境変数より優先されるべき")
+	// Since flag takes precedence over environment variable, Fields should be "id,title,status,url"
+	assert.Equal(t, "id,title,status,url", cli.Fields, "--fields flag should take precedence over environment variable")
 }
 
-// TestCommandAliases_Posts はpostsコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Posts verifies that posts command aliases work
 func TestCommandAliases_Posts(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"postsコマンド", "posts"},
-		{"postエイリアス", "post"},
-		{"pエイリアス", "p"},
+		{"posts command", "posts"},
+		{"post alias", "post"},
+		{"p alias", "p"},
 	}
 
 	for _, tc := range testCases {
@@ -287,20 +287,20 @@ func TestCommandAliases_Posts(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Tags はtagsコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Tags verifies that tags command aliases work
 func TestCommandAliases_Tags(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"tagsコマンド", "tags"},
-		{"tagエイリアス", "tag"},
-		{"tエイリアス", "t"},
+		{"tags command", "tags"},
+		{"tag alias", "tag"},
+		{"t alias", "t"},
 	}
 
 	for _, tc := range testCases {
@@ -310,19 +310,19 @@ func TestCommandAliases_Tags(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Pages はpagesコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Pages verifies that pages command aliases work
 func TestCommandAliases_Pages(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"pagesコマンド", "pages"},
-		{"pageエイリアス", "page"},
+		{"pages command", "pages"},
+		{"page alias", "page"},
 	}
 
 	for _, tc := range testCases {
@@ -332,20 +332,20 @@ func TestCommandAliases_Pages(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Members はmembersコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Members verifies that members command aliases work
 func TestCommandAliases_Members(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"membersコマンド", "members"},
-		{"memberエイリアス", "member"},
-		{"mエイリアス", "m"},
+		{"members command", "members"},
+		{"member alias", "member"},
+		{"m alias", "m"},
 	}
 
 	for _, tc := range testCases {
@@ -355,20 +355,20 @@ func TestCommandAliases_Members(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Users はusersコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Users verifies that users command aliases work
 func TestCommandAliases_Users(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"usersコマンド", "users"},
-		{"userエイリアス", "user"},
-		{"uエイリアス", "u"},
+		{"users command", "users"},
+		{"user alias", "user"},
+		{"u alias", "u"},
 	}
 
 	for _, tc := range testCases {
@@ -378,20 +378,20 @@ func TestCommandAliases_Users(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Newsletters はnewslettersコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Newsletters verifies that newsletters command aliases work
 func TestCommandAliases_Newsletters(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"newslettersコマンド", "newsletters"},
-		{"newsletterエイリアス", "newsletter"},
-		{"nlエイリアス", "nl"},
+		{"newsletters command", "newsletters"},
+		{"newsletter alias", "newsletter"},
+		{"nl alias", "nl"},
 	}
 
 	for _, tc := range testCases {
@@ -401,19 +401,19 @@ func TestCommandAliases_Newsletters(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Tiers はtiersコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Tiers verifies that tiers command aliases work
 func TestCommandAliases_Tiers(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"tiersコマンド", "tiers"},
-		{"tierエイリアス", "tier"},
+		{"tiers command", "tiers"},
+		{"tier alias", "tier"},
 	}
 
 	for _, tc := range testCases {
@@ -423,19 +423,19 @@ func TestCommandAliases_Tiers(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Offers はoffersコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Offers verifies that offers command aliases work
 func TestCommandAliases_Offers(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"offersコマンド", "offers"},
-		{"offerエイリアス", "offer"},
+		{"offers command", "offers"},
+		{"offer alias", "offer"},
 	}
 
 	for _, tc := range testCases {
@@ -445,20 +445,20 @@ func TestCommandAliases_Offers(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Webhooks はwebhooksコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Webhooks verifies that webhooks command aliases work
 func TestCommandAliases_Webhooks(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"webhooksコマンド", "webhooks"},
-		{"webhookエイリアス", "webhook"},
-		{"whエイリアス", "wh"},
+		{"webhooks command", "webhooks"},
+		{"webhook alias", "webhook"},
+		{"wh alias", "wh"},
 	}
 
 	for _, tc := range testCases {
@@ -467,25 +467,25 @@ func TestCommandAliases_Webhooks(t *testing.T) {
 			parser, err := kong.New(&cli)
 			require.NoError(t, err)
 
-			// webhooksはlistサブコマンドを持たないため、createで確認
-			// 必須引数がないため失敗するが、コマンド自体は認識される
+			// webhooks does not have list subcommand, so verify with create
+			// It will fail due to missing required arguments, but the command itself should be recognized
 			_, err = parser.Parse([]string{tc.command, "create"})
-			// エラーは発生するが、"unexpected argument"ではないことを確認
+			// Error occurs, but verify it's not "unexpected argument"
 			if err != nil {
-				assert.NotContains(t, err.Error(), "unexpected argument", "%sコマンドは認識されるべき", tc.command)
+				assert.NotContains(t, err.Error(), "unexpected argument", "%s command should be recognized", tc.command)
 			}
 		})
 	}
 }
 
-// TestCommandAliases_Settings はsettingsコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Settings verifies that settings command aliases work
 func TestCommandAliases_Settings(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"settingsコマンド", "settings"},
-		{"settingエイリアス", "setting"},
+		{"settings command", "settings"},
+		{"setting alias", "setting"},
 	}
 
 	for _, tc := range testCases {
@@ -495,20 +495,20 @@ func TestCommandAliases_Settings(t *testing.T) {
 			require.NoError(t, err)
 
 			_, err = parser.Parse([]string{tc.command, "list"})
-			require.NoError(t, err, "%sコマンドは正しくパースされるべき", tc.command)
+			require.NoError(t, err, "%s command should be parsed correctly", tc.command)
 		})
 	}
 }
 
-// TestCommandAliases_Images はimagesコマンドのエイリアスが動作することをテストします
+// TestCommandAliases_Images verifies that images command aliases work
 func TestCommandAliases_Images(t *testing.T) {
 	testCases := []struct {
 		name    string
 		command string
 	}{
-		{"imagesコマンド", "images"},
-		{"imageエイリアス", "image"},
-		{"imgエイリアス", "img"},
+		{"images command", "images"},
+		{"image alias", "image"},
+		{"img alias", "img"},
 	}
 
 	for _, tc := range testCases {
@@ -517,12 +517,12 @@ func TestCommandAliases_Images(t *testing.T) {
 			parser, err := kong.New(&cli)
 			require.NoError(t, err)
 
-			// imagesはuploadサブコマンドを持つ
-			// 必須引数がないため失敗するが、コマンド自体は認識される
+			// images has upload subcommand
+			// It will fail due to missing required arguments, but the command itself should be recognized
 			_, err = parser.Parse([]string{tc.command, "upload"})
-			// エラーは発生するが、"unexpected argument"ではないことを確認
+			// Error occurs, but verify it's not "unexpected argument"
 			if err != nil {
-				assert.NotContains(t, err.Error(), "unexpected argument", "%sコマンドは認識されるべき", tc.command)
+				assert.NotContains(t, err.Error(), "unexpected argument", "%s command should be recognized", tc.command)
 			}
 		})
 	}

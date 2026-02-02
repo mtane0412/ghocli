@@ -2,7 +2,7 @@
  * users.go
  * Users API
  *
- * Ghost Admin APIのUsers機能を提供します。
+ * Provides Users functionality for Ghost Admin API.
  */
 
 package ghostapi
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// User はGhostのユーザーを表します
+// User represents a Ghost user
 type User struct {
 	ID           string    `json:"id,omitempty"`
 	Name         string    `json:"name,omitempty"`
@@ -26,26 +26,26 @@ type User struct {
 	Website      string    `json:"website,omitempty"`
 	ProfileImage string    `json:"profile_image,omitempty"`
 	CoverImage   string    `json:"cover_image,omitempty"`
-	Roles        []Role    `json:"roles,omitempty"` // 読み取り専用
+	Roles        []Role    `json:"roles,omitempty"` // Read-only
 	CreatedAt    time.Time `json:"created_at,omitempty"`
 	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 }
 
-// Role はユーザーのロールを表します
+// Role represents a user role
 type Role struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// UserListOptions はユーザー一覧取得のオプションです
+// UserListOptions contains options for listing users
 type UserListOptions struct {
-	Limit   int    // 取得件数（デフォルト: 15）
-	Page    int    // ページ番号（デフォルト: 1）
-	Include string // 含める追加情報（roles, count.posts など）
-	Filter  string // フィルター条件
+	Limit   int    // Number of users to retrieve (default: 15)
+	Page    int    // Page number (default: 1)
+	Include string // Additional information to include (roles, count.posts, etc.)
+	Filter  string // Filter condition
 }
 
-// UserListResponse はユーザー一覧のレスポンスです
+// UserListResponse represents the response of user list
 type UserListResponse struct {
 	Users []User `json:"users"`
 	Meta  struct {
@@ -58,16 +58,16 @@ type UserListResponse struct {
 	} `json:"meta"`
 }
 
-// UserResponse はユーザー単体のレスポンスです
+// UserResponse represents the response of a single user
 type UserResponse struct {
 	Users []User `json:"users"`
 }
 
-// ListUsers はユーザー一覧を取得します
+// ListUsers retrieves a list of users
 func (c *Client) ListUsers(opts UserListOptions) (*UserListResponse, error) {
 	path := "/ghost/api/admin/users/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Limit > 0 {
 		params = append(params, fmt.Sprintf("limit=%d", opts.Limit))
@@ -86,27 +86,27 @@ func (c *Client) ListUsers(opts UserListOptions) (*UserListResponse, error) {
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp UserListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// GetUser は指定されたIDまたはスラッグのユーザーを取得します
-// idOrSlugが "slug:" で始まる場合はスラッグとして扱います
+// GetUser retrieves a user by ID or slug
+// If idOrSlug starts with "slug:", it is treated as a slug
 func (c *Client) GetUser(idOrSlug string) (*User, error) {
 	var path string
 
-	// スラッグかIDかを判定
+	// Determine whether it's a slug or ID
 	if strings.HasPrefix(idOrSlug, "slug:") {
 		slug := strings.TrimPrefix(idOrSlug, "slug:")
 		path = fmt.Sprintf("/ghost/api/admin/users/slug/%s/", slug)
@@ -114,53 +114,53 @@ func (c *Client) GetUser(idOrSlug string) (*User, error) {
 		path = fmt.Sprintf("/ghost/api/admin/users/%s/", idOrSlug)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp UserResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Users) == 0 {
-		return nil, fmt.Errorf("ユーザーが見つかりません: %s", idOrSlug)
+		return nil, fmt.Errorf("user not found: %s", idOrSlug)
 	}
 
 	return &resp.Users[0], nil
 }
 
-// UpdateUser は既存のユーザーを更新します
+// UpdateUser updates an existing user
 func (c *Client) UpdateUser(id string, user *User) (*User, error) {
 	path := fmt.Sprintf("/ghost/api/admin/users/%s/", id)
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"users": []User{*user},
 	}
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディの生成に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp UserResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Users) == 0 {
-		return nil, fmt.Errorf("ユーザーの更新に失敗しました")
+		return nil, fmt.Errorf("failed to update user")
 	}
 
 	return &resp.Users[0], nil

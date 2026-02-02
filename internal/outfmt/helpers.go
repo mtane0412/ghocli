@@ -1,8 +1,8 @@
 /**
  * helpers.go
- * 出力フォーマット用ヘルパー関数
+ * Output format helper functions
  *
- * posts/pagesコマンドのデフォルト表示で使用する共通ヘルパー関数を提供します。
+ * Provides common helper functions used in default display for posts/pages commands.
  */
 
 package outfmt
@@ -13,57 +13,57 @@ import (
 	"github.com/mtane0412/ghocli/internal/ghostapi"
 )
 
-// FormatAuthors は著者一覧を名前のカンマ区切りにフォーマットします
+// FormatAuthors formats a list of authors as comma-separated names
 func FormatAuthors(authors []ghostapi.Author) string {
-	// 著者がいない場合は空文字列
+	// Return empty string if no authors
 	if len(authors) == 0 {
 		return ""
 	}
 
-	// 著者名を収集
+	// Collect author names
 	names := make([]string, len(authors))
 	for i, author := range authors {
 		names[i] = author.Name
 	}
 
-	// カンマ区切りで結合
+	// Join with comma separator
 	return strings.Join(names, ", ")
 }
 
-// FormatTags はタグ一覧を名前のカンマ区切りにフォーマットします
+// FormatTags formats a list of tags as comma-separated names
 func FormatTags(tags []ghostapi.Tag) string {
-	// タグがない場合は空文字列
+	// Return empty string if no tags
 	if len(tags) == 0 {
 		return ""
 	}
 
-	// タグ名を収集
+	// Collect tag names
 	names := make([]string, len(tags))
 	for i, tag := range tags {
 		names[i] = tag.Name
 	}
 
-	// カンマ区切りで結合
+	// Join with comma separator
 	return strings.Join(names, ", ")
 }
 
-// TruncateExcerpt は抜粋を指定文字数で切り詰めます
-// maxLenを超える場合は、maxLen文字まで切り詰めて「...」を追加します
+// TruncateExcerpt truncates an excerpt to a specified number of characters
+// If it exceeds maxLen, truncate to maxLen characters and append "..."
 func TruncateExcerpt(excerpt string, maxLen int) string {
-	// 空文字列の場合はそのまま返す
+	// Return as is for empty string
 	if excerpt == "" {
 		return ""
 	}
 
-	// 文字列をルーン（Unicodeコードポイント）のスライスに変換
-	// 日本語などのマルチバイト文字を正しくカウントするため
+	// Convert string to rune (Unicode code point) slice
+	// To correctly count multibyte characters like Japanese
 	runes := []rune(excerpt)
 
-	// maxLen以下の場合はそのまま返す
+	// Return as is if within maxLen
 	if len(runes) <= maxLen {
 		return excerpt
 	}
 
-	// maxLen文字まで切り詰めて「...」を追加
+	// Truncate to maxLen characters and append "..."
 	return string(runes[:maxLen]) + "..."
 }

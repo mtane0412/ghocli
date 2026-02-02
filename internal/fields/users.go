@@ -1,15 +1,15 @@
 /**
  * users.go
- * User用フィールド定義
+ * User field definitions
  *
- * Ghost Admin APIのUserリソースの全フィールドを定義します。
+ * Defines all fields for Ghost Admin API User resources.
  */
 
 package fields
 
-// UserFields はUser用のフィールドセットです
+// UserFields is the field set for User resources
 var UserFields = FieldSet{
-	// Default はlist用デフォルトフィールド（テーブル表示で使用）
+	// Default fields for list operations (used in table display)
 	Default: []string{
 		"id",
 		"name",
@@ -18,7 +18,7 @@ var UserFields = FieldSet{
 		"created_at",
 	},
 
-	// Detail はget用デフォルトフィールド（詳細表示で使用）
+	// Detail fields for get operations (used in detail display)
 	Detail: []string{
 		"id",
 		"name",
@@ -34,7 +34,7 @@ var UserFields = FieldSet{
 		"updated_at",
 	},
 
-	// All は全フィールド（Ghost Admin APIのUserリソースが持つ全フィールド）
+	// All fields (all fields available in Ghost Admin API User resource)
 	All: []string{
 		"id",
 		"name",

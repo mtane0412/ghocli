@@ -1,6 +1,6 @@
 /**
  * helpers_test.go
- * 出力フォーマット用ヘルパー関数のテスト
+ * Test code for output format helper functions
  */
 
 package outfmt
@@ -11,176 +11,176 @@ import (
 	"github.com/mtane0412/ghocli/internal/ghostapi"
 )
 
-// TestFormatAuthors_著者一覧のフォーマット
-func TestFormatAuthors_著者一覧のフォーマット(t *testing.T) {
-	// テストケース: 複数の著者
+// TestFormatAuthors_FormatsAuthorList tests formatting author list
+func TestFormatAuthors_FormatsAuthorList(t *testing.T) {
+	// Test case: multiple authors
 	authors := []ghostapi.Author{
-		{ID: "1", Name: "山田太郎"},
-		{ID: "2", Name: "鈴木花子"},
+		{ID: "1", Name: "Taro Yamada"},
+		{ID: "2", Name: "Hanako Suzuki"},
 	}
 
-	// フォーマットを実行
+	// Execute formatting
 	result := FormatAuthors(authors)
 
-	// 期待値を検証
-	expected := "山田太郎, 鈴木花子"
+	// Verify expected value
+	expected := "Taro Yamada, Hanako Suzuki"
 	if result != expected {
 		t.Errorf("FormatAuthors() = %q; want %q", result, expected)
 	}
 }
 
-// TestFormatAuthors_単一の著者
-func TestFormatAuthors_単一の著者(t *testing.T) {
-	// テストケース: 単一の著者
+// TestFormatAuthors_SingleAuthor tests formatting single author
+func TestFormatAuthors_SingleAuthor(t *testing.T) {
+	// Test case: single author
 	authors := []ghostapi.Author{
-		{ID: "1", Name: "山田太郎"},
+		{ID: "1", Name: "Taro Yamada"},
 	}
 
-	// フォーマットを実行
+	// Execute formatting
 	result := FormatAuthors(authors)
 
-	// 期待値を検証
-	expected := "山田太郎"
+	// Verify expected value
+	expected := "Taro Yamada"
 	if result != expected {
 		t.Errorf("FormatAuthors() = %q; want %q", result, expected)
 	}
 }
 
-// TestFormatAuthors_著者なし
-func TestFormatAuthors_著者なし(t *testing.T) {
-	// テストケース: 空のスライス
+// TestFormatAuthors_NoAuthors tests formatting with no authors
+func TestFormatAuthors_NoAuthors(t *testing.T) {
+	// Test case: empty slice
 	authors := []ghostapi.Author{}
 
-	// フォーマットを実行
+	// Execute formatting
 	result := FormatAuthors(authors)
 
-	// 期待値を検証（空文字列）
+	// Verify expected value (empty string)
 	expected := ""
 	if result != expected {
 		t.Errorf("FormatAuthors() = %q; want %q", result, expected)
 	}
 }
 
-// TestFormatTags_タグ一覧のフォーマット
-func TestFormatTags_タグ一覧のフォーマット(t *testing.T) {
-	// テストケース: 複数のタグ
+// TestFormatTags_FormatsTagList tests formatting tag list
+func TestFormatTags_FormatsTagList(t *testing.T) {
+	// Test case: multiple tags
 	tags := []ghostapi.Tag{
-		{ID: "1", Name: "旅行"},
-		{ID: "2", Name: "北海道"},
-		{ID: "3", Name: "グルメ"},
+		{ID: "1", Name: "Travel"},
+		{ID: "2", Name: "Hokkaido"},
+		{ID: "3", Name: "Gourmet"},
 	}
 
-	// フォーマットを実行
+	// Execute formatting
 	result := FormatTags(tags)
 
-	// 期待値を検証
-	expected := "旅行, 北海道, グルメ"
+	// Verify expected value
+	expected := "Travel, Hokkaido, Gourmet"
 	if result != expected {
 		t.Errorf("FormatTags() = %q; want %q", result, expected)
 	}
 }
 
-// TestFormatTags_単一のタグ
-func TestFormatTags_単一のタグ(t *testing.T) {
-	// テストケース: 単一のタグ
+// TestFormatTags_SingleTag tests formatting single tag
+func TestFormatTags_SingleTag(t *testing.T) {
+	// Test case: single tag
 	tags := []ghostapi.Tag{
-		{ID: "1", Name: "旅行"},
+		{ID: "1", Name: "Travel"},
 	}
 
-	// フォーマットを実行
+	// Execute formatting
 	result := FormatTags(tags)
 
-	// 期待値を検証
-	expected := "旅行"
+	// Verify expected value
+	expected := "Travel"
 	if result != expected {
 		t.Errorf("FormatTags() = %q; want %q", result, expected)
 	}
 }
 
-// TestFormatTags_タグなし
-func TestFormatTags_タグなし(t *testing.T) {
-	// テストケース: 空のスライス
+// TestFormatTags_NoTags tests formatting with no tags
+func TestFormatTags_NoTags(t *testing.T) {
+	// Test case: empty slice
 	tags := []ghostapi.Tag{}
 
-	// フォーマットを実行
+	// Execute formatting
 	result := FormatTags(tags)
 
-	// 期待値を検証（空文字列）
+	// Verify expected value (empty string)
 	expected := ""
 	if result != expected {
 		t.Errorf("FormatTags() = %q; want %q", result, expected)
 	}
 }
 
-// TestTruncateExcerpt_抜粋の切り詰め
-func TestTruncateExcerpt_抜粋の切り詰め(t *testing.T) {
-	// テストケース: 長い文字列（actualに140文字を超える文字列）
-	excerpt := "これは非常に長い抜粋テキストです。この抜粋は140文字を超えるため、適切に切り詰められる必要があります。切り詰められた部分には「...」が追加されます。これは人間やLLMにとって読みやすくするための処理です。さらに文字を追加して140文字を超えるようにします。あと少しで140文字に達します。もう少し追加します。これで140文字を確実に超えるはずです。"
+// TestTruncateExcerpt_TruncatesExcerpt tests truncating excerpt
+func TestTruncateExcerpt_TruncatesExcerpt(t *testing.T) {
+	// Test case: long string (actual string exceeding 140 characters)
+	excerpt := "This is a very long excerpt text. This excerpt exceeds 140 characters and needs to be properly truncated. An ellipsis (...) will be added to the truncated part. This is processing to make it easy for humans and LLMs to read. Adding more characters to exceed 140 characters. Almost reaching 140 characters. Adding a bit more. This should definitely exceed 140 characters now."
 
-	// フォーマットを実行（最大140文字）
+	// Execute formatting (max 140 characters)
 	result := TruncateExcerpt(excerpt, 140)
 
-	// 期待値を検証
-	// ルーン数（文字数）で検証
+	// Verify expected value
+	// Verify by rune count (character count)
 	resultRunes := []rune(result)
 	excerptRunes := []rune(excerpt)
 
-	// 元の文字列が140文字を超えているか確認
+	// Verify original string exceeds 140 characters
 	if len(excerptRunes) <= 140 {
-		t.Errorf("テストケースのexcerptが140文字以下です。len = %d", len(excerptRunes))
+		t.Errorf("Test case excerpt is 140 characters or less. len = %d", len(excerptRunes))
 	}
 
-	// 結果が143文字（140 + "..."）であることを確認
+	// Verify result is 143 characters (140 + "...")
 	if len(resultRunes) != 143 {
-		t.Errorf("TruncateExcerpt()の長さ = %d; want %d", len(resultRunes), 143)
+		t.Errorf("TruncateExcerpt() length = %d; want %d", len(resultRunes), 143)
 	}
 
-	// 末尾が「...」であることを確認
+	// Verify ending with "..."
 	if len(resultRunes) >= 3 {
 		suffix := string(resultRunes[len(resultRunes)-3:])
 		if suffix != "..." {
-			t.Errorf("TruncateExcerpt()の末尾 = %q; want %q", suffix, "...")
+			t.Errorf("TruncateExcerpt() ending = %q; want %q", suffix, "...")
 		}
 	}
 }
 
-// TestTruncateExcerpt_短い文字列
-func TestTruncateExcerpt_短い文字列(t *testing.T) {
-	// テストケース: 短い文字列
-	excerpt := "これは短い抜粋です。"
+// TestTruncateExcerpt_ShortString tests with short string
+func TestTruncateExcerpt_ShortString(t *testing.T) {
+	// Test case: short string
+	excerpt := "This is a short excerpt."
 
-	// フォーマットを実行（最大140文字）
+	// Execute formatting (max 140 characters)
 	result := TruncateExcerpt(excerpt, 140)
 
-	// 期待値を検証（そのまま返される）
+	// Verify expected value (returned as is)
 	if result != excerpt {
 		t.Errorf("TruncateExcerpt() = %q; want %q", result, excerpt)
 	}
 }
 
-// TestTruncateExcerpt_ちょうど最大長
-func TestTruncateExcerpt_ちょうど最大長(t *testing.T) {
-	// テストケース: ちょうど140文字（日本語1文字 = 3バイトだが、文字数でカウント）
+// TestTruncateExcerpt_ExactlyMaxLength tests with exactly maximum length
+func TestTruncateExcerpt_ExactlyMaxLength(t *testing.T) {
+	// Test case: exactly 140 characters (Japanese 1 character = 3 bytes, but counted by character count)
 	excerpt := "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
 
-	// フォーマットを実行（最大140文字）
+	// Execute formatting (max 140 characters)
 	result := TruncateExcerpt(excerpt, 140)
 
-	// 期待値を検証（そのまま返される）
+	// Verify expected value (returned as is)
 	if result != excerpt {
 		t.Errorf("TruncateExcerpt() = %q; want %q", result, excerpt)
 	}
 }
 
-// TestTruncateExcerpt_空文字列
-func TestTruncateExcerpt_空文字列(t *testing.T) {
-	// テストケース: 空文字列
+// TestTruncateExcerpt_EmptyString tests with empty string
+func TestTruncateExcerpt_EmptyString(t *testing.T) {
+	// Test case: empty string
 	excerpt := ""
 
-	// フォーマットを実行
+	// Execute formatting
 	result := TruncateExcerpt(excerpt, 140)
 
-	// 期待値を検証（空文字列）
+	// Verify expected value (empty string)
 	if result != "" {
 		t.Errorf("TruncateExcerpt() = %q; want %q", result, "")
 	}

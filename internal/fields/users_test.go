@@ -1,24 +1,24 @@
 /**
  * users_test.go
- * User用フィールド定義のテストコード
+ * Test code for User field definitions
  */
 
 package fields
 
 import "testing"
 
-// TestUserFields_全フィールド数 はUserFieldsが期待する数のフィールドを持つことを確認します
-func TestUserFields_全フィールド数(t *testing.T) {
-	// User構造体のフィールド数は12個
+// TestUserFields_TotalFieldCount verifies that UserFields has the expected number of fields
+func TestUserFields_TotalFieldCount(t *testing.T) {
+	// User struct has 12 fields
 	expectedCount := 12
 	if len(UserFields.All) != expectedCount {
-		t.Errorf("UserFields.Allのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(UserFields.All))
+		t.Errorf("Incorrect number of UserFields.All fields. expected=%d, got=%d", expectedCount, len(UserFields.All))
 	}
 }
 
-// TestUserFields_基本フィールド はUserFieldsが基本フィールドを含むことを確認します
-func TestUserFields_基本フィールド(t *testing.T) {
-	// 基本フィールドが存在することを確認
+// TestUserFields_BasicFields verifies that UserFields contains basic fields
+func TestUserFields_BasicFields(t *testing.T) {
+	// Verify basic fields exist
 	expectedFields := []string{"id", "name", "slug", "email"}
 
 	fieldMap := make(map[string]bool)
@@ -28,14 +28,14 @@ func TestUserFields_基本フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("基本フィールド '%s' が見つかりません", expected)
+			t.Errorf("Basic field '%s' not found", expected)
 		}
 	}
 }
 
-// TestUserFields_プロフィールフィールド はUserFieldsがプロフィールフィールドを含むことを確認します
-func TestUserFields_プロフィールフィールド(t *testing.T) {
-	// プロフィールフィールドが存在することを確認
+// TestUserFields_ProfileFields verifies that UserFields contains profile fields
+func TestUserFields_ProfileFields(t *testing.T) {
+	// Verify profile fields exist
 	expectedFields := []string{"bio", "location", "website", "profile_image", "cover_image"}
 
 	fieldMap := make(map[string]bool)
@@ -45,33 +45,33 @@ func TestUserFields_プロフィールフィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("プロフィールフィールド '%s' が見つかりません", expected)
+			t.Errorf("Profile field '%s' not found", expected)
 		}
 	}
 }
 
-// TestUserFields_ロールフィールド はUserFieldsがrolesフィールドを含むことを確認します
-func TestUserFields_ロールフィールド(t *testing.T) {
-	// rolesフィールドが存在することを確認
+// TestUserFields_RolesField verifies that UserFields contains the roles field
+func TestUserFields_RolesField(t *testing.T) {
+	// Verify roles field exists
 	fieldMap := make(map[string]bool)
 	for _, field := range UserFields.All {
 		fieldMap[field] = true
 	}
 
 	if !fieldMap["roles"] {
-		t.Errorf("rolesフィールドが見つかりません")
+		t.Errorf("Roles field not found")
 	}
 }
 
-// TestUserFields_デフォルトフィールド はUserFields.Defaultが期待するフィールドを含むことを確認します
-func TestUserFields_デフォルトフィールド(t *testing.T) {
-	// Defaultフィールドは5個
+// TestUserFields_DefaultFields verifies that UserFields.Default contains the expected fields
+func TestUserFields_DefaultFields(t *testing.T) {
+	// Default fields should be 5
 	expectedCount := 5
 	if len(UserFields.Default) != expectedCount {
-		t.Errorf("UserFields.Defaultのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(UserFields.Default))
+		t.Errorf("Incorrect number of UserFields.Default fields. expected=%d, got=%d", expectedCount, len(UserFields.Default))
 	}
 
-	// 必須フィールドが含まれることを確認
+	// Verify required fields are included
 	expectedFields := []string{"id", "name", "email"}
 	fieldMap := make(map[string]bool)
 	for _, field := range UserFields.Default {
@@ -80,20 +80,20 @@ func TestUserFields_デフォルトフィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("Defaultフィールド '%s' が見つかりません", expected)
+			t.Errorf("Default field '%s' not found", expected)
 		}
 	}
 }
 
-// TestUserFields_詳細表示フィールド はUserFields.Detailが期待するフィールドを含むことを確認します
-func TestUserFields_詳細表示フィールド(t *testing.T) {
-	// Detailフィールドは12個（全フィールド）
+// TestUserFields_DetailFields verifies that UserFields.Detail contains the expected fields
+func TestUserFields_DetailFields(t *testing.T) {
+	// Detail fields should be 12 (all fields)
 	expectedCount := 12
 	if len(UserFields.Detail) != expectedCount {
-		t.Errorf("UserFields.Detailのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(UserFields.Detail))
+		t.Errorf("Incorrect number of UserFields.Detail fields. expected=%d, got=%d", expectedCount, len(UserFields.Detail))
 	}
 
-	// bio、location、rolesが含まれることを確認
+	// Verify bio, location, roles are included
 	expectedFields := []string{"bio", "location", "roles"}
 	fieldMap := make(map[string]bool)
 	for _, field := range UserFields.Detail {
@@ -102,7 +102,7 @@ func TestUserFields_詳細表示フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("Detailフィールド '%s' が見つかりません", expected)
+			t.Errorf("Detail field '%s' not found", expected)
 		}
 	}
 }

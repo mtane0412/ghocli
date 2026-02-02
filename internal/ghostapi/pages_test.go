@@ -1,6 +1,6 @@
 /**
  * pages_test.go
- * Pages APIのテストコード
+ * Pages API test code
  */
 
 package ghostapi
@@ -13,30 +13,30 @@ import (
 	"time"
 )
 
-// TestListPages_ページ一覧の取得
-func TestListPages_ページ一覧の取得(t *testing.T) {
+// TestListPages_GetPageList tests retrieving a list of pages
+func TestListPages_GetPageList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/pages/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/pages/")
+			t.Errorf("request path = %q; want %q", r.URL.Path, "/ghost/api/admin/pages/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234601",
-					"title":      "テストページ1",
+					"title":      "Test Page 1",
 					"slug":       "test-page-1",
 					"status":     "published",
 					"created_at": "2024-01-15T10:00:00.000Z",
@@ -44,7 +44,7 @@ func TestListPages_ページ一覧の取得(t *testing.T) {
 				},
 				{
 					"id":         "64fac5417c4c6b0001234602",
-					"title":      "テストページ2",
+					"title":      "Test Page 2",
 					"slug":       "test-page-2",
 					"status":     "draft",
 					"created_at": "2024-01-16T10:00:00.000Z",
@@ -65,56 +65,56 @@ func TestListPages_ページ一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページ一覧を取得
+	// Get page list
 	response, err := client.ListPages(ListOptions{})
 	if err != nil {
-		t.Fatalf("ページ一覧の取得に失敗: %v", err)
+		t.Fatalf("failed to get page list: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if len(response.Pages) != 2 {
-		t.Errorf("ページ数 = %d; want %d", len(response.Pages), 2)
+		t.Errorf("number of pages = %d; want %d", len(response.Pages), 2)
 	}
-	if response.Pages[0].Title != "テストページ1" {
-		t.Errorf("ページ1のタイトル = %q; want %q", response.Pages[0].Title, "テストページ1")
+	if response.Pages[0].Title != "Test Page 1" {
+		t.Errorf("page 1 title = %q; want %q", response.Pages[0].Title, "Test Page 1")
 	}
 	if response.Pages[0].Status != "published" {
-		t.Errorf("ページ1のステータス = %q; want %q", response.Pages[0].Status, "published")
+		t.Errorf("page 1 status = %q; want %q", response.Pages[0].Status, "published")
 	}
-	if response.Pages[1].Title != "テストページ2" {
-		t.Errorf("ページ2のタイトル = %q; want %q", response.Pages[1].Title, "テストページ2")
+	if response.Pages[1].Title != "Test Page 2" {
+		t.Errorf("page 2 title = %q; want %q", response.Pages[1].Title, "Test Page 2")
 	}
 	if response.Pages[1].Status != "draft" {
-		t.Errorf("ページ2のステータス = %q; want %q", response.Pages[1].Status, "draft")
+		t.Errorf("page 2 status = %q; want %q", response.Pages[1].Status, "draft")
 	}
 }
 
-// TestGetPage_IDでページを取得
-func TestGetPage_IDでページを取得(t *testing.T) {
+// TestGetPage_GetByID tests retrieving a page by ID
+func TestGetPage_GetByID(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":         pageID,
-					"title":      "テストページ",
+					"title":      "Test Page",
 					"slug":       "test-page",
-					"html":       "<p>ページ本文</p>",
+					"html":       "<p>Page Body</p>",
 					"status":     "published",
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": "2024-01-15T10:00:00.000Z",
@@ -126,59 +126,59 @@ func TestGetPage_IDでページを取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページを取得
+	// Get page
 	page, err := client.GetPage(pageID)
 	if err != nil {
-		t.Fatalf("ページの取得に失敗: %v", err)
+		t.Fatalf("failed to get page: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if page.ID != pageID {
 		t.Errorf("ID = %q; want %q", page.ID, pageID)
 	}
-	if page.Title != "テストページ" {
-		t.Errorf("Title = %q; want %q", page.Title, "テストページ")
+	if page.Title != "Test Page" {
+		t.Errorf("Title = %q; want %q", page.Title, "Test Page")
 	}
-	if page.HTML != "<p>ページ本文</p>" {
-		t.Errorf("HTML = %q; want %q", page.HTML, "<p>ページ本文</p>")
+	if page.HTML != "<p>Page Body</p>" {
+		t.Errorf("HTML = %q; want %q", page.HTML, "<p>Page Body</p>")
 	}
 }
 
-// TestCreatePage_ページの作成
-func TestCreatePage_ページの作成(t *testing.T) {
+// TestCreatePage_CreatePage tests creating a new page
+func TestCreatePage_CreatePage(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/pages/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/pages/")
+			t.Errorf("request path = %q; want %q", r.URL.Path, "/ghost/api/admin/pages/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// リクエストボディの検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+			t.Fatalf("failed to read request body: %v", err)
 		}
 		pages := reqBody["pages"].([]interface{})
 		page := pages[0].(map[string]interface{})
-		if page["title"] != "新規ページ" {
-			t.Errorf("Title = %q; want %q", page["title"], "新規ページ")
+		if page["title"] != "New Page" {
+			t.Errorf("Title = %q; want %q", page["title"], "New Page")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234603",
-					"title":      "新規ページ",
+					"title":      "New Page",
 					"slug":       "new-page",
 					"status":     "draft",
 					"created_at": time.Now().Format(time.RFC3339),
@@ -192,66 +192,66 @@ func TestCreatePage_ページの作成(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページを作成
+	// Create page
 	newPage := &Page{
-		Title:  "新規ページ",
+		Title:  "New Page",
 		Status: "draft",
 	}
 	createdPage, err := client.CreatePage(newPage)
 	if err != nil {
-		t.Fatalf("ページの作成に失敗: %v", err)
+		t.Fatalf("failed to create page: %v", err)
 	}
 
-	// レスポンスの検証
-	if createdPage.Title != "新規ページ" {
-		t.Errorf("Title = %q; want %q", createdPage.Title, "新規ページ")
+	// Verify response
+	if createdPage.Title != "New Page" {
+		t.Errorf("Title = %q; want %q", createdPage.Title, "New Page")
 	}
 	if createdPage.Status != "draft" {
 		t.Errorf("Status = %q; want %q", createdPage.Status, "draft")
 	}
 	if createdPage.ID == "" {
-		t.Error("IDが空です")
+		t.Error("ID is empty")
 	}
 }
 
-// TestUpdatePage_ページの更新
-func TestUpdatePage_ページの更新(t *testing.T) {
+// TestUpdatePage_UpdatePage tests updating an existing page
+func TestUpdatePage_UpdatePage(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディの検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+			t.Fatalf("failed to read request body: %v", err)
 		}
 		pages := reqBody["pages"].([]interface{})
 		page := pages[0].(map[string]interface{})
-		if page["title"] != "更新後のページタイトル" {
-			t.Errorf("Title = %q; want %q", page["title"], "更新後のページタイトル")
+		if page["title"] != "Updated Page Title" {
+			t.Errorf("Title = %q; want %q", page["title"], "Updated Page Title")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":         pageID,
-					"title":      "更新後のページタイトル",
+					"title":      "Updated Page Title",
 					"slug":       "updated-page",
 					"status":     "published",
 					"created_at": "2024-01-15T10:00:00.000Z",
@@ -264,97 +264,97 @@ func TestUpdatePage_ページの更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページを更新
+	// Update page
 	updatePage := &Page{
-		Title:  "更新後のページタイトル",
+		Title:  "Updated Page Title",
 		Status: "published",
 	}
 	updatedPage, err := client.UpdatePage(pageID, updatePage)
 	if err != nil {
-		t.Fatalf("ページの更新に失敗: %v", err)
+		t.Fatalf("failed to update page: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if updatedPage.ID != pageID {
 		t.Errorf("ID = %q; want %q", updatedPage.ID, pageID)
 	}
-	if updatedPage.Title != "更新後のページタイトル" {
-		t.Errorf("Title = %q; want %q", updatedPage.Title, "更新後のページタイトル")
+	if updatedPage.Title != "Updated Page Title" {
+		t.Errorf("Title = %q; want %q", updatedPage.Title, "Updated Page Title")
 	}
 }
 
-// TestDeletePage_ページの削除
-func TestDeletePage_ページの削除(t *testing.T) {
+// TestDeletePage_DeletePage tests deleting a page
+func TestDeletePage_DeletePage(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "DELETE" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "DELETE")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "DELETE")
 		}
 
-		// レスポンスを返す（204 No Content）
+		// Return response (204 No Content)
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページを削除
+	// Delete page
 	err = client.DeletePage(pageID)
 	if err != nil {
-		t.Fatalf("ページの削除に失敗: %v", err)
+		t.Fatalf("failed to delete page: %v", err)
 	}
 }
 
-// TestGetPage_拡張フィールドのパース
-func TestGetPage_拡張フィールドのパース(t *testing.T) {
+// TestGetPage_ExtendedFieldParsing tests parsing extended fields of a page
+func TestGetPage_ExtendedFieldParsing(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// レスポンスを返す（拡張フィールドを含む）
+		// Return response with extended fields
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":         pageID,
-					"title":      "拡張フィールドテストページ",
+					"title":      "Extended Fields Test Page",
 					"slug":       "extended-fields-test",
-					"html":       "<p>ページ本文</p>",
+					"html":       "<p>Page Body</p>",
 					"status":     "published",
 					"url":        "https://example.com/extended-fields-test/",
-					"excerpt":    "ページの抜粋です。",
+					"excerpt":    "This is a page excerpt.",
 					"visibility": "public",
 					"featured":   true,
 					"authors": []map[string]interface{}{
 						{
 							"id":   "author1",
-							"name": "山田太郎",
+							"name": "John Doe",
 						},
 					},
 					"tags": []map[string]interface{}{
 						{
 							"id":   "tag1",
-							"name": "テスト",
+							"name": "Test",
 						},
 						{
 							"id":   "tag2",
-							"name": "サンプル",
+							"name": "Sample",
 						},
 					},
 					"created_at":   "2024-01-15T10:00:00.000Z",
@@ -368,32 +368,32 @@ func TestGetPage_拡張フィールドのパース(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページを取得
+	// Get page
 	page, err := client.GetPage(pageID)
 	if err != nil {
-		t.Fatalf("ページの取得に失敗: %v", err)
+		t.Fatalf("failed to get page: %v", err)
 	}
 
-	// 基本フィールドの検証
+	// Verify basic fields
 	if page.ID != pageID {
 		t.Errorf("ID = %q; want %q", page.ID, pageID)
 	}
-	if page.Title != "拡張フィールドテストページ" {
-		t.Errorf("Title = %q; want %q", page.Title, "拡張フィールドテストページ")
+	if page.Title != "Extended Fields Test Page" {
+		t.Errorf("Title = %q; want %q", page.Title, "Extended Fields Test Page")
 	}
 
-	// 拡張フィールドの検証
+	// Verify extended fields
 	if page.URL != "https://example.com/extended-fields-test/" {
 		t.Errorf("URL = %q; want %q", page.URL, "https://example.com/extended-fields-test/")
 	}
-	if page.Excerpt != "ページの抜粋です。" {
-		t.Errorf("Excerpt = %q; want %q", page.Excerpt, "ページの抜粋です。")
+	if page.Excerpt != "This is a page excerpt." {
+		t.Errorf("Excerpt = %q; want %q", page.Excerpt, "This is a page excerpt.")
 	}
 	if page.Visibility != "public" {
 		t.Errorf("Visibility = %q; want %q", page.Visibility, "public")
@@ -402,66 +402,66 @@ func TestGetPage_拡張フィールドのパース(t *testing.T) {
 		t.Errorf("Featured = %v; want %v", page.Featured, true)
 	}
 
-	// Authors の検証
+	// Verify Authors
 	if len(page.Authors) != 1 {
-		t.Errorf("Authors数 = %d; want %d", len(page.Authors), 1)
+		t.Errorf("number of authors = %d; want %d", len(page.Authors), 1)
 	}
-	if len(page.Authors) > 0 && page.Authors[0].Name != "山田太郎" {
-		t.Errorf("Authors[0].Name = %q; want %q", page.Authors[0].Name, "山田太郎")
+	if len(page.Authors) > 0 && page.Authors[0].Name != "John Doe" {
+		t.Errorf("Authors[0].Name = %q; want %q", page.Authors[0].Name, "John Doe")
 	}
 
-	// Tags の検証
+	// Verify Tags
 	if len(page.Tags) != 2 {
-		t.Errorf("Tags数 = %d; want %d", len(page.Tags), 2)
+		t.Errorf("number of tags = %d; want %d", len(page.Tags), 2)
 	}
-	if len(page.Tags) > 0 && page.Tags[0].Name != "テスト" {
-		t.Errorf("Tags[0].Name = %q; want %q", page.Tags[0].Name, "テスト")
+	if len(page.Tags) > 0 && page.Tags[0].Name != "Test" {
+		t.Errorf("Tags[0].Name = %q; want %q", page.Tags[0].Name, "Test")
 	}
-	if len(page.Tags) > 1 && page.Tags[1].Name != "サンプル" {
-		t.Errorf("Tags[1].Name = %q; want %q", page.Tags[1].Name, "サンプル")
+	if len(page.Tags) > 1 && page.Tags[1].Name != "Sample" {
+		t.Errorf("Tags[1].Name = %q; want %q", page.Tags[1].Name, "Sample")
 	}
 }
 
-// TestCreatePageWithOptions_HTMLソース指定でページを作成
-func TestCreatePageWithOptions_HTMLソース指定でページを作成(t *testing.T) {
+// TestCreatePageWithOptions_WithHTMLSourceParameter tests creating a page with HTML source parameter
+func TestCreatePageWithOptions_WithHTMLSourceParameter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/pages/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/pages/")
+			t.Errorf("request path = %q; want %q", r.URL.Path, "/ghost/api/admin/pages/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// source=htmlパラメータが含まれているか確認
+		// Verify query parameters
 		if r.URL.Query().Get("source") != "html" {
-			t.Errorf("sourceパラメータ = %q; want %q", r.URL.Query().Get("source"), "html")
+			t.Errorf("source parameter = %q; want %q", r.URL.Query().Get("source"), "html")
 		}
 
-		// リクエストボディの検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+			t.Fatalf("failed to read request body: %v", err)
 		}
 		pages := reqBody["pages"].([]interface{})
 		page := pages[0].(map[string]interface{})
-		if page["title"] != "HTMLページ" {
-			t.Errorf("Title = %q; want %q", page["title"], "HTMLページ")
+		if page["title"] != "HTML Page" {
+			t.Errorf("Title = %q; want %q", page["title"], "HTML Page")
 		}
-		if page["html"] != "<h1>見出し</h1><p>段落</p>" {
-			t.Errorf("HTML = %q; want %q", page["html"], "<h1>見出し</h1><p>段落</p>")
+		if page["html"] != "<h1>Heading</h1><p>Paragraph</p>" {
+			t.Errorf("HTML = %q; want %q", page["html"], "<h1>Heading</h1><p>Paragraph</p>")
 		}
 
-		// レスポンスを返す（Lexical形式に変換された状態）
+		// Return response (converted to Lexical format)
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":      "64fac5417c4c6b0001234604",
-					"title":   "HTMLページ",
+					"title":   "HTML Page",
 					"slug":    "html-page",
 					"status":  "draft",
-					"lexical": `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"見出し","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","version":1,"tag":"h1"},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"段落","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+					"lexical": `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Heading","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","version":1,"tag":"h1"},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Paragraph","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
 					"created_at": time.Now().Format(time.RFC3339),
 					"updated_at": time.Now().Format(time.RFC3339),
 				},
@@ -473,77 +473,77 @@ func TestCreatePageWithOptions_HTMLソース指定でページを作成(t *testi
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// HTMLページを作成
+	// Create HTML page
 	newPage := &Page{
-		Title:  "HTMLページ",
-		HTML:   "<h1>見出し</h1><p>段落</p>",
+		Title:  "HTML Page",
+		HTML:   "<h1>Heading</h1><p>Paragraph</p>",
 		Status: "draft",
 	}
 	opts := CreateOptions{Source: "html"}
 	createdPage, err := client.CreatePageWithOptions(newPage, opts)
 	if err != nil {
-		t.Fatalf("ページの作成に失敗: %v", err)
+		t.Fatalf("failed to create page: %v", err)
 	}
 
-	// レスポンスの検証
-	if createdPage.Title != "HTMLページ" {
-		t.Errorf("Title = %q; want %q", createdPage.Title, "HTMLページ")
+	// Verify response
+	if createdPage.Title != "HTML Page" {
+		t.Errorf("Title = %q; want %q", createdPage.Title, "HTML Page")
 	}
 	if createdPage.Status != "draft" {
 		t.Errorf("Status = %q; want %q", createdPage.Status, "draft")
 	}
-	// Lexical形式に変換されていることを確認
+	// Verify Lexical format is set
 	if createdPage.Lexical == "" {
-		t.Error("Lexicalフィールドが空です")
+		t.Error("Lexical is empty")
 	}
 }
 
-// TestUpdatePageWithOptions_HTMLソース指定でページを更新
-func TestUpdatePageWithOptions_HTMLソース指定でページを更新(t *testing.T) {
+// TestUpdatePageWithOptions_WithHTMLSourceParameter tests updating a page with HTML source parameter
+func TestUpdatePageWithOptions_WithHTMLSourceParameter(t *testing.T) {
 	pageID := "64fac5417c4c6b0001234601"
 
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/pages/" + pageID + "/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// source=htmlパラメータが含まれているか確認
+		// Verify query parameters
 		if r.URL.Query().Get("source") != "html" {
-			t.Errorf("sourceパラメータ = %q; want %q", r.URL.Query().Get("source"), "html")
+			t.Errorf("source parameter = %q; want %q", r.URL.Query().Get("source"), "html")
 		}
 
-		// リクエストボディの検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+			t.Fatalf("failed to read request body: %v", err)
 		}
 		pages := reqBody["pages"].([]interface{})
 		page := pages[0].(map[string]interface{})
-		if page["html"] != "<h1>更新後の見出し</h1>" {
-			t.Errorf("HTML = %q; want %q", page["html"], "<h1>更新後の見出し</h1>")
+		if page["html"] != "<h1>Updated Heading</h1>" {
+			t.Errorf("HTML = %q; want %q", page["html"], "<h1>Updated Heading</h1>")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"pages": []map[string]interface{}{
 				{
 					"id":      pageID,
-					"title":   "更新後のページ",
+					"title":   "Updated Page",
 					"slug":    "updated-html-page",
 					"status":  "published",
-					"lexical": `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"更新後の見出し","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","version":1,"tag":"h1"}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+					"lexical": `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Updated Heading","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","version":1,"tag":"h1"}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": time.Now().Format(time.RFC3339),
 				},
@@ -554,33 +554,33 @@ func TestUpdatePageWithOptions_HTMLソース指定でページを更新(t *testi
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
-	// ページを更新
+	// Update page
 	updatePage := &Page{
-		Title:  "更新後のページ",
-		HTML:   "<h1>更新後の見出し</h1>",
+		Title:  "Updated Page",
+		HTML:   "<h1>Updated Heading</h1>",
 		Status: "published",
 	}
 	opts := CreateOptions{Source: "html"}
 	updatedPage, err := client.UpdatePageWithOptions(pageID, updatePage, opts)
 	if err != nil {
-		t.Fatalf("ページの更新に失敗: %v", err)
+		t.Fatalf("failed to update page: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if updatedPage.ID != pageID {
 		t.Errorf("ID = %q; want %q", updatedPage.ID, pageID)
 	}
-	if updatedPage.Title != "更新後のページ" {
-		t.Errorf("Title = %q; want %q", updatedPage.Title, "更新後のページ")
+	if updatedPage.Title != "Updated Page" {
+		t.Errorf("Title = %q; want %q", updatedPage.Title, "Updated Page")
 	}
-	// Lexical形式に変換されていることを確認
+	// Verify Lexical format is set
 	if updatedPage.Lexical == "" {
-		t.Error("Lexicalフィールドが空です")
+		t.Error("Lexical is empty")
 	}
 }

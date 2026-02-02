@@ -1,15 +1,15 @@
 /**
  * members.go
- * Member用フィールド定義
+ * Member field definitions
  *
- * Ghost Admin APIのMemberリソースの全フィールドを定義します。
+ * Defines all fields for Ghost Admin API Member resources.
  */
 
 package fields
 
-// MemberFields はMember用のフィールドセットです
+// MemberFields is the field set for Member resources
 var MemberFields = FieldSet{
-	// Default はlist用デフォルトフィールド（テーブル表示で使用）
+	// Default fields for list operations (used in table display)
 	Default: []string{
 		"id",
 		"email",
@@ -18,7 +18,7 @@ var MemberFields = FieldSet{
 		"created_at",
 	},
 
-	// Detail はget用デフォルトフィールド（詳細表示で使用）
+	// Detail fields for get operations (used in detail display)
 	Detail: []string{
 		"id",
 		"uuid",
@@ -31,7 +31,7 @@ var MemberFields = FieldSet{
 		"updated_at",
 	},
 
-	// All は全フィールド（Ghost Admin APIのMemberリソースが持つ全フィールド）
+	// All fields (all fields available in Ghost Admin API Member resource)
 	All: []string{
 		"id",
 		"uuid",

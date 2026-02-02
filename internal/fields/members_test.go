@@ -1,24 +1,24 @@
 /**
  * members_test.go
- * Member用フィールド定義のテストコード
+ * Test code for Member field definitions
  */
 
 package fields
 
 import "testing"
 
-// TestMemberFields_全フィールド数 はMemberFieldsが期待する数のフィールドを持つことを確認します
-func TestMemberFields_全フィールド数(t *testing.T) {
-	// Member構造体のフィールド数は9個
+// TestMemberFields_TotalFieldCount verifies that MemberFields has the expected number of fields
+func TestMemberFields_TotalFieldCount(t *testing.T) {
+	// Member struct has 9 fields
 	expectedCount := 9
 	if len(MemberFields.All) != expectedCount {
-		t.Errorf("MemberFields.Allのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(MemberFields.All))
+		t.Errorf("Incorrect number of MemberFields.All fields. expected=%d, got=%d", expectedCount, len(MemberFields.All))
 	}
 }
 
-// TestMemberFields_基本フィールド はMemberFieldsが基本フィールドを含むことを確認します
-func TestMemberFields_基本フィールド(t *testing.T) {
-	// 基本フィールドが存在することを確認
+// TestMemberFields_BasicFields verifies that MemberFields contains basic fields
+func TestMemberFields_BasicFields(t *testing.T) {
+	// Verify basic fields exist
 	expectedFields := []string{"id", "email", "name", "status"}
 
 	fieldMap := make(map[string]bool)
@@ -28,14 +28,14 @@ func TestMemberFields_基本フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("基本フィールド '%s' が見つかりません", expected)
+			t.Errorf("Basic field '%s' not found", expected)
 		}
 	}
 }
 
-// TestMemberFields_詳細フィールド はMemberFieldsが詳細フィールドを含むことを確認します
-func TestMemberFields_詳細フィールド(t *testing.T) {
-	// 詳細フィールドが存在することを確認
+// TestMemberFields_DetailFields verifies that MemberFields contains detail fields
+func TestMemberFields_DetailFields(t *testing.T) {
+	// Verify detail fields exist
 	expectedFields := []string{"uuid", "note", "labels", "created_at", "updated_at"}
 
 	fieldMap := make(map[string]bool)
@@ -45,20 +45,20 @@ func TestMemberFields_詳細フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("詳細フィールド '%s' が見つかりません", expected)
+			t.Errorf("Detail field '%s' not found", expected)
 		}
 	}
 }
 
-// TestMemberFields_デフォルトフィールド はMemberFields.Defaultが期待するフィールドを含むことを確認します
-func TestMemberFields_デフォルトフィールド(t *testing.T) {
-	// Defaultフィールドは5個
+// TestMemberFields_DefaultFields verifies that MemberFields.Default contains the expected fields
+func TestMemberFields_DefaultFields(t *testing.T) {
+	// Default fields should be 5
 	expectedCount := 5
 	if len(MemberFields.Default) != expectedCount {
-		t.Errorf("MemberFields.Defaultのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(MemberFields.Default))
+		t.Errorf("Incorrect number of MemberFields.Default fields. expected=%d, got=%d", expectedCount, len(MemberFields.Default))
 	}
 
-	// 必須フィールドが含まれることを確認
+	// Verify required fields are included
 	expectedFields := []string{"id", "email", "name"}
 	fieldMap := make(map[string]bool)
 	for _, field := range MemberFields.Default {
@@ -67,20 +67,20 @@ func TestMemberFields_デフォルトフィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("Defaultフィールド '%s' が見つかりません", expected)
+			t.Errorf("Default field '%s' not found", expected)
 		}
 	}
 }
 
-// TestMemberFields_詳細表示フィールド はMemberFields.Detailが期待するフィールドを含むことを確認します
-func TestMemberFields_詳細表示フィールド(t *testing.T) {
-	// Detailフィールドは9個（全フィールド）
+// TestMemberFields_DetailDisplayFields verifies that MemberFields.Detail contains the expected fields
+func TestMemberFields_DetailDisplayFields(t *testing.T) {
+	// Detail fields should be 9 (all fields)
 	expectedCount := 9
 	if len(MemberFields.Detail) != expectedCount {
-		t.Errorf("MemberFields.Detailのフィールド数が正しくありません。expected=%d, got=%d", expectedCount, len(MemberFields.Detail))
+		t.Errorf("Incorrect number of MemberFields.Detail fields. expected=%d, got=%d", expectedCount, len(MemberFields.Detail))
 	}
 
-	// uuid、note、labelsが含まれることを確認
+	// Verify uuid, note, labels are included
 	expectedFields := []string{"uuid", "note", "labels"}
 	fieldMap := make(map[string]bool)
 	for _, field := range MemberFields.Detail {
@@ -89,7 +89,7 @@ func TestMemberFields_詳細表示フィールド(t *testing.T) {
 
 	for _, expected := range expectedFields {
 		if !fieldMap[expected] {
-			t.Errorf("Detailフィールド '%s' が見つかりません", expected)
+			t.Errorf("Detail field '%s' not found", expected)
 		}
 	}
 }

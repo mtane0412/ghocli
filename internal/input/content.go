@@ -1,8 +1,8 @@
 /**
  * content.go
- * コンテンツ入力ユーティリティ
+ * Content input utility
  *
- * ファイル、標準入力、インラインコンテンツからコンテンツを読み込む機能を提供する
+ * Provides functionality to read content from files, stdin, and inline content
  */
 
 package input
@@ -14,58 +14,58 @@ import (
 	"strings"
 )
 
-// ContentFormat はコンテンツのフォーマットを表す型
+// ContentFormat represents the format of content
 type ContentFormat string
 
 const (
-	// FormatUnknown は不明なフォーマット
+	// FormatUnknown represents an unknown format
 	FormatUnknown ContentFormat = ""
-	// FormatHTML はHTML形式
+	// FormatHTML represents HTML format
 	FormatHTML ContentFormat = "html"
-	// FormatMarkdown はMarkdown形式
+	// FormatMarkdown represents Markdown format
 	FormatMarkdown ContentFormat = "markdown"
-	// FormatLexical はLexical JSON形式
+	// FormatLexical represents Lexical JSON format
 	FormatLexical ContentFormat = "lexical"
 )
 
 // ReadContent reads content from a file or returns inline content
 //
-// 優先順位:
-// 1. filePathが指定されている場合、ファイルからコンテンツを読み込む
-// 2. filePathが空の場合、inlineContentを返す
+// Priority:
+// 1. If filePath is specified, read content from the file
+// 2. If filePath is empty, return inlineContent
 func ReadContent(filePath string, inlineContent string) (string, error) {
-	// ファイルパスが指定されている場合はファイルから読み込み
+	// Read from file if filePath is specified
 	if filePath != "" {
 		data, err := os.ReadFile(filePath)
 		if err != nil {
-			return "", fmt.Errorf("ファイルの読み込みに失敗: %w", err)
+			return "", fmt.Errorf("failed to read file: %w", err)
 		}
 		return string(data), nil
 	}
 
-	// ファイルパスが空の場合はインラインコンテンツを返す
+	// Return inline content if filePath is empty
 	return inlineContent, nil
 }
 
-// DetectFormat はファイルパスの拡張子からコンテンツフォーマットを検出する
+// DetectFormat detects content format from file extension
 //
-// 引数:
-//   - filePath: ファイルパス
+// Parameters:
+//   - filePath: file path
 //
-// 戻り値:
-//   - ContentFormat: 検出されたフォーマット
+// Returns:
+//   - ContentFormat: detected format
 //
-// 検出ルール:
+// Detection rules:
 //   - .md, .markdown → FormatMarkdown
 //   - .html, .htm → FormatHTML
 //   - .json → FormatLexical
-//   - その他 → FormatUnknown
+//   - others → FormatUnknown
 func DetectFormat(filePath string) ContentFormat {
 	if filePath == "" {
 		return FormatUnknown
 	}
 
-	// 拡張子を取得（小文字に変換）
+	// Get extension (convert to lowercase)
 	ext := strings.ToLower(filepath.Ext(filePath))
 
 	switch ext {
@@ -80,35 +80,35 @@ func DetectFormat(filePath string) ContentFormat {
 	}
 }
 
-// ReadContentWithFormat はファイルまたはインラインコンテンツを読み込み、フォーマットも返す
+// ReadContentWithFormat reads file or inline content and returns the format
 //
-// 引数:
-//   - filePath: ファイルパス（空の場合はinlineContentを使用）
-//   - inlineContent: インラインコンテンツ
+// Parameters:
+//   - filePath: file path (use inlineContent if empty)
+//   - inlineContent: inline content
 //
-// 戻り値:
-//   - content: コンテンツ文字列
-//   - format: 検出されたフォーマット（インラインの場合はFormatUnknown）
-//   - error: エラー
+// Returns:
+//   - content: content string
+//   - format: detected format (FormatUnknown for inline content)
+//   - error: error
 //
-// 優先順位:
-//  1. filePathが指定されている場合、ファイルから読み込み、フォーマットを検出
-//  2. filePathが空の場合、inlineContentを返し、フォーマットはFormatUnknown
+// Priority:
+//  1. If filePath is specified, read from file and detect format
+//  2. If filePath is empty, return inlineContent with FormatUnknown
 func ReadContentWithFormat(filePath string, inlineContent string) (content string, format ContentFormat, err error) {
-	// ファイルパスが指定されている場合
+	// If filePath is specified
 	if filePath != "" {
-		// フォーマットを検出
+		// Detect format
 		format = DetectFormat(filePath)
 
-		// ファイルから読み込み
+		// Read from file
 		data, err := os.ReadFile(filePath)
 		if err != nil {
-			return "", FormatUnknown, fmt.Errorf("ファイルの読み込みに失敗: %w", err)
+			return "", FormatUnknown, fmt.Errorf("failed to read file: %w", err)
 		}
 
 		return string(data), format, nil
 	}
 
-	// インラインコンテンツを返す（フォーマットは不明）
+	// Return inline content (format is unknown)
 	return inlineContent, FormatUnknown, nil
 }

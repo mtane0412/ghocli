@@ -1,6 +1,6 @@
 /**
  * offers_test.go
- * Offers APIのテストコード
+ * Test code for Offers API
  */
 
 package ghostapi
@@ -12,33 +12,33 @@ import (
 	"testing"
 )
 
-// TestListOffers_オファー一覧の取得
-func TestListOffers_オファー一覧の取得(t *testing.T) {
+// TestListOffers_GetOfferList retrieves a list of offers
+func TestListOffers_GetOfferList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate request
 		if r.URL.Path != "/ghost/api/admin/offers/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/offers/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/offers/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"offers": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":               "春のキャンペーン",
+					"name":               "Spring Campaign",
 					"code":               "SPRING2024",
-					"display_title":       "春の特別割引",
-					"display_description": "今だけ50%オフ",
+					"display_title":       "Spring Special Discount",
+					"display_description": "50% off for a limited time",
 					"type":               "percent",
 					"cadence":            "month",
 					"amount":             50,
@@ -49,17 +49,17 @@ func TestListOffers_オファー一覧の取得(t *testing.T) {
 					"redemption_count":   10,
 					"tier": map[string]interface{}{
 						"id":   "64fac5417c4c6b0001234999",
-						"name": "プレミアム会員",
+						"name": "Premium Membership",
 					},
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": "2024-01-15T10:00:00.000Z",
 				},
 				{
 					"id":                  "64fac5417c4c6b0001234568",
-					"name":               "新規会員特典",
+					"name":               "New Member Benefit",
 					"code":               "WELCOME100",
-					"display_title":       "新規登録で100円オフ",
-					"display_description": "初月限定",
+					"display_title":       "100 yen off for new registration",
+					"display_description": "First month only",
 					"type":               "fixed",
 					"cadence":            "month",
 					"amount":             100,
@@ -69,7 +69,7 @@ func TestListOffers_オファー一覧の取得(t *testing.T) {
 					"redemption_count":   25,
 					"tier": map[string]interface{}{
 						"id":   "64fac5417c4c6b0001234999",
-						"name": "プレミアム会員",
+						"name": "Premium Membership",
 					},
 					"created_at": "2024-01-16T10:00:00.000Z",
 					"updated_at": "2024-01-16T10:00:00.000Z",
@@ -90,57 +90,57 @@ func TestListOffers_オファー一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// オファー一覧を取得
+	// Get offer list
 	resp, err := client.ListOffers(OfferListOptions{})
 	if err != nil {
-		t.Fatalf("オファー一覧取得エラー: %v", err)
+		t.Fatalf("Offer list retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Validate response
 	if len(resp.Offers) != 2 {
-		t.Errorf("オファー数 = %d; want 2", len(resp.Offers))
+		t.Errorf("Number of offers = %d; want 2", len(resp.Offers))
 	}
 
-	// 1つ目のオファーを検証
+	// Validate first offer
 	firstOffer := resp.Offers[0]
-	if firstOffer.Name != "春のキャンペーン" {
-		t.Errorf("オファー名 = %q; want %q", firstOffer.Name, "春のキャンペーン")
+	if firstOffer.Name != "Spring Campaign" {
+		t.Errorf("Offer name = %q; want %q", firstOffer.Name, "Spring Campaign")
 	}
 	if firstOffer.Code != "SPRING2024" {
-		t.Errorf("コード = %q; want %q", firstOffer.Code, "SPRING2024")
+		t.Errorf("Code = %q; want %q", firstOffer.Code, "SPRING2024")
 	}
 	if firstOffer.Type != "percent" {
-		t.Errorf("タイプ = %q; want %q", firstOffer.Type, "percent")
+		t.Errorf("Type = %q; want %q", firstOffer.Type, "percent")
 	}
 }
 
-// TestListOffers_filterパラメータ
-func TestListOffers_filterパラメータ(t *testing.T) {
+// TestListOffers_FilterParameter tests filter parameter
+func TestListOffers_FilterParameter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Validate query parameter
 		if !r.URL.Query().Has("filter") {
-			t.Error("filterパラメータが設定されていない")
+			t.Error("filter parameter is not set")
 		}
 		if r.URL.Query().Get("filter") != "status:active" {
-			t.Errorf("filterパラメータ = %q; want %q", r.URL.Query().Get("filter"), "status:active")
+			t.Errorf("filter parameter = %q; want %q", r.URL.Query().Get("filter"), "status:active")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"offers": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":               "春のキャンペーン",
+					"name":               "Spring Campaign",
 					"code":               "SPRING2024",
-					"display_title":       "春の特別割引",
-					"display_description": "今だけ50%オフ",
+					"display_title":       "Spring Special Discount",
+					"display_description": "50% off for a limited time",
 					"type":               "percent",
 					"cadence":            "month",
 					"amount":             50,
@@ -168,48 +168,48 @@ func TestListOffers_filterパラメータ(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// オファー一覧を取得（status:activeでフィルター）
+	// Get offer list (filtered by status:active)
 	resp, err := client.ListOffers(OfferListOptions{
 		Filter: "status:active",
 	})
 	if err != nil {
-		t.Fatalf("オファー一覧取得エラー: %v", err)
+		t.Fatalf("Offer list retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Validate response
 	if len(resp.Offers) != 1 {
-		t.Errorf("オファー数 = %d; want 1", len(resp.Offers))
+		t.Errorf("Number of offers = %d; want 1", len(resp.Offers))
 	}
 }
 
-// TestGetOffer_IDでオファーを取得
-func TestGetOffer_IDでオファーを取得(t *testing.T) {
+// TestGetOffer_GetOfferByID retrieves an offer by ID
+func TestGetOffer_GetOfferByID(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate request
 		expectedPath := "/ghost/api/admin/offers/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"offers": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":               "春のキャンペーン",
+					"name":               "Spring Campaign",
 					"code":               "SPRING2024",
-					"display_title":       "春の特別割引",
-					"display_description": "今だけ50%オフ",
+					"display_title":       "Spring Special Discount",
+					"display_description": "50% off for a limited time",
 					"type":               "percent",
 					"cadence":            "month",
 					"amount":             50,
@@ -220,7 +220,7 @@ func TestGetOffer_IDでオファーを取得(t *testing.T) {
 					"redemption_count":   10,
 					"tier": map[string]interface{}{
 						"id":   "64fac5417c4c6b0001234999",
-						"name": "プレミアム会員",
+						"name": "Premium Membership",
 					},
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": "2024-01-15T10:00:00.000Z",
@@ -233,59 +233,59 @@ func TestGetOffer_IDでオファーを取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// オファーを取得
+	// Get offer
 	offer, err := client.GetOffer("64fac5417c4c6b0001234567")
 	if err != nil {
-		t.Fatalf("オファー取得エラー: %v", err)
+		t.Fatalf("Offer retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
-	if offer.Name != "春のキャンペーン" {
-		t.Errorf("オファー名 = %q; want %q", offer.Name, "春のキャンペーン")
+	// Validate response
+	if offer.Name != "Spring Campaign" {
+		t.Errorf("Offer name = %q; want %q", offer.Name, "Spring Campaign")
 	}
 	if offer.ID != "64fac5417c4c6b0001234567" {
-		t.Errorf("オファーID = %q; want %q", offer.ID, "64fac5417c4c6b0001234567")
+		t.Errorf("Offer ID = %q; want %q", offer.ID, "64fac5417c4c6b0001234567")
 	}
 }
 
-// TestCreateOffer_オファーの作成
-func TestCreateOffer_オファーの作成(t *testing.T) {
+// TestCreateOffer_CreateOffer creates a new offer
+func TestCreateOffer_CreateOffer(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate request
 		if r.URL.Path != "/ghost/api/admin/offers/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/offers/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/offers/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// リクエストボディを検証
+		// Validate request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+			t.Fatalf("Failed to parse request body: %v", err)
 		}
 
 		offers, ok := reqBody["offers"].([]interface{})
 		if !ok || len(offers) == 0 {
-			t.Error("offersフィールドが正しくない")
+			t.Error("offers field is incorrect")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"offers": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234569",
-					"name":               "新規オファー",
+					"name":               "New Offer",
 					"code":               "NEWCODE",
-					"display_title":       "テスト用オファー",
-					"display_description": "テスト説明",
+					"display_title":       "Test Offer",
+					"display_description": "Test description",
 					"type":               "percent",
 					"cadence":            "month",
 					"amount":             30,
@@ -295,7 +295,7 @@ func TestCreateOffer_オファーの作成(t *testing.T) {
 					"redemption_count":   0,
 					"tier": map[string]interface{}{
 						"id":   "64fac5417c4c6b0001234999",
-						"name": "プレミアム会員",
+						"name": "Premium Membership",
 					},
 					"created_at": "2024-01-20T10:00:00.000Z",
 					"updated_at": "2024-01-20T10:00:00.000Z",
@@ -308,18 +308,18 @@ func TestCreateOffer_オファーの作成(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// オファーを作成
+	// Create offer
 	newOffer := &Offer{
-		Name:               "新規オファー",
+		Name:               "New Offer",
 		Code:               "NEWCODE",
-		DisplayTitle:       "テスト用オファー",
-		DisplayDescription: "テスト説明",
+		DisplayTitle:       "Test Offer",
+		DisplayDescription: "Test description",
 		Type:               "percent",
 		Cadence:            "month",
 		Amount:             30,
@@ -332,51 +332,51 @@ func TestCreateOffer_オファーの作成(t *testing.T) {
 
 	createdOffer, err := client.CreateOffer(newOffer)
 	if err != nil {
-		t.Fatalf("オファー作成エラー: %v", err)
+		t.Fatalf("Offer creation error: %v", err)
 	}
 
-	// レスポンスの検証
-	if createdOffer.Name != "新規オファー" {
-		t.Errorf("オファー名 = %q; want %q", createdOffer.Name, "新規オファー")
+	// Validate response
+	if createdOffer.Name != "New Offer" {
+		t.Errorf("Offer name = %q; want %q", createdOffer.Name, "New Offer")
 	}
 	if createdOffer.ID == "" {
-		t.Error("オファーIDが設定されていない")
+		t.Error("Offer ID is not set")
 	}
 }
 
-// TestUpdateOffer_オファーの更新
-func TestUpdateOffer_オファーの更新(t *testing.T) {
+// TestUpdateOffer_UpdateOffer updates an existing offer
+func TestUpdateOffer_UpdateOffer(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate request
 		expectedPath := "/ghost/api/admin/offers/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディを検証
+		// Validate request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+			t.Fatalf("Failed to parse request body: %v", err)
 		}
 
 		offers, ok := reqBody["offers"].([]interface{})
 		if !ok || len(offers) == 0 {
-			t.Error("offersフィールドが正しくない")
+			t.Error("offers field is incorrect")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"offers": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":               "更新されたオファー",
+					"name":               "Updated Offer",
 					"code":               "SPRING2024",
-					"display_title":       "更新後タイトル",
-					"display_description": "更新後の説明",
+					"display_title":       "Updated Title",
+					"display_description": "Updated description",
 					"type":               "percent",
 					"cadence":            "month",
 					"amount":             60,
@@ -387,7 +387,7 @@ func TestUpdateOffer_オファーの更新(t *testing.T) {
 					"redemption_count":   15,
 					"tier": map[string]interface{}{
 						"id":   "64fac5417c4c6b0001234999",
-						"name": "プレミアム会員",
+						"name": "Premium Membership",
 					},
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": "2024-01-20T10:00:00.000Z",
@@ -400,31 +400,31 @@ func TestUpdateOffer_オファーの更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// オファーを更新
+	// Update offer
 	updateOffer := &Offer{
-		Name:               "更新されたオファー",
-		DisplayTitle:       "更新後タイトル",
-		DisplayDescription: "更新後の説明",
+		Name:               "Updated Offer",
+		DisplayTitle:       "Updated Title",
+		DisplayDescription: "Updated description",
 		Amount:             60,
 		DurationInMonths:   6,
 	}
 
 	updatedOffer, err := client.UpdateOffer("64fac5417c4c6b0001234567", updateOffer)
 	if err != nil {
-		t.Fatalf("オファー更新エラー: %v", err)
+		t.Fatalf("Offer update error: %v", err)
 	}
 
-	// レスポンスの検証
-	if updatedOffer.Name != "更新されたオファー" {
-		t.Errorf("オファー名 = %q; want %q", updatedOffer.Name, "更新されたオファー")
+	// Validate response
+	if updatedOffer.Name != "Updated Offer" {
+		t.Errorf("Offer name = %q; want %q", updatedOffer.Name, "Updated Offer")
 	}
-	if updatedOffer.DisplayTitle != "更新後タイトル" {
-		t.Errorf("表示タイトル = %q; want %q", updatedOffer.DisplayTitle, "更新後タイトル")
+	if updatedOffer.DisplayTitle != "Updated Title" {
+		t.Errorf("Display title = %q; want %q", updatedOffer.DisplayTitle, "Updated Title")
 	}
 }

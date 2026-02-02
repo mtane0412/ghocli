@@ -1,8 +1,8 @@
 /**
  * themes.go
- * テーマ管理コマンド
+ * Theme management commands
  *
- * Ghostテーマの一覧表示、アップロード、有効化機能を提供します。
+ * Provides functionality for listing, uploading, and activating Ghost themes.
  */
 
 package cmd
@@ -16,18 +16,18 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// ThemesCmd はテーマ管理コマンドです
+// ThemesCmd is the theme management command
 type ThemesCmd struct {
 	List     ThemesListCmd     `cmd:"" help:"List themes"`
 	Upload   ThemesUploadCmd   `cmd:"" help:"Upload a theme"`
 	Activate ThemesActivateCmd `cmd:"" help:"Activate a theme"`
 	Delete   ThemesDeleteCmd   `cmd:"" help:"Delete a theme"`
 
-	// Phase 3: 複合操作
+	// Phase 3: Composite operations
 	Install ThemesInstallCmd `cmd:"" help:"Upload and activate a theme"`
 }
 
-// ThemesListCmd is the command to retrieve テーマ list
+// ThemesListCmd is the command to retrieve theme list
 type ThemesListCmd struct{}
 
 // Run executes the list subcommand of the themes command
@@ -79,7 +79,7 @@ func (c *ThemesListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// ThemesUploadCmd is the command to upload テーマ
+// ThemesUploadCmd is the command to upload theme
 type ThemesUploadCmd struct {
 	File string `arg:"" help:"Theme zip file path" type:"existingfile"`
 }
@@ -130,7 +130,7 @@ func (c *ThemesUploadCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// ThemesActivateCmd is the command to activate テーマ
+// ThemesActivateCmd is the command to activate theme
 type ThemesActivateCmd struct {
 	Name string `arg:"" help:"Theme name"`
 }
@@ -166,10 +166,10 @@ func (c *ThemesActivateCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 3: 複合操作
+// Phase 3: Composite operations
 // ========================================
 
-// ThemesInstallCmd is the command to upload and activate テーマ
+// ThemesInstallCmd is the command to upload and activate theme
 type ThemesInstallCmd struct {
 	File string `arg:"" help:"Path to theme zip file" type:"existingfile"`
 }
@@ -225,10 +225,10 @@ func (c *ThemesInstallCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// テーマ削除
+// Theme deletion
 // ========================================
 
-// ThemesDeleteCmd is the command to delete テーマ
+// ThemesDeleteCmd is the command to delete theme
 type ThemesDeleteCmd struct {
 	Name string `arg:"" help:"Theme name"`
 }
@@ -241,7 +241,7 @@ func (c *ThemesDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// Get theme listしてアクティブかチェック
+	// Get theme list and check if active
 	themes, err := client.ListThemes()
 	if err != nil {
 		return fmt.Errorf("failed to list themes: %w", err)

@@ -1,13 +1,13 @@
 /**
  * types.go
- * 共通型定義
+ * Common type definitions
  *
- * Ghost Admin APIの共通型（Author等）を定義します。
+ * Defines common types for Ghost Admin API (Author, etc.).
  */
 
 package ghostapi
 
-// Author はGhostの著者を表します
+// Author represents a Ghost author
 type Author struct {
 	ID       string `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`

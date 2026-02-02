@@ -1,6 +1,6 @@
 /**
  * prompt_test.go
- * ユーザー入力プロンプト機能のテストコード
+ * Test code for user input prompt functionality
  */
 package input_test
 
@@ -15,67 +15,67 @@ import (
 	"github.com/mtane0412/ghocli/internal/ui"
 )
 
-// TestPromptLineFrom は、io.Readerから入力を読み取るPromptLineFrom関数のテスト
+// TestPromptLineFrom tests the PromptLineFrom function that reads input from io.Reader
 func TestPromptLineFrom(t *testing.T) {
-	// 前提条件: stderrにプロンプトを出力するためのUIを準備
+	// Precondition: prepare UI to output prompt to stderr
 	var stderr bytes.Buffer
 	output := ui.NewOutput(&stderr, &stderr)
 	ctx := ui.WithUI(context.Background(), output)
 
-	// 実行: PromptLineFrom関数を呼び出す（strings.Readerから読み取る）
+	// Execute: call PromptLineFrom function (read from strings.Reader)
 	line, err := input.PromptLineFrom(ctx, "Prompt: ", strings.NewReader("hello\n"))
 
-	// 検証: エラーが発生しないこと
+	// Verify: no error occurs
 	if err != nil {
-		t.Fatalf("PromptLineFrom関数がエラーを返した: %v", err)
+		t.Fatalf("PromptLineFrom function returned an error: %v", err)
 	}
 
-	// 検証: 正しい行が読み取られること
+	// Verify: correct line is read
 	if line != "hello" {
-		t.Errorf("読み取られた行が期待と異なる: got %q, want %q", line, "hello")
+		t.Errorf("Read line differs from expected: got %q, want %q", line, "hello")
 	}
 
-	// 検証: プロンプトがstderrに出力されること
+	// Verify: prompt is output to stderr
 	if !strings.Contains(stderr.String(), "Prompt: ") {
-		t.Errorf("プロンプトがstderrに出力されていない: %q", stderr.String())
+		t.Errorf("Prompt not output to stderr: %q", stderr.String())
 	}
 }
 
-// TestPromptLine は、os.Stdinから入力を読み取るPromptLine関数のテスト
+// TestPromptLine tests the PromptLine function that reads input from os.Stdin
 func TestPromptLine(t *testing.T) {
-	// 前提条件: os.Stdinを保存し、テスト後に復元する
+	// Precondition: save os.Stdin and restore it after test
 	orig := os.Stdin
 	defer func() {
 		os.Stdin = orig
 	}()
 
-	// 前提条件: パイプを作成してos.Stdinを置き換える
+	// Precondition: create a pipe and replace os.Stdin
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Fatalf("パイプの作成に失敗: %v", err)
+		t.Fatalf("Failed to create pipe: %v", err)
 	}
 	defer func() {
 		_ = r.Close()
 	}()
 	os.Stdin = r
 
-	// 前提条件: パイプに入力データを書き込む
+	// Precondition: write input data to the pipe
 	_, writeErr := w.WriteString("world\n")
 	if writeErr != nil {
-		t.Fatalf("パイプへの書き込みに失敗: %v", writeErr)
+		t.Fatalf("Failed to write to pipe: %v", writeErr)
 	}
 	_ = w.Close()
 
-	// 実行: PromptLine関数を呼び出す
+	// Execute: call PromptLine function
 	line, err := input.PromptLine(context.Background(), "Prompt: ")
 
-	// 検証: エラーが発生しないこと
+	// Verify: no error occurs
 	if err != nil {
-		t.Fatalf("PromptLine関数がエラーを返した: %v", err)
+		t.Fatalf("PromptLine function returned an error: %v", err)
 	}
 
-	// 検証: 正しい行が読み取られること
+	// Verify: correct line is read
 	if line != "world" {
-		t.Errorf("読み取られた行が期待と異なる: got %q, want %q", line, "world")
+		t.Errorf("Read line differs from expected: got %q, want %q", line, "world")
 	}
 }

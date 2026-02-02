@@ -2,8 +2,8 @@
  * newsletters.go
  * Newsletters API
  *
- * Ghost Admin APIのNewsletters機能を提供します。
- * Create/Update操作には確認機構が適用されます。
+ * Provides Newsletters functionality for the Ghost Admin API.
+ * Confirmation mechanism is applied to Create/Update operations.
  */
 
 package ghostapi
@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// Newsletter はGhostのニュースレターを表します
+// Newsletter represents a Ghost newsletter
 type Newsletter struct {
 	ID                string    `json:"id,omitempty"`
 	Name              string    `json:"name,omitempty"`
@@ -33,14 +33,14 @@ type Newsletter struct {
 	UpdatedAt         time.Time `json:"updated_at,omitempty"`
 }
 
-// NewsletterListOptions はニュースレター一覧取得のオプションです
+// NewsletterListOptions represents options for retrieving newsletter list
 type NewsletterListOptions struct {
-	Limit  int    // 取得件数（デフォルト: 15）
-	Page   int    // ページ番号（デフォルト: 1）
-	Filter string // フィルター条件
+	Limit  int    // Number of items to retrieve (default: 15)
+	Page   int    // Page number (default: 1)
+	Filter string // Filter condition
 }
 
-// NewsletterListResponse はニュースレター一覧のレスポンスです
+// NewsletterListResponse represents a newsletter list response
 type NewsletterListResponse struct {
 	Newsletters []Newsletter `json:"newsletters"`
 	Meta        struct {
@@ -53,16 +53,16 @@ type NewsletterListResponse struct {
 	} `json:"meta"`
 }
 
-// NewsletterResponse はニュースレター単体のレスポンスです
+// NewsletterResponse represents a single newsletter response
 type NewsletterResponse struct {
 	Newsletters []Newsletter `json:"newsletters"`
 }
 
-// ListNewsletters はニュースレター一覧を取得します
+// ListNewsletters retrieves a list of newsletters
 func (c *Client) ListNewsletters(opts NewsletterListOptions) (*NewsletterListResponse, error) {
 	path := "/ghost/api/admin/newsletters/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Limit > 0 {
 		params = append(params, fmt.Sprintf("limit=%d", opts.Limit))
@@ -78,27 +78,27 @@ func (c *Client) ListNewsletters(opts NewsletterListOptions) (*NewsletterListRes
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp NewsletterListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// GetNewsletter は指定されたIDまたはスラッグのニュースレターを取得します
-// idOrSlugが "slug:" で始まる場合はスラッグとして扱います
+// GetNewsletter retrieves a newsletter by ID or slug
+// If idOrSlug starts with "slug:", it is treated as a slug
 func (c *Client) GetNewsletter(idOrSlug string) (*Newsletter, error) {
 	var path string
 
-	// スラッグかIDかを判定
+	// Determine if it's a slug or ID
 	if strings.HasPrefix(idOrSlug, "slug:") {
 		slug := strings.TrimPrefix(idOrSlug, "slug:")
 		path = fmt.Sprintf("/ghost/api/admin/newsletters/slug/%s/", slug)
@@ -106,86 +106,86 @@ func (c *Client) GetNewsletter(idOrSlug string) (*Newsletter, error) {
 		path = fmt.Sprintf("/ghost/api/admin/newsletters/%s/", idOrSlug)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp NewsletterResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Newsletters) == 0 {
-		return nil, fmt.Errorf("ニュースレターが見つかりません: %s", idOrSlug)
+		return nil, fmt.Errorf("newsletter not found: %s", idOrSlug)
 	}
 
 	return &resp.Newsletters[0], nil
 }
 
-// CreateNewsletter は新しいニュースレターを作成します
+// CreateNewsletter creates a new newsletter
 func (c *Client) CreateNewsletter(newsletter *Newsletter) (*Newsletter, error) {
 	path := "/ghost/api/admin/newsletters/"
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"newsletters": []interface{}{newsletter},
 	}
 
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("POST", path, bytes.NewReader(reqBodyJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp NewsletterResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Newsletters) == 0 {
-		return nil, fmt.Errorf("ニュースレターの作成に失敗しました")
+		return nil, fmt.Errorf("failed to create newsletter")
 	}
 
 	return &resp.Newsletters[0], nil
 }
 
-// UpdateNewsletter は既存のニュースレターを更新します
+// UpdateNewsletter updates an existing newsletter
 func (c *Client) UpdateNewsletter(id string, newsletter *Newsletter) (*Newsletter, error) {
 	path := fmt.Sprintf("/ghost/api/admin/newsletters/%s/", id)
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"newsletters": []interface{}{newsletter},
 	}
 
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(reqBodyJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp NewsletterResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Newsletters) == 0 {
-		return nil, fmt.Errorf("ニュースレターの更新に失敗しました")
+		return nil, fmt.Errorf("failed to update newsletter")
 	}
 
 	return &resp.Newsletters[0], nil

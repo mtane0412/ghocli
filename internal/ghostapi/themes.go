@@ -2,7 +2,7 @@
  * themes.go
  * Themes API
  *
- * Ghost Admin APIのThemes機能を提供します。
+ * Provides Themes functionality for the Ghost Admin API.
  */
 
 package ghostapi
@@ -13,7 +13,7 @@ import (
 	"io"
 )
 
-// Theme はGhostのテーマを表します
+// Theme represents a Ghost theme
 type Theme struct {
 	Name      string          `json:"name"`
 	Package   *ThemePackage   `json:"package,omitempty"`
@@ -21,98 +21,98 @@ type Theme struct {
 	Templates []ThemeTemplate `json:"templates,omitempty"`
 }
 
-// ThemePackage はテーマのパッケージ情報を表します
+// ThemePackage represents theme package information
 type ThemePackage struct {
 	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 	Version     string `json:"version,omitempty"`
 }
 
-// ThemeTemplate はテーマのテンプレートファイル情報を表します
+// ThemeTemplate represents theme template file information
 type ThemeTemplate struct {
 	Filename string `json:"filename"`
 }
 
-// ThemeListResponse はテーマ一覧のレスポンスです
+// ThemeListResponse represents a theme list response
 type ThemeListResponse struct {
 	Themes []Theme `json:"themes"`
 }
 
-// ThemeResponse はテーマ単体のレスポンスです
+// ThemeResponse represents a single theme response
 type ThemeResponse struct {
 	Themes []Theme `json:"themes"`
 }
 
-// ListThemes はテーマ一覧を取得します
+// ListThemes retrieves a list of themes
 func (c *Client) ListThemes() (*ThemeListResponse, error) {
 	path := "/ghost/api/admin/themes/"
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp ThemeListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// UploadTheme はテーマをアップロードします
+// UploadTheme uploads a theme
 func (c *Client) UploadTheme(file io.Reader, filename string) (*Theme, error) {
 	path := "/ghost/api/admin/themes/upload/"
 
-	// マルチパートリクエストを実行
+	// Execute multipart request
 	respBody, err := c.doMultipartRequest(path, file, filename, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp ThemeResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Themes) == 0 {
-		return nil, fmt.Errorf("テーマのアップロードに失敗しました")
+		return nil, fmt.Errorf("failed to upload theme")
 	}
 
 	return &resp.Themes[0], nil
 }
 
-// ActivateTheme はテーマを有効化します
+// ActivateTheme activates a theme
 func (c *Client) ActivateTheme(name string) (*Theme, error) {
 	path := fmt.Sprintf("/ghost/api/admin/themes/%s/activate/", name)
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp ThemeResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Themes) == 0 {
-		return nil, fmt.Errorf("テーマの有効化に失敗しました")
+		return nil, fmt.Errorf("failed to activate theme")
 	}
 
 	return &resp.Themes[0], nil
 }
 
-// DeleteTheme はテーマを削除します
+// DeleteTheme deletes a theme
 func (c *Client) DeleteTheme(name string) error {
 	path := fmt.Sprintf("/ghost/api/admin/themes/%s/", name)
 
-	// リクエストを実行
+	// Execute request
 	_, err := c.doRequest("DELETE", path, nil)
 	if err != nil {
 		return err

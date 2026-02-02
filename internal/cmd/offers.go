@@ -1,9 +1,9 @@
 /**
  * offers.go
- * オファー管理コマンド
+ * Offer management commands
  *
- * Ghostオファーの管理機能を提供します。
- * Create/Update操作には確認機構が適用されます。
+ * Provides functionality for managing Ghost offers.
+ * Create/Update operations require confirmation.
  */
 
 package cmd
@@ -17,18 +17,18 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// OffersCmd はオファー管理コマンドです
+// OffersCmd is the offer management command
 type OffersCmd struct {
 	List   OffersListCmd   `cmd:"" help:"List offers"`
 	Get    OffersInfoCmd   `cmd:"" help:"Show offer information"`
 	Create OffersCreateCmd `cmd:"" help:"Create an offer"`
 	Update OffersUpdateCmd `cmd:"" help:"Update an offer"`
 
-	// Phase 2: 状態変更
+	// Phase 2: State changes
 	Archive OffersArchiveCmd `cmd:"" help:"Archive an offer"`
 }
 
-// OffersListCmd is the command to retrieve オファー list
+// OffersListCmd is the command to retrieve offer list
 type OffersListCmd struct {
 	Limit  int    `help:"Number of offers to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
@@ -80,7 +80,7 @@ func (c *OffersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// OffersInfoCmd is the command to show オファー information
+// OffersInfoCmd is the command to show offer information
 type OffersInfoCmd struct {
 	ID string `arg:"" help:"Offer ID"`
 }
@@ -132,7 +132,7 @@ func (c *OffersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// OffersCreateCmd is the command to create オファー
+// OffersCreateCmd is the command to create offer
 type OffersCreateCmd struct {
 	Name               string `help:"Offer name" short:"n" required:""`
 	Code               string `help:"Offer code" short:"c" required:""`
@@ -205,7 +205,7 @@ func (c *OffersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// OffersUpdateCmd is the command to update オファー
+// OffersUpdateCmd is the command to update offer
 type OffersUpdateCmd struct {
 	ID                 string `arg:"" help:"Offer ID"`
 	Name               string `help:"Offer name" short:"n"`
@@ -289,10 +289,10 @@ func (c *OffersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 2: 状態変更
+// Phase 2: State changes
 // ========================================
 
-// OffersArchiveCmd is the command to archive オファー
+// OffersArchiveCmd is the command to archive offer
 type OffersArchiveCmd struct {
 	ID string `arg:"" help:"Offer ID"`
 }

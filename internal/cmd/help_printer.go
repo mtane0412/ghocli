@@ -1,8 +1,8 @@
 /**
  * help_printer.go
- * カスタムヘルププリンター
+ * Custom help printer
  *
- * ヘルプメッセージの色付けとビルド情報の注入を行います。
+ * Provides colorized help messages and build information injection.
  */
 
 package cmd
@@ -19,12 +19,12 @@ import (
 	"golang.org/x/term"
 )
 
-// helpPrinter はカスタムヘルププリンターです
+// helpPrinter is a custom help printer
 func helpPrinter(options kong.HelpOptions, ctx *kong.Context) error {
 	origStdout := ctx.Stdout
 	origStderr := ctx.Stderr
 
-	// 端末の幅を取得
+	// Get terminal width
 	width := guessColumns(origStdout)
 	oldCols, hadCols := os.LookupEnv("COLUMNS")
 	_ = os.Setenv("COLUMNS", strconv.Itoa(width))
@@ -36,18 +36,18 @@ func helpPrinter(options kong.HelpOptions, ctx *kong.Context) error {
 		}
 	}()
 
-	// バッファに出力
+	// Output to buffer
 	buf := bytes.NewBuffer(nil)
 	ctx.Stdout = buf
 	ctx.Stderr = origStderr
 	defer func() { ctx.Stdout = origStdout }()
 
-	// デフォルトのヘルプを生成
+	// Generate default help
 	if err := kong.DefaultHelpPrinter(options, ctx); err != nil {
 		return err
 	}
 
-	// ヘルプテキストをカスタマイズ
+	// Customize help text
 	out := buf.String()
 	out = injectBuildLine(out)
 	out = colorizeHelp(out, helpProfile(origStdout))
@@ -56,21 +56,21 @@ func helpPrinter(options kong.HelpOptions, ctx *kong.Context) error {
 	return err
 }
 
-// injectBuildLine はビルド情報をヘルプに注入します
+// injectBuildLine injects build information into help text
 func injectBuildLine(out string) string {
-	// ビルド情報はExecute()で設定されたバージョンから取得
-	// 簡略化のため、ここでは注入をスキップ
+	// Build information is obtained from the version set in Execute()
+	// For simplicity, injection is skipped here
 	return out
 }
 
-// helpProfile はカラープロファイルを返します
+// helpProfile returns the color profile
 func helpProfile(stdout io.Writer) termenv.Profile {
-	// NO_COLOR環境変数の確認
+	// Check NO_COLOR environment variable
 	if termenv.EnvNoColor() {
 		return termenv.Ascii
 	}
 
-	// GHO_COLOR環境変数の確認
+	// Check GHO_COLOR environment variable
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("GHO_COLOR")))
 	switch mode {
 	case "never":
@@ -78,20 +78,20 @@ func helpProfile(stdout io.Writer) termenv.Profile {
 	case "always":
 		return termenv.TrueColor
 	default:
-		// auto: 端末の色対応を自動検出
+		// auto: Auto-detect terminal color support
 		o := termenv.NewOutput(stdout, termenv.WithProfile(termenv.EnvColorProfile()))
 		return o.Profile
 	}
 }
 
-// colorizeHelp はヘルプテキストを色付けします
+// colorizeHelp colorizes help text
 func colorizeHelp(out string, profile termenv.Profile) string {
-	// カラープロファイルがAsciiの場合は色付けしない
+	// Don't colorize if color profile is Ascii
 	if profile == termenv.Ascii {
 		return out
 	}
 
-	// カラー関数を定義
+	// Define color functions
 	heading := func(s string) string {
 		return termenv.String(s).Foreground(profile.Color("#60a5fa")).Bold().String()
 	}
@@ -102,7 +102,7 @@ func colorizeHelp(out string, profile termenv.Profile) string {
 		return termenv.String(s).Foreground(profile.Color("#38bdf8")).Bold().String()
 	}
 
-	// 行ごとに処理
+	// Process line by line
 	inCommands := false
 	lines := strings.Split(out, "\n")
 	for i, line := range lines {
@@ -119,7 +119,7 @@ func colorizeHelp(out string, profile termenv.Profile) string {
 		case line == "Arguments:":
 			lines[i] = section(line)
 		case inCommands && strings.HasPrefix(line, "  ") && len(line) > 2 && line[2] != ' ':
-			// コマンド名を色付け
+			// Colorize command name
 			name, tail, found := strings.Cut(strings.TrimPrefix(line, "  "), " ")
 			if found {
 				lines[i] = "  " + cmdName(name) + " " + tail
@@ -132,16 +132,16 @@ func colorizeHelp(out string, profile termenv.Profile) string {
 	return strings.Join(lines, "\n")
 }
 
-// guessColumns は端末の幅を推測します
+// guessColumns guesses terminal width
 func guessColumns(w io.Writer) int {
-	// COLUMNS環境変数を確認
+	// Check COLUMNS environment variable
 	if colsStr := os.Getenv("COLUMNS"); colsStr != "" {
 		if cols, err := strconv.Atoi(colsStr); err == nil {
 			return cols
 		}
 	}
 
-	// 端末のサイズを取得
+	// Get terminal size
 	f, ok := w.(*os.File)
 	if !ok {
 		return 80
@@ -152,6 +152,6 @@ func guessColumns(w io.Writer) int {
 		return width
 	}
 
-	// デフォルト値
+	// Default value
 	return 80
 }

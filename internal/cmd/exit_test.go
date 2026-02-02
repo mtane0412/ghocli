@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// TestExitCode はExitCode関数の動作を検証する
+// TestExitCode verifies the behavior of ExitCode function
 func TestExitCode(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -13,28 +13,28 @@ func TestExitCode(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name:     "エラーがnilの場合は0を返す",
+			name:     "return 0 when error is nil",
 			err:      nil,
 			wantCode: 0,
 		},
 		{
-			name:     "通常のエラーの場合は1を返す",
-			err:      errors.New("通常のエラー"),
+			name:     "return 1 for regular error",
+			err:      errors.New("regular error"),
 			wantCode: 1,
 		},
 		{
-			name:     "ExitErrorでコード2の場合は2を返す",
-			err:      &ExitError{Code: 2, Err: errors.New("カスタムエラー")},
+			name:     "return 2 for ExitError with code 2",
+			err:      &ExitError{Code: 2, Err: errors.New("custom error")},
 			wantCode: 2,
 		},
 		{
-			name:     "ExitErrorでコード130の場合は130を返す（Ctrl+C）",
-			err:      &ExitError{Code: 130, Err: errors.New("中断")},
+			name:     "return 130 for ExitError with code 130 (Ctrl+C)",
+			err:      &ExitError{Code: 130, Err: errors.New("interrupted")},
 			wantCode: 130,
 		},
 		{
-			name:     "ラップされたExitErrorでも正しくコードを返す",
-			err:      errors.Join(errors.New("ラッパー"), &ExitError{Code: 3, Err: errors.New("内部エラー")}),
+			name:     "return correct code even for wrapped ExitError",
+			err:      errors.Join(errors.New("wrapper"), &ExitError{Code: 3, Err: errors.New("inner error")}),
 			wantCode: 3,
 		},
 	}
@@ -49,7 +49,7 @@ func TestExitCode(t *testing.T) {
 	}
 }
 
-// TestExitError_Error はExitError.Error()メソッドの動作を検証する
+// TestExitError_Error verifies the behavior of ExitError.Error() method
 func TestExitError_Error(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -57,20 +57,20 @@ func TestExitError_Error(t *testing.T) {
 		wantMessage string
 	}{
 		{
-			name: "内部エラーのメッセージを返す",
+			name: "return inner error message",
 			exitErr: &ExitError{
 				Code: 1,
-				Err:  errors.New("テストエラーメッセージ"),
+				Err:  errors.New("test error message"),
 			},
-			wantMessage: "テストエラーメッセージ",
+			wantMessage: "test error message",
 		},
 		{
-			name: "複雑なエラーメッセージも正しく返す",
+			name: "return complex error message correctly",
 			exitErr: &ExitError{
 				Code: 2,
-				Err:  errors.New("認証に失敗しました: トークンが無効です"),
+				Err:  errors.New("authentication failed: token is invalid"),
 			},
-			wantMessage: "認証に失敗しました: トークンが無効です",
+			wantMessage: "authentication failed: token is invalid",
 		},
 	}
 
@@ -84,9 +84,9 @@ func TestExitError_Error(t *testing.T) {
 	}
 }
 
-// TestExitError_Unwrap はExitError.Unwrap()メソッドの動作を検証する
+// TestExitError_Unwrap verifies the behavior of ExitError.Unwrap() method
 func TestExitError_Unwrap(t *testing.T) {
-	innerErr := errors.New("内部エラー")
+	innerErr := errors.New("inner error")
 	exitErr := &ExitError{
 		Code: 1,
 		Err:  innerErr,

@@ -1,15 +1,15 @@
 /**
  * completion_scripts.go
- * シェル補完スクリプト
+ * Shell completion scripts
  *
- * 各シェル（bash/zsh/fish/powershell）用の補完スクリプトを提供します。
+ * Provides completion scripts for each shell (bash/zsh/fish/powershell).
  */
 
 package cmd
 
 import "fmt"
 
-// completionScript は指定されたシェル用の補完スクリプトを返します
+// completionScript returns the completion script for the specified shell
 func completionScript(shell string) (string, error) {
 	switch shell {
 	case "bash":
@@ -25,7 +25,7 @@ func completionScript(shell string) (string, error) {
 	}
 }
 
-// bashCompletionScript はbash用の補完スクリプトを返します
+// bashCompletionScript returns the completion script for bash
 func bashCompletionScript() string {
 	return `#!/usr/bin/env bash
 
@@ -43,7 +43,7 @@ complete -F _gho_complete gho
 `
 }
 
-// zshCompletionScript はzsh用の補完スクリプトを返します
+// zshCompletionScript returns the completion script for zsh
 func zshCompletionScript() string {
 	return `#compdef gho
 
@@ -52,7 +52,7 @@ bashcompinit
 ` + bashCompletionScript()
 }
 
-// fishCompletionScript はfish用の補完スクリプトを返します
+// fishCompletionScript returns the completion script for fish
 func fishCompletionScript() string {
 	return `function __gho_complete
   set -l words (commandline -opc)
@@ -68,7 +68,7 @@ complete -c gho -f -a "(__gho_complete)"
 `
 }
 
-// powerShellCompletionScript はpowershell用の補完スクリプトを返します
+// powerShellCompletionScript returns the completion script for powershell
 func powerShellCompletionScript() string {
 	return `Register-ArgumentCompleter -CommandName gho -ScriptBlock {
   param($commandName, $wordToComplete, $cursorPosition, $commandAst, $fakeBoundParameter)

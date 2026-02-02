@@ -1,6 +1,6 @@
 /**
  * content_test.go
- * コンテンツ入力ユーティリティのテストコード
+ * Test code for content input utilities
  */
 
 package input
@@ -11,90 +11,90 @@ import (
 	"testing"
 )
 
-// TestReadContent_ファイルから読み込み
-func TestReadContent_ファイルから読み込み(t *testing.T) {
-	// 一時ファイルを作成
+// TestReadContent_ReadFromFile tests reading content from a file
+func TestReadContent_ReadFromFile(t *testing.T) {
+	// Create temporary file
 	tmpDir := t.TempDir()
 	tmpFile := filepath.Join(tmpDir, "test.html")
-	expectedContent := "<p>テストコンテンツ</p>"
+	expectedContent := "<p>Test Content</p>"
 	if err := os.WriteFile(tmpFile, []byte(expectedContent), 0644); err != nil {
-		t.Fatalf("一時ファイルの作成に失敗: %v", err)
+		t.Fatalf("Failed to create temporary file: %v", err)
 	}
 
-	// ファイルからコンテンツを読み込み
+	// Read content from file
 	content, err := ReadContent(tmpFile, "")
 	if err != nil {
-		t.Fatalf("コンテンツの読み込みに失敗: %v", err)
+		t.Fatalf("Failed to read content: %v", err)
 	}
 
-	// コンテンツの検証
+	// Verify content
 	if content != expectedContent {
-		t.Errorf("コンテンツ = %q; want %q", content, expectedContent)
+		t.Errorf("Content = %q; want %q", content, expectedContent)
 	}
 }
 
-// TestReadContent_インラインコンテンツを返す
-func TestReadContent_インラインコンテンツを返す(t *testing.T) {
-	expectedContent := "<p>インラインコンテンツ</p>"
+// TestReadContent_ReturnInlineContent tests returning inline content
+func TestReadContent_ReturnInlineContent(t *testing.T) {
+	expectedContent := "<p>Inline Content</p>"
 
-	// インラインコンテンツを読み込み（ファイルパスが空）
+	// Read inline content (empty file path)
 	content, err := ReadContent("", expectedContent)
 	if err != nil {
-		t.Fatalf("コンテンツの読み込みに失敗: %v", err)
+		t.Fatalf("Failed to read content: %v", err)
 	}
 
-	// コンテンツの検証
+	// Verify content
 	if content != expectedContent {
-		t.Errorf("コンテンツ = %q; want %q", content, expectedContent)
+		t.Errorf("Content = %q; want %q", content, expectedContent)
 	}
 }
 
-// TestReadContent_ファイルが優先される
-func TestReadContent_ファイルが優先される(t *testing.T) {
-	// 一時ファイルを作成
+// TestReadContent_FileTakesPrecedence tests that file takes precedence
+func TestReadContent_FileTakesPrecedence(t *testing.T) {
+	// Create temporary file
 	tmpDir := t.TempDir()
 	tmpFile := filepath.Join(tmpDir, "test.html")
-	expectedContent := "<p>ファイルコンテンツ</p>"
+	expectedContent := "<p>File Content</p>"
 	if err := os.WriteFile(tmpFile, []byte(expectedContent), 0644); err != nil {
-		t.Fatalf("一時ファイルの作成に失敗: %v", err)
+		t.Fatalf("Failed to create temporary file: %v", err)
 	}
 
-	// ファイルとインラインコンテンツの両方を指定（ファイルが優先される）
-	content, err := ReadContent(tmpFile, "<p>インラインコンテンツ</p>")
+	// Specify both file and inline content (file takes precedence)
+	content, err := ReadContent(tmpFile, "<p>Inline Content</p>")
 	if err != nil {
-		t.Fatalf("コンテンツの読み込みに失敗: %v", err)
+		t.Fatalf("Failed to read content: %v", err)
 	}
 
-	// ファイルのコンテンツが返されることを確認
+	// Verify file content is returned
 	if content != expectedContent {
-		t.Errorf("コンテンツ = %q; want %q", content, expectedContent)
+		t.Errorf("Content = %q; want %q", content, expectedContent)
 	}
 }
 
-// TestReadContent_ファイルが存在しない場合はエラー
-func TestReadContent_ファイルが存在しない場合はエラー(t *testing.T) {
-	// 存在しないファイルを指定
+// TestReadContent_ErrorWhenFileNotFound tests error when file does not exist
+func TestReadContent_ErrorWhenFileNotFound(t *testing.T) {
+	// Specify non-existent file
 	_, err := ReadContent("/path/to/nonexistent/file.html", "")
 	if err == nil {
-		t.Error("エラーが返されるべき")
+		t.Error("Error should be returned")
 	}
 }
 
-// TestReadContent_両方空の場合は空文字列を返す
-func TestReadContent_両方空の場合は空文字列を返す(t *testing.T) {
-	// ファイルパスとインラインコンテンツの両方が空
+// TestReadContent_ReturnsEmptyStringWhenBothEmpty tests returning empty string when both are empty
+func TestReadContent_ReturnsEmptyStringWhenBothEmpty(t *testing.T) {
+	// Both file path and inline content are empty
 	content, err := ReadContent("", "")
 	if err != nil {
-		t.Fatalf("エラーが返されるべきでない: %v", err)
+		t.Fatalf("Error should not be returned: %v", err)
 	}
 
-	// 空文字列が返されることを確認
+	// Verify empty string is returned
 	if content != "" {
-		t.Errorf("コンテンツ = %q; want %q", content, "")
+		t.Errorf("Content = %q; want %q", content, "")
 	}
 }
 
-// TestDetectFormat_Markdown はMarkdownファイルのフォーマット検出をテストする
+// TestDetectFormat_Markdown tests format detection for Markdown files
 func TestDetectFormat_Markdown(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -102,17 +102,17 @@ func TestDetectFormat_Markdown(t *testing.T) {
 		expected ContentFormat
 	}{
 		{
-			name:     ".md拡張子",
+			name:     ".md extension",
 			filePath: "test.md",
 			expected: FormatMarkdown,
 		},
 		{
-			name:     ".markdown拡張子",
+			name:     ".markdown extension",
 			filePath: "article.markdown",
 			expected: FormatMarkdown,
 		},
 		{
-			name:     "パス付き.md",
+			name:     ".md with path",
 			filePath: "/path/to/file.md",
 			expected: FormatMarkdown,
 		},
@@ -128,7 +128,7 @@ func TestDetectFormat_Markdown(t *testing.T) {
 	}
 }
 
-// TestDetectFormat_HTML はHTMLファイルのフォーマット検出をテストする
+// TestDetectFormat_HTML tests format detection for HTML files
 func TestDetectFormat_HTML(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -136,17 +136,17 @@ func TestDetectFormat_HTML(t *testing.T) {
 		expected ContentFormat
 	}{
 		{
-			name:     ".html拡張子",
+			name:     ".html extension",
 			filePath: "page.html",
 			expected: FormatHTML,
 		},
 		{
-			name:     ".htm拡張子",
+			name:     ".htm extension",
 			filePath: "index.htm",
 			expected: FormatHTML,
 		},
 		{
-			name:     "パス付き.html",
+			name:     ".html with path",
 			filePath: "/var/www/page.html",
 			expected: FormatHTML,
 		},
@@ -162,7 +162,7 @@ func TestDetectFormat_HTML(t *testing.T) {
 	}
 }
 
-// TestDetectFormat_Lexical はLexical JSONファイルのフォーマット検出をテストする
+// TestDetectFormat_Lexical tests format detection for Lexical JSON files
 func TestDetectFormat_Lexical(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -170,12 +170,12 @@ func TestDetectFormat_Lexical(t *testing.T) {
 		expected ContentFormat
 	}{
 		{
-			name:     ".json拡張子",
+			name:     ".json extension",
 			filePath: "content.json",
 			expected: FormatLexical,
 		},
 		{
-			name:     "パス付き.json",
+			name:     ".json with path",
 			filePath: "/data/lexical.json",
 			expected: FormatLexical,
 		},
@@ -191,7 +191,7 @@ func TestDetectFormat_Lexical(t *testing.T) {
 	}
 }
 
-// TestDetectFormat_Unknown は未知のファイル形式の検出をテストする
+// TestDetectFormat_Unknown tests detection of unknown file formats
 func TestDetectFormat_Unknown(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -199,17 +199,17 @@ func TestDetectFormat_Unknown(t *testing.T) {
 		expected ContentFormat
 	}{
 		{
-			name:     "拡張子なし",
+			name:     "no extension",
 			filePath: "noextension",
 			expected: FormatUnknown,
 		},
 		{
-			name:     ".txt拡張子",
+			name:     ".txt extension",
 			filePath: "text.txt",
 			expected: FormatUnknown,
 		},
 		{
-			name:     "空文字列",
+			name:     "empty string",
 			filePath: "",
 			expected: FormatUnknown,
 		},
@@ -225,23 +225,23 @@ func TestDetectFormat_Unknown(t *testing.T) {
 	}
 }
 
-// TestReadContentWithFormat_Markdown はMarkdownファイルの読み込みとフォーマット検出をテストする
+// TestReadContentWithFormat_Markdown tests reading and format detection for Markdown files
 func TestReadContentWithFormat_Markdown(t *testing.T) {
-	// 一時Markdownファイルを作成
+	// Create temporary Markdown file
 	tmpDir := t.TempDir()
 	tmpFile := filepath.Join(tmpDir, "test.md")
-	expectedContent := "# 見出し\n\nこれはMarkdownです。"
+	expectedContent := "# Heading\n\nThis is Markdown."
 	if err := os.WriteFile(tmpFile, []byte(expectedContent), 0644); err != nil {
-		t.Fatalf("一時ファイルの作成に失敗: %v", err)
+		t.Fatalf("Failed to create temporary file: %v", err)
 	}
 
-	// ファイルから読み込み、フォーマットを検出
+	// Read from file and detect format
 	content, format, err := ReadContentWithFormat(tmpFile, "")
 	if err != nil {
-		t.Fatalf("コンテンツの読み込みに失敗: %v", err)
+		t.Fatalf("Failed to read content: %v", err)
 	}
 
-	// コンテンツとフォーマットを検証
+	// Verify content and format
 	if content != expectedContent {
 		t.Errorf("content = %q; want %q", content, expectedContent)
 	}
@@ -250,23 +250,23 @@ func TestReadContentWithFormat_Markdown(t *testing.T) {
 	}
 }
 
-// TestReadContentWithFormat_HTML はHTMLファイルの読み込みとフォーマット検出をテストする
+// TestReadContentWithFormat_HTML tests reading and format detection for HTML files
 func TestReadContentWithFormat_HTML(t *testing.T) {
-	// 一時HTMLファイルを作成
+	// Create temporary HTML file
 	tmpDir := t.TempDir()
 	tmpFile := filepath.Join(tmpDir, "test.html")
-	expectedContent := "<h1>見出し</h1><p>これはHTMLです。</p>"
+	expectedContent := "<h1>Heading</h1><p>This is HTML.</p>"
 	if err := os.WriteFile(tmpFile, []byte(expectedContent), 0644); err != nil {
-		t.Fatalf("一時ファイルの作成に失敗: %v", err)
+		t.Fatalf("Failed to create temporary file: %v", err)
 	}
 
-	// ファイルから読み込み、フォーマットを検出
+	// Read from file and detect format
 	content, format, err := ReadContentWithFormat(tmpFile, "")
 	if err != nil {
-		t.Fatalf("コンテンツの読み込みに失敗: %v", err)
+		t.Fatalf("Failed to read content: %v", err)
 	}
 
-	// コンテンツとフォーマットを検証
+	// Verify content and format
 	if content != expectedContent {
 		t.Errorf("content = %q; want %q", content, expectedContent)
 	}
@@ -275,21 +275,21 @@ func TestReadContentWithFormat_HTML(t *testing.T) {
 	}
 }
 
-// TestReadContentWithFormat_InlineContent はインラインコンテンツの読み込みをテストする
+// TestReadContentWithFormat_InlineContent tests reading inline content
 func TestReadContentWithFormat_InlineContent(t *testing.T) {
-	expectedContent := "<p>インラインコンテンツ</p>"
+	expectedContent := "<p>Inline Content</p>"
 
-	// インラインコンテンツを読み込み
+	// Read inline content
 	content, format, err := ReadContentWithFormat("", expectedContent)
 	if err != nil {
-		t.Fatalf("コンテンツの読み込みに失敗: %v", err)
+		t.Fatalf("Failed to read content: %v", err)
 	}
 
-	// コンテンツとフォーマットを検証
+	// Verify content and format
 	if content != expectedContent {
 		t.Errorf("content = %q; want %q", content, expectedContent)
 	}
-	// インラインコンテンツの場合はフォーマット不明
+	// Format is unknown for inline content
 	if format != FormatUnknown {
 		t.Errorf("format = %q; want %q", format, FormatUnknown)
 	}

@@ -1,15 +1,15 @@
 /**
  * posts.go
- * Post用フィールド定義
+ * Post field definitions
  *
- * Ghost Admin APIのPost/Pageリソースの全フィールドを定義します。
+ * Defines all fields for Ghost Admin API Post/Page resources.
  */
 
 package fields
 
-// PostFields はPost/Page用のフィールドセットです
+// PostFields is the field set for Post/Page resources
 var PostFields = FieldSet{
-	// Default はlist用デフォルトフィールド（テーブル表示で使用）
+	// Default fields for list operations (used in table display)
 	Default: []string{
 		"id",
 		"title",
@@ -18,7 +18,7 @@ var PostFields = FieldSet{
 		"published_at",
 	},
 
-	// Detail はget用デフォルトフィールド（詳細表示で使用）
+	// Detail fields for get operations (used in detail display)
 	Detail: []string{
 		"id",
 		"uuid",
@@ -35,9 +35,9 @@ var PostFields = FieldSet{
 		"featured",
 	},
 
-	// All は全フィールド（Ghost Admin APIのPostリソースが持つ全フィールド）
+	// All fields (all fields available in Ghost Admin API Post resource)
 	All: []string{
-		// 基本情報
+		// Basic information
 		"id",
 		"uuid",
 		"title",
@@ -45,13 +45,13 @@ var PostFields = FieldSet{
 		"status",
 		"url",
 
-		// コンテンツ
+		// Content
 		"html",
 		"lexical",
 		"excerpt",
 		"custom_excerpt",
 
-		// 画像
+		// Images
 		"feature_image",
 		"feature_image_alt",
 		"feature_image_caption",
@@ -67,32 +67,32 @@ var PostFields = FieldSet{
 		"twitter_description",
 		"canonical_url",
 
-		// 日時
+		// Timestamps
 		"created_at",
 		"updated_at",
 		"published_at",
 
-		// 制御
+		// Control
 		"visibility",
 		"featured",
 		"email_only",
 
-		// カスタム
+		// Custom
 		"codeinjection_head",
 		"codeinjection_foot",
 		"custom_template",
 
-		// 関連
+		// Relations
 		"tags",
 		"authors",
 		"primary_author",
 		"primary_tag",
 
-		// その他
+		// Other
 		"comment_id",
 		"reading_time",
 
-		// メール・ニュースレター
+		// Email/Newsletter
 		"email_segment",
 		"newsletter_id",
 		"send_email_when_published",

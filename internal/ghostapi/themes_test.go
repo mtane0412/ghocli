@@ -1,6 +1,6 @@
 /**
  * themes_test.go
- * Themes APIのテストコード
+ * Test code for Themes API
  */
 
 package ghostapi
@@ -13,25 +13,25 @@ import (
 	"testing"
 )
 
-// TestListThemes_テーマ一覧の取得
-func TestListThemes_テーマ一覧の取得(t *testing.T) {
+// TestListThemes_RetrieveThemeList retrieves the list of themes
+func TestListThemes_RetrieveThemeList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/themes/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/themes/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/themes/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"themes": []map[string]interface{}{
 				{
@@ -64,75 +64,75 @@ func TestListThemes_テーマ一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// テーマ一覧を取得
+	// Retrieve theme list
 	resp, err := client.ListThemes()
 	if err != nil {
-		t.Fatalf("テーマ一覧取得エラー: %v", err)
+		t.Fatalf("Failed to retrieve theme list: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if len(resp.Themes) != 2 {
-		t.Errorf("テーマ数 = %d; want 2", len(resp.Themes))
+		t.Errorf("Number of themes = %d; want 2", len(resp.Themes))
 	}
 
-	// 1つ目のテーマを検証
+	// Verify first theme
 	firstTheme := resp.Themes[0]
 	if firstTheme.Name != "casper" {
-		t.Errorf("テーマ名 = %q; want %q", firstTheme.Name, "casper")
+		t.Errorf("Theme name = %q; want %q", firstTheme.Name, "casper")
 	}
 	if !firstTheme.Active {
-		t.Error("Activeフラグ = false; want true")
+		t.Error("Active flag = false; want true")
 	}
 	if firstTheme.Package == nil {
-		t.Fatal("Package情報がnil")
+		t.Fatal("Package information is nil")
 	}
 	if firstTheme.Package.Name != "casper" {
-		t.Errorf("Package名 = %q; want %q", firstTheme.Package.Name, "casper")
+		t.Errorf("Package name = %q; want %q", firstTheme.Package.Name, "casper")
 	}
 	if len(firstTheme.Templates) != 2 {
-		t.Errorf("テンプレート数 = %d; want 2", len(firstTheme.Templates))
+		t.Errorf("Number of templates = %d; want 2", len(firstTheme.Templates))
 	}
 }
 
-// TestUploadTheme_テーマのアップロード
-func TestUploadTheme_テーマのアップロード(t *testing.T) {
+// TestUploadTheme_UploadTheme uploads a theme
+func TestUploadTheme_UploadTheme(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/themes/upload/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/themes/upload/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/themes/upload/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// Content-Typeがmultipart/form-dataであることを確認
+		// Verify Content-Type is multipart/form-data
 		contentType := r.Header.Get("Content-Type")
 		if contentType == "" || len(contentType) < 19 || contentType[:19] != "multipart/form-data" {
 			t.Errorf("Content-Type = %q; want multipart/form-data", contentType)
 		}
 
-		// マルチパートフォームをパース
+		// Parse multipart form
 		if err := r.ParseMultipartForm(10 << 20); err != nil {
-			t.Fatalf("マルチパートフォームのパースエラー: %v", err)
+			t.Fatalf("Failed to parse multipart form: %v", err)
 		}
 
-		// ファイルが存在することを確認
+		// Verify file exists
 		_, fileHeader, err := r.FormFile("file")
 		if err != nil {
-			t.Fatalf("ファイル取得エラー: %v", err)
+			t.Fatalf("Failed to retrieve file: %v", err)
 		}
 		if fileHeader.Filename != "theme.zip" {
-			t.Errorf("ファイル名 = %q; want %q", fileHeader.Filename, "theme.zip")
+			t.Errorf("File name = %q; want %q", fileHeader.Filename, "theme.zip")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"themes": []map[string]interface{}{
 				{
@@ -153,51 +153,51 @@ func TestUploadTheme_テーマのアップロード(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ダミーのZIPファイルデータを作成
+	// Create dummy ZIP file data
 	fileData := []byte("dummy zip content")
 	reader := bytes.NewReader(fileData)
 
-	// テーマをアップロード
+	// Upload theme
 	theme, err := client.UploadTheme(reader, "theme.zip")
 	if err != nil {
-		t.Fatalf("テーマアップロードエラー: %v", err)
+		t.Fatalf("Failed to upload theme: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if theme.Name != "custom-theme" {
-		t.Errorf("テーマ名 = %q; want %q", theme.Name, "custom-theme")
+		t.Errorf("Theme name = %q; want %q", theme.Name, "custom-theme")
 	}
 	if theme.Active {
-		t.Error("Activeフラグ = true; want false")
+		t.Error("Active flag = true; want false")
 	}
 	if theme.Package == nil {
-		t.Fatal("Package情報がnil")
+		t.Fatal("Package information is nil")
 	}
 	if theme.Package.Version != "1.0.0" {
-		t.Errorf("バージョン = %q; want %q", theme.Package.Version, "1.0.0")
+		t.Errorf("Version = %q; want %q", theme.Package.Version, "1.0.0")
 	}
 }
 
-// TestActivateTheme_テーマの有効化
-func TestActivateTheme_テーマの有効化(t *testing.T) {
+// TestActivateTheme_ActivateTheme activates a theme
+func TestActivateTheme_ActivateTheme(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/themes/custom-theme/activate/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"themes": []map[string]interface{}{
 				{
@@ -217,54 +217,54 @@ func TestActivateTheme_テーマの有効化(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// テーマを有効化
+	// Activate theme
 	theme, err := client.ActivateTheme("custom-theme")
 	if err != nil {
-		t.Fatalf("テーマ有効化エラー: %v", err)
+		t.Fatalf("Failed to activate theme: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if theme.Name != "custom-theme" {
-		t.Errorf("テーマ名 = %q; want %q", theme.Name, "custom-theme")
+		t.Errorf("Theme name = %q; want %q", theme.Name, "custom-theme")
 	}
 	if !theme.Active {
-		t.Error("Activeフラグ = false; want true")
+		t.Error("Active flag = false; want true")
 	}
 }
 
-// TestDeleteTheme_テーマの削除
-func TestDeleteTheme_テーマの削除(t *testing.T) {
+// TestDeleteTheme_DeleteTheme deletes a theme
+func TestDeleteTheme_DeleteTheme(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/themes/custom-theme/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "DELETE" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "DELETE")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "DELETE")
 		}
 
-		// レスポンスを返す（204 No Content）
+		// Return response (204 No Content)
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// テーマを削除
+	// Delete theme
 	err = client.DeleteTheme("custom-theme")
 	if err != nil {
-		t.Fatalf("テーマ削除エラー: %v", err)
+		t.Fatalf("Failed to delete theme: %v", err)
 	}
 }

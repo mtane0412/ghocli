@@ -13,79 +13,79 @@ import (
 	"github.com/k3a/html2text"
 )
 
-// TestPostsInfoCmd_構造体が存在すること
+// TestPostsInfoCmd_StructExists verifies that PostsInfoCmd struct exists
 func TestPostsInfoCmd_StructExists(t *testing.T) {
 	// Verify that PostsInfoCmd is defined
 	_ = &PostsInfoCmd{}
 }
 
-// TestPostsDraftsCmd_構造体が存在すること
+// TestPostsDraftsCmd_StructExists verifies that PostsDraftsCmd struct exists
 func TestPostsDraftsCmd_StructExists(t *testing.T) {
 	// Verify that PostsDraftsCmd is defined
 	_ = &PostsDraftsCmd{}
 }
 
-// TestPostsPublishedCmd_構造体が存在すること
+// TestPostsPublishedCmd_StructExists verifies that PostsPublishedCmd struct exists
 func TestPostsPublishedCmd_StructExists(t *testing.T) {
 	// Verify that PostsPublishedCmd is defined
 	_ = &PostsPublishedCmd{}
 }
 
-// TestPostsScheduledCmd_構造体が存在すること
+// TestPostsScheduledCmd_StructExists verifies that PostsScheduledCmd struct exists
 func TestPostsScheduledCmd_StructExists(t *testing.T) {
 	// Verify that PostsScheduledCmd is defined
 	_ = &PostsScheduledCmd{}
 }
 
-// TestPostsURLCmd_構造体が存在すること
+// TestPostsURLCmd_StructExists verifies that PostsURLCmd struct exists
 func TestPostsURLCmd_StructExists(t *testing.T) {
 	// Verify that PostsURLCmd is defined
 	_ = &PostsURLCmd{}
 }
 
-// TestPostsUnpublishCmd_構造体が存在すること
+// TestPostsUnpublishCmd_StructExists verifies that PostsUnpublishCmd struct exists
 func TestPostsUnpublishCmd_StructExists(t *testing.T) {
 	// Verify that PostsUnpublishCmd is defined
 	_ = &PostsUnpublishCmd{}
 }
 
-// TestPostsScheduleCmd_構造体が存在すること
+// TestPostsScheduleCmd_StructExists verifies that PostsScheduleCmd struct exists
 func TestPostsScheduleCmd_StructExists(t *testing.T) {
 	// Verify that PostsScheduleCmd is defined
 	_ = &PostsScheduleCmd{}
 }
 
-// TestPostsBatchPublishCmd_構造体が存在すること
+// TestPostsBatchPublishCmd_StructExists verifies that PostsBatchPublishCmd struct exists
 func TestPostsBatchPublishCmd_StructExists(t *testing.T) {
 	// Verify that PostsBatchPublishCmd is defined
 	_ = &PostsBatchPublishCmd{}
 }
 
-// TestPostsBatchDeleteCmd_構造体が存在すること
+// TestPostsBatchDeleteCmd_StructExists verifies that PostsBatchDeleteCmd struct exists
 func TestPostsBatchDeleteCmd_StructExists(t *testing.T) {
 	// Verify that PostsBatchDeleteCmd is defined
 	_ = &PostsBatchDeleteCmd{}
 }
 
-// TestPostsSearchCmd_構造体が存在すること
+// TestPostsSearchCmd_StructExists verifies that PostsSearchCmd struct exists
 func TestPostsSearchCmd_StructExists(t *testing.T) {
 	// Verify that PostsSearchCmd is defined
 	_ = &PostsSearchCmd{}
 }
 
-// TestPostsCatCmd_構造体が存在すること
+// TestPostsCatCmd_StructExists verifies that PostsCatCmd struct exists
 func TestPostsCatCmd_StructExists(t *testing.T) {
 	// Verify that PostsCatCmd is defined
 	_ = &PostsCatCmd{}
 }
 
-// TestPostsCopyCmd_構造体が存在すること
+// TestPostsCopyCmd_StructExists verifies that PostsCopyCmd struct exists
 func TestPostsCopyCmd_StructExists(t *testing.T) {
 	// Verify that PostsCopyCmd is defined
 	_ = &PostsCopyCmd{}
 }
 
-// TestPostsCat_HTML2Text_シンプルなHTMLをテキストに変換できること
+// TestPostsCat_HTML2Text_SimpleHTMLToText verifies that simple HTML can be converted to text
 func TestPostsCat_HTML2Text_SimpleHTMLToText(t *testing.T) {
 	// Test case: simple paragraph tag
 	html := "<p>Hello</p>"
@@ -100,12 +100,12 @@ func TestPostsCat_HTML2Text_SimpleHTMLToText(t *testing.T) {
 	}
 }
 
-// TestPostsCat_HTML2Text_複数のタグを含むHTMLをテキストに変換できること
+// TestPostsCat_HTML2Text_MultipleTagsHTMLToText verifies that HTML with multiple tags can be converted to text
 func TestPostsCat_HTML2Text_MultipleTagsHTMLToText(t *testing.T) {
 	// Test case: heading and paragraph
-	html := "<h1>タイトル</h1><p>本文です。</p>"
-	// html2textは見出しと段落の間に改行を入れる（\r\n形式）
-	expected := "タイトル\r\n\r\n本文です。"
+	html := "<h1>Title</h1><p>This is the content.</p>"
+	// html2text inserts newlines between headings and paragraphs (\r\n format)
+	expected := "Title\r\n\r\nThis is the content."
 
 	// Execute HTML to text conversion
 	result := html2text.HTML2Text(html)
@@ -116,12 +116,12 @@ func TestPostsCat_HTML2Text_MultipleTagsHTMLToText(t *testing.T) {
 	}
 }
 
-// TestPostsCat_HTML2Text_リストを含むHTMLをテキストに変換できること
+// TestPostsCat_HTML2Text_ListHTMLToText verifies that HTML with lists can be converted to text
 func TestPostsCat_HTML2Text_ListHTMLToText(t *testing.T) {
 	// Test case: bullet list
-	html := "<ul><li>項目1</li><li>項目2</li></ul>"
+	html := "<ul><li>Item 1</li><li>Item 2</li></ul>"
 	// html2text formats lists with newline separators
-	expected := "\r\n項目1\r\n項目2\r\n"
+	expected := "\r\nItem 1\r\nItem 2\r\n"
 
 	// Execute HTML to text conversion
 	result := html2text.HTML2Text(html)
@@ -132,7 +132,7 @@ func TestPostsCat_HTML2Text_ListHTMLToText(t *testing.T) {
 	}
 }
 
-// TestPostsList_Fields対応 はpostsListCmd.Runがfieldsをサポートすることを確認します
+// TestPostsList_FieldsSupport verifies that postsListCmd.Run supports fields
 func TestPostsList_FieldsSupport(t *testing.T) {
 	// Verify that Fields can be set in RootFlags
 	root := &RootFlags{
@@ -145,14 +145,14 @@ func TestPostsList_FieldsSupport(t *testing.T) {
 	}
 }
 
-// TestPostsListCmd_フィールド一覧表示 はJSON単独時にフィールド一覧が表示されることを確認します
+// TestPostsListCmd_FieldListDisplay verifies that field list is displayed when JSON is used alone
 func TestPostsListCmd_FieldListDisplay(t *testing.T) {
 	// This test is used for verification after implementation
 	// Not implemented as unit test because it includes actual API calls
 	t.Skip("Implement in integration test")
 }
 
-// TestPostsInfoCmd_Fields対応 はPostsInfoCmdがfieldsをサポートすることを確認します
+// TestPostsInfoCmd_FieldsSupport verifies that PostsInfoCmd supports fields
 func TestPostsInfoCmd_FieldsSupport(t *testing.T) {
 	// Verify that Fields can be set in RootFlags
 	root := &RootFlags{
@@ -166,7 +166,7 @@ func TestPostsInfoCmd_FieldsSupport(t *testing.T) {
 	}
 }
 
-// TestPostsInfoCmd_フィールド一覧表示 はJSON単独時にフィールド一覧が表示されることを確認します
+// TestPostsInfoCmd_FieldListDisplay verifies that field list is displayed when JSON is used alone
 func TestPostsInfoCmd_FieldListDisplay(t *testing.T) {
 	// This test is used for verification after implementation
 	// Not implemented as unit test because it includes actual API calls

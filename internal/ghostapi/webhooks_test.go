@@ -1,6 +1,6 @@
 /**
  * webhooks_test.go
- * Webhooks APIのテストコード
+ * Test code for Webhooks API
  */
 
 package ghostapi
@@ -13,36 +13,36 @@ import (
 	"time"
 )
 
-// TestCreateWebhook_Webhookの作成
-func TestCreateWebhook_Webhookの作成(t *testing.T) {
+// TestCreateWebhook_CreateWebhook tests the creation of a webhook
+func TestCreateWebhook_CreateWebhook(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/webhooks/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/webhooks/")
+			t.Errorf("request path = %q; want %q", r.URL.Path, "/ghost/api/admin/webhooks/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify that Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースエラー: %v", err)
+			t.Fatalf("request body parse error: %v", err)
 		}
 
 		webhooks, ok := reqBody["webhooks"].([]interface{})
 		if !ok || len(webhooks) == 0 {
-			t.Error("リクエストボディに webhooks 配列が存在しない")
+			t.Error("webhooks array does not exist in request body")
 		}
 
-		// レスポンスを返す
+		// Return response
 		createdAt := time.Now().Format(time.RFC3339)
 		response := map[string]interface{}{
 			"webhooks": []map[string]interface{}{
@@ -68,13 +68,13 @@ func TestCreateWebhook_Webhookの作成(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// Webhookを作成
+	// Create webhook
 	webhook := &Webhook{
 		Event:     "post.published",
 		TargetURL: "https://example.com/webhook",
@@ -83,44 +83,44 @@ func TestCreateWebhook_Webhookの作成(t *testing.T) {
 
 	created, err := client.CreateWebhook(webhook)
 	if err != nil {
-		t.Fatalf("Webhook作成エラー: %v", err)
+		t.Fatalf("webhook creation error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if created.Event != "post.published" {
-		t.Errorf("イベント = %q; want %q", created.Event, "post.published")
+		t.Errorf("event = %q; want %q", created.Event, "post.published")
 	}
 	if created.TargetURL != "https://example.com/webhook" {
-		t.Errorf("ターゲットURL = %q; want %q", created.TargetURL, "https://example.com/webhook")
+		t.Errorf("target URL = %q; want %q", created.TargetURL, "https://example.com/webhook")
 	}
 	if created.ID == "" {
-		t.Error("Webhook IDが空")
+		t.Error("webhook ID is empty")
 	}
 	if created.Status != "available" {
-		t.Errorf("ステータス = %q; want %q", created.Status, "available")
+		t.Errorf("status = %q; want %q", created.Status, "available")
 	}
 }
 
-// TestUpdateWebhook_Webhookの更新
-func TestUpdateWebhook_Webhookの更新(t *testing.T) {
+// TestUpdateWebhook_UpdateWebhook tests the update of a webhook
+func TestUpdateWebhook_UpdateWebhook(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/webhooks/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースエラー: %v", err)
+			t.Fatalf("request body parse error: %v", err)
 		}
 
-		// レスポンスを返す
+		// Return response
 		updatedAt := time.Now().Format(time.RFC3339)
 		response := map[string]interface{}{
 			"webhooks": []map[string]interface{}{
@@ -145,13 +145,13 @@ func TestUpdateWebhook_Webhookの更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// Webhookを更新
+	// Update webhook
 	updateWebhook := &Webhook{
 		TargetURL: "https://example.com/webhook-updated",
 		Name:      "Updated webhook",
@@ -159,45 +159,45 @@ func TestUpdateWebhook_Webhookの更新(t *testing.T) {
 
 	updated, err := client.UpdateWebhook("64fac5417c4c6b0001234567", updateWebhook)
 	if err != nil {
-		t.Fatalf("Webhook更新エラー: %v", err)
+		t.Fatalf("webhook update error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if updated.TargetURL != "https://example.com/webhook-updated" {
-		t.Errorf("ターゲットURL = %q; want %q", updated.TargetURL, "https://example.com/webhook-updated")
+		t.Errorf("target URL = %q; want %q", updated.TargetURL, "https://example.com/webhook-updated")
 	}
 	if updated.Name != "Updated webhook" {
-		t.Errorf("名前 = %q; want %q", updated.Name, "Updated webhook")
+		t.Errorf("name = %q; want %q", updated.Name, "Updated webhook")
 	}
 }
 
-// TestDeleteWebhook_Webhookの削除
-func TestDeleteWebhook_Webhookの削除(t *testing.T) {
+// TestDeleteWebhook_DeleteWebhook tests the deletion of a webhook
+func TestDeleteWebhook_DeleteWebhook(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		expectedPath := "/ghost/api/admin/webhooks/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "DELETE" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "DELETE")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "DELETE")
 		}
 
-		// 204 No Content を返す
+		// Return 204 No Content
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// Webhookを削除
+	// Delete webhook
 	err = client.DeleteWebhook("64fac5417c4c6b0001234567")
 	if err != nil {
-		t.Fatalf("Webhook削除エラー: %v", err)
+		t.Fatalf("webhook deletion error: %v", err)
 	}
 }

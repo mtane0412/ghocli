@@ -1,9 +1,9 @@
 /**
  * jwt.go
- * Ghost Admin API用のJWT生成
+ * JWT generation for Ghost Admin API
  *
- * Ghost Admin APIはHS256アルゴリズムで署名されたJWTを要求します。
- * トークンの有効期限は5分です。
+ * Ghost Admin API requires JWT tokens signed with HS256 algorithm.
+ * Token expiration is 5 minutes.
  */
 
 package ghostapi
@@ -16,40 +16,40 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// GenerateJWT はGhost Admin API用のJWTトークンを生成します。
-// keyID: Admin APIキーのID部分
-// secret: Admin APIキーのシークレット部分
+// GenerateJWT generates a JWT token for Ghost Admin API.
+// keyID: ID part of the Admin API key
+// secret: Secret part of the Admin API key
 func GenerateJWT(keyID, secret string) (string, error) {
 	if keyID == "" {
-		return "", errors.New("キーIDが空です")
+		return "", errors.New("key ID is empty")
 	}
 	if secret == "" {
-		return "", errors.New("シークレットが空です")
+		return "", errors.New("secret is empty")
 	}
 
-	// 現在時刻（秒単位）
+	// Current time (in seconds)
 	now := time.Now().Unix()
 
-	// JWTクレームを設定
+	// Set JWT claims
 	claims := jwt.MapClaims{
-		"iat": now,           // 発行時刻
-		"exp": now + 5*60,    // 有効期限（5分後）
-		"aud": "/admin/",     // Ghost Admin APIのパス
+		"iat": now,           // Issued at
+		"exp": now + 5*60,    // Expiration (5 minutes later)
+		"aud": "/admin/",     // Ghost Admin API path
 	}
 
-	// トークンを作成
+	// Create token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// ヘッダーにキーIDを設定
+	// Set key ID in header
 	token.Header["kid"] = keyID
 
-	// シークレットを16進数からバイナリにデコード
+	// Decode secret from hex to binary
 	secretBytes, err := hex.DecodeString(secret)
 	if err != nil {
-		return "", errors.New("シークレットの16進数デコードに失敗しました")
+		return "", errors.New("failed to decode secret from hex")
 	}
 
-	// デコードしたシークレットで署名
+	// Sign with decoded secret
 	tokenString, err := token.SignedString(secretBytes)
 	if err != nil {
 		return "", err
