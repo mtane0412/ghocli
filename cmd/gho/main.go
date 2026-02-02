@@ -8,6 +8,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/mtane0412/ghocli/internal/cmd"
@@ -26,8 +27,9 @@ func main() {
 		Version: buildVersion(),
 	})
 
-	// エラーがあれば終了コードを設定して終了
+	// エラーがあればstderrに出力して終了コードを設定して終了
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(cmd.ExitCode(err))
 	}
 }
