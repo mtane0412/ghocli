@@ -212,9 +212,14 @@ gho posts cat <id> --format lexical # Display as Lexical JSON
 
 # Create & Update
 gho posts create --title "Title" --html "Content"
+gho posts create --title "Title" --markdown "# Heading\n\nContent"
+gho posts create --title "Title" --lexical '{"root":{"children":[...]}}'
+gho posts create --title "Title" --file article.md   # Auto-detect format (.md, .html, .json)
 gho posts create --title "New Post" --status draft
 gho posts update <id> --title "New Title"
 gho posts update <id> --html "New Content"
+gho posts update <id> --markdown "# Updated Content"
+gho posts update <id> --file updated.md
 gho posts copy <id-or-slug>     # Copy post as new draft
 gho posts copy <id> --title "Copy of Original"
 
@@ -240,7 +245,12 @@ gho pages list --status draft   # Filter by status
 gho pages info <id-or-slug>     # Get page details
 gho pages cat <id-or-slug>      # Display page content
 gho pages create --title "Title" --html "Content"
+gho pages create --title "Title" --markdown "# Page Content"
+gho pages create --title "Title" --lexical '{"root":{"children":[...]}}'
+gho pages create --title "Title" --file page.md      # Auto-detect format (.md, .html, .json)
 gho pages update <id> --title "New Title"
+gho pages update <id> --markdown "# Updated Content"
+gho pages update <id> --file updated.md
 gho pages delete <id>           # Delete page
 gho pages copy <id-or-slug>     # Copy page as new draft
 ```
