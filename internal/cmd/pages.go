@@ -15,6 +15,8 @@ import (
 	"github.com/k3a/html2text"
 	"github.com/mtane0412/ghocli/internal/fields"
 	"github.com/mtane0412/ghocli/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/input"
+	"github.com/mtane0412/ghocli/internal/markdown"
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
@@ -233,10 +235,12 @@ func (c *PagesInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PagesCreateCmd is the command to create ページ
 type PagesCreateCmd struct {
-	Title   string `help:"Page title" short:"t" required:""`
-	HTML    string `help:"Page content (HTML)" short:"c"`
-	Lexical string `help:"Page content (Lexical JSON)" short:"x"`
-	Status  string `help:"Page status (draft, published)" default:"draft"`
+	Title    string `help:"Page title" short:"t" required:""`
+	HTML     string `help:"Page content (HTML)" short:"c"`
+	Markdown string `help:"Page content (Markdown)" short:"m"`
+	Lexical  string `help:"Page content (Lexical JSON)" short:"x"`
+	File     string `help:"Read content from file (auto-detect format)" type:"existingfile"`
+	Status   string `help:"Page status (draft, published)" default:"draft"`
 }
 
 // Run executes the create subcommand of the pages command
@@ -247,15 +251,70 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
+	// コンテンツとフォーマットの決定
+	var htmlContent string
+	var format input.ContentFormat
+
+	// ファイル指定の場合はフォーマット自動検出
+	if c.File != "" {
+		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
+		if err != nil {
+			return fmt.Errorf("failed to read file: %w", err)
+		}
+		format = detectedFormat
+
+		// フォーマットに応じて処理
+		switch format {
+		case input.FormatMarkdown:
+			// Markdown→HTML変換
+			htmlContent, err = markdown.ConvertToHTML(fileContent)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		case input.FormatHTML:
+			// HTMLはそのまま使用
+			htmlContent = fileContent
+		case input.FormatLexical:
+			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			c.Lexical = fileContent
+		default:
+			// 不明な形式の場合はHTMLとして扱う
+			htmlContent = fileContent
+		}
+	} else {
+		// インラインコンテンツの処理
+		htmlContent = c.HTML
+
+		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		if c.Markdown != "" {
+			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		}
+	}
+
 	// Create new page
 	newPage := &ghostapi.Page{
 		Title:   c.Title,
-		HTML:    c.HTML,
+		HTML:    htmlContent,
 		Lexical: c.Lexical,
 		Status:  c.Status,
 	}
 
-	createdPage, err := client.CreatePage(newPage)
+	// HTMLコンテンツが指定されている場合は、自動的にsource=htmlを適用
+	var createdPage *ghostapi.Page
+	if htmlContent != "" && c.Lexical == "" {
+		// HTMLをサーバー側でLexical形式に変換
+		opts := ghostapi.CreateOptions{
+			Source: "html",
+		}
+		createdPage, err = client.CreatePageWithOptions(newPage, opts)
+	} else {
+		// Lexical形式またはコンテンツなしの場合は通常の作成
+		createdPage, err = client.CreatePage(newPage)
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to create page: %w", err)
 	}
@@ -278,11 +337,13 @@ func (c *PagesCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PagesUpdateCmd is the command to update ページ
 type PagesUpdateCmd struct {
-	ID      string `arg:"" help:"Page ID"`
-	Title   string `help:"Page title" short:"t"`
-	HTML    string `help:"Page content (HTML)" short:"c"`
-	Lexical string `help:"Page content (Lexical JSON)" short:"x"`
-	Status  string `help:"Page status (draft, published)"`
+	ID       string `arg:"" help:"Page ID"`
+	Title    string `help:"Page title" short:"t"`
+	HTML     string `help:"Page content (HTML)" short:"c"`
+	Markdown string `help:"Page content (Markdown)" short:"m"`
+	Lexical  string `help:"Page content (Lexical JSON)" short:"x"`
+	File     string `help:"Read content from file (auto-detect format)" type:"existingfile"`
+	Status   string `help:"Page status (draft, published)"`
 }
 
 // Run executes the update subcommand of the pages command
@@ -299,6 +360,49 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return fmt.Errorf("failed to get page: %w", err)
 	}
 
+	// コンテンツとフォーマットの決定
+	var htmlContent string
+	var format input.ContentFormat
+
+	// ファイル指定の場合はフォーマット自動検出
+	if c.File != "" {
+		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
+		if err != nil {
+			return fmt.Errorf("failed to read file: %w", err)
+		}
+		format = detectedFormat
+
+		// フォーマットに応じて処理
+		switch format {
+		case input.FormatMarkdown:
+			// Markdown→HTML変換
+			htmlContent, err = markdown.ConvertToHTML(fileContent)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		case input.FormatHTML:
+			// HTMLはそのまま使用
+			htmlContent = fileContent
+		case input.FormatLexical:
+			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			c.Lexical = fileContent
+		default:
+			// 不明な形式の場合はHTMLとして扱う
+			htmlContent = fileContent
+		}
+	} else {
+		// インラインコンテンツの処理
+		htmlContent = c.HTML
+
+		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		if c.Markdown != "" {
+			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		}
+	}
+
 	// Apply updates
 	updatePage := &ghostapi.Page{
 		Title:     existingPage.Title,
@@ -312,8 +416,8 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	if c.Title != "" {
 		updatePage.Title = c.Title
 	}
-	if c.HTML != "" {
-		updatePage.HTML = c.HTML
+	if htmlContent != "" {
+		updatePage.HTML = htmlContent
 	}
 	if c.Lexical != "" {
 		updatePage.Lexical = c.Lexical
@@ -322,8 +426,19 @@ func (c *PagesUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updatePage.Status = c.Status
 	}
 
-	// Update page
-	updatedPage, err := client.UpdatePage(c.ID, updatePage)
+	// HTMLコンテンツが更新される場合は、自動的にsource=htmlを適用
+	var updatedPage *ghostapi.Page
+	if htmlContent != "" && c.Lexical == "" {
+		// HTMLをサーバー側でLexical形式に変換
+		opts := ghostapi.CreateOptions{
+			Source: "html",
+		}
+		updatedPage, err = client.UpdatePageWithOptions(c.ID, updatePage, opts)
+	} else {
+		// Lexical形式またはHTMLの更新なしの場合は通常の更新
+		updatedPage, err = client.UpdatePage(c.ID, updatePage)
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to update page: %w", err)
 	}

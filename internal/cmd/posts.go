@@ -19,6 +19,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/fields"
 	"github.com/mtane0412/ghocli/internal/ghostapi"
 	"github.com/mtane0412/ghocli/internal/input"
+	"github.com/mtane0412/ghocli/internal/markdown"
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
@@ -237,11 +238,12 @@ func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PostsCreateCmd is the command to create 投稿
 type PostsCreateCmd struct {
-	Title   string `help:"Post title" short:"t" required:""`
-	HTML    string `help:"Post content (HTML)" short:"c"`
-	Lexical string `help:"Post content (Lexical JSON)" short:"x"`
-	File    string `help:"Read content from file" type:"existingfile"`
-	Status  string `help:"Post status (draft, published)" default:"draft"`
+	Title    string `help:"Post title" short:"t" required:""`
+	HTML     string `help:"Post content (HTML)" short:"c"`
+	Markdown string `help:"Post content (Markdown)" short:"m"`
+	Lexical  string `help:"Post content (Lexical JSON)" short:"x"`
+	File     string `help:"Read content from file (auto-detect format)" type:"existingfile"`
+	Status   string `help:"Post status (draft, published)" default:"draft"`
 }
 
 // Run executes the create subcommand of the posts command
@@ -252,16 +254,47 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// ファイルからHTMLコンテンツを読み込む（指定されている場合）
-	htmlContent := c.HTML
+	// コンテンツとフォーマットの決定
+	var htmlContent string
+	var format input.ContentFormat
+
+	// ファイル指定の場合はフォーマット自動検出
 	if c.File != "" {
-		// ファイルから読み込み
-		fileContent, err := input.ReadContent(c.File, "")
+		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
 		if err != nil {
 			return fmt.Errorf("failed to read file: %w", err)
 		}
-		// ファイルから読み込んだ内容をHTMLとして扱う
-		htmlContent = fileContent
+		format = detectedFormat
+
+		// フォーマットに応じて処理
+		switch format {
+		case input.FormatMarkdown:
+			// Markdown→HTML変換
+			htmlContent, err = markdown.ConvertToHTML(fileContent)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		case input.FormatHTML:
+			// HTMLはそのまま使用
+			htmlContent = fileContent
+		case input.FormatLexical:
+			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			c.Lexical = fileContent
+		default:
+			// 不明な形式の場合はHTMLとして扱う
+			htmlContent = fileContent
+		}
+	} else {
+		// インラインコンテンツの処理
+		htmlContent = c.HTML
+
+		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		if c.Markdown != "" {
+			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		}
 	}
 
 	// Create new post
@@ -307,12 +340,13 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 
 // PostsUpdateCmd is the command to update 投稿
 type PostsUpdateCmd struct {
-	ID      string `arg:"" help:"Post ID"`
-	Title   string `help:"Post title" short:"t"`
-	HTML    string `help:"Post content (HTML)" short:"c"`
-	Lexical string `help:"Post content (Lexical JSON)" short:"x"`
-	File    string `help:"Read content from file" type:"existingfile"`
-	Status  string `help:"Post status (draft, published)"`
+	ID       string `arg:"" help:"Post ID"`
+	Title    string `help:"Post title" short:"t"`
+	HTML     string `help:"Post content (HTML)" short:"c"`
+	Markdown string `help:"Post content (Markdown)" short:"m"`
+	Lexical  string `help:"Post content (Lexical JSON)" short:"x"`
+	File     string `help:"Read content from file (auto-detect format)" type:"existingfile"`
+	Status   string `help:"Post status (draft, published)"`
 }
 
 // Run executes the update subcommand of the posts command
@@ -329,16 +363,47 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// ファイルからHTMLコンテンツを読み込む（指定されている場合）
-	htmlContent := c.HTML
+	// コンテンツとフォーマットの決定
+	var htmlContent string
+	var format input.ContentFormat
+
+	// ファイル指定の場合はフォーマット自動検出
 	if c.File != "" {
-		// ファイルから読み込み
-		fileContent, err := input.ReadContent(c.File, "")
+		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
 		if err != nil {
 			return fmt.Errorf("failed to read file: %w", err)
 		}
-		// ファイルから読み込んだ内容をHTMLとして扱う
-		htmlContent = fileContent
+		format = detectedFormat
+
+		// フォーマットに応じて処理
+		switch format {
+		case input.FormatMarkdown:
+			// Markdown→HTML変換
+			htmlContent, err = markdown.ConvertToHTML(fileContent)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		case input.FormatHTML:
+			// HTMLはそのまま使用
+			htmlContent = fileContent
+		case input.FormatLexical:
+			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			c.Lexical = fileContent
+		default:
+			// 不明な形式の場合はHTMLとして扱う
+			htmlContent = fileContent
+		}
+	} else {
+		// インラインコンテンツの処理
+		htmlContent = c.HTML
+
+		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		if c.Markdown != "" {
+			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
+			if err != nil {
+				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
+			}
+		}
 	}
 
 	// Apply updates
