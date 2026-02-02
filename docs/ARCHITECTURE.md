@@ -14,11 +14,21 @@ gho/
 │   ├── cmd/                  # CLI command definitions
 │   │   ├── root.go          # CLI structure, RootFlags
 │   │   ├── auth.go          # Authentication commands
+│   │   ├── config.go        # Configuration commands
 │   │   ├── site.go          # Site information commands
-│   │   ├── posts.go         # Posts commands (Phase 2)
-│   │   ├── pages.go         # Pages commands (Phase 2)
-│   │   ├── tags.go          # Tags commands (Phase 3)
-│   │   └── images.go        # Images commands (Phase 3)
+│   │   ├── posts.go         # Posts management
+│   │   ├── pages.go         # Pages management
+│   │   ├── tags.go          # Tags management
+│   │   ├── members.go       # Members management
+│   │   ├── users.go         # Users management
+│   │   ├── newsletters.go   # Newsletters management
+│   │   ├── tiers.go         # Tiers management
+│   │   ├── offers.go        # Offers management
+│   │   ├── images.go        # Images management
+│   │   ├── themes.go        # Themes management
+│   │   ├── webhooks.go      # Webhooks management
+│   │   ├── settings.go      # Settings management
+│   │   └── completion.go    # Shell completion
 │   ├── config/              # Configuration file management
 │   │   ├── config.go
 │   │   └── config_test.go
@@ -27,22 +37,37 @@ gho/
 │   │   └── store_test.go
 │   ├── ghostapi/            # Ghost API client
 │   │   ├── client.go        # HTTP client + JWT generation
-│   │   ├── client_test.go
 │   │   ├── jwt.go           # JWT generation
-│   │   ├── jwt_test.go
-│   │   ├── posts.go         # Posts API (Phase 2)
-│   │   ├── posts_test.go
-│   │   ├── pages.go         # Pages API (Phase 2)
-│   │   ├── pages_test.go
-│   │   ├── tags.go          # Tags API (Phase 3)
-│   │   ├── tags_test.go
-│   │   ├── images.go        # Images API (Phase 3)
-│   │   └── images_test.go
+│   │   ├── posts.go         # Posts API
+│   │   ├── pages.go         # Pages API
+│   │   ├── tags.go          # Tags API
+│   │   ├── members.go       # Members API
+│   │   ├── users.go         # Users API
+│   │   ├── newsletters.go   # Newsletters API
+│   │   ├── tiers.go         # Tiers API
+│   │   ├── offers.go        # Offers API
+│   │   ├── images.go        # Images API
+│   │   ├── themes.go        # Themes API
+│   │   ├── webhooks.go      # Webhooks API
+│   │   └── settings.go      # Settings API
 │   ├── outfmt/              # Output formatting
 │   │   ├── outfmt.go
 │   │   └── outfmt_test.go
-│   └── errfmt/              # Error formatting (to be implemented)
+│   ├── errfmt/              # Error formatting
+│   │   ├── errfmt.go
+│   │   └── errfmt_test.go
+│   ├── fields/              # Field filtering
+│   │   ├── fields.go
+│   │   └── fields_test.go
+│   ├── input/               # User input handling
+│   │   ├── input.go
+│   │   └── input_test.go
+│   └── ui/                  # UI output
+│       ├── ui.go
+│       └── ui_test.go
 ├── docs/                    # Documentation
+│   ├── ARCHITECTURE.md
+│   └── DEVELOPMENT_GUIDE.md
 ├── go.mod
 ├── go.sum
 ├── Makefile
@@ -91,8 +116,11 @@ gho/
       Site    string // Site alias or URL
       JSON    bool   // Output in JSON format
       Plain   bool   // Output in TSV format
+      Fields  string // Fields to output (comma-separated)
       Force   bool   // Skip confirmation
+      NoInput bool   // Never prompt; fail instead
       Verbose bool   // Enable verbose logging
+      Color   string // Color output (auto, always, never)
   }
   ```
 
@@ -100,14 +128,26 @@ gho/
   ```go
   type CLI struct {
       RootFlags `embed:""`
-      Version   kong.VersionFlag
-      Auth      AuthCmd
-      Site      SiteCmd
-      Posts     PostsCmd
-      Pages     PagesCmd
-      Tags      TagsCmd
-      Images    ImagesCmd
-      // ...
+      Version   kong.VersionFlag `help:"Print version"`
+
+      Auth        AuthCmd        `cmd:"" help:"Authentication management"`
+      Config      ConfigCmd      `cmd:"" help:"Configuration management"`
+      Site        SiteCmd        `cmd:"" help:"Site information"`
+      Posts       PostsCmd       `cmd:"" aliases:"post,p" help:"Posts management"`
+      Pages       PagesCmd       `cmd:"" aliases:"page" help:"Pages management"`
+      Tags        TagsCmd        `cmd:"" aliases:"tag,t" help:"Tags management"`
+      Images      ImagesCmd      `cmd:"" aliases:"image,img" help:"Images management"`
+      Members     MembersCmd     `cmd:"" aliases:"member,m" help:"Members management"`
+      Users       UsersCmd       `cmd:"" aliases:"user,u" help:"Users management"`
+      Newsletters NewslettersCmd `cmd:"" aliases:"newsletter,nl" help:"Newsletters management"`
+      Tiers       TiersCmd       `cmd:"" aliases:"tier" help:"Tiers management"`
+      Offers      OffersCmd      `cmd:"" aliases:"offer" help:"Offers management"`
+      Themes      ThemesCmd      `cmd:"" aliases:"theme" help:"Themes management"`
+      Webhooks    WebhooksCmd    `cmd:"" aliases:"webhook,wh" help:"Webhooks management"`
+      Settings    SettingsCmd    `cmd:"" aliases:"setting" help:"Settings management"`
+
+      Completion         CompletionCmd         `cmd:"" help:"Generate shell completion script"`
+      CompletionInternal CompletionInternalCmd `cmd:"" name:"__complete" hidden:"" help:""`
   }
   ```
 

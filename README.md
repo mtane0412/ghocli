@@ -198,7 +198,7 @@ gho posts drafts                # List draft posts only
 gho posts url <url>             # Get post by URL
 
 # View
-gho posts info <id-or-slug>     # Get post details
+gho posts get <id-or-slug>      # Get post details
 gho posts cat <id-or-slug>      # Display post content
 gho posts cat <id> --format text    # Display as plain text
 gho posts cat <id> --format lexical # Display as Lexical JSON
@@ -221,9 +221,8 @@ gho posts delete <id>           # Delete post
 gho posts delete <id> --force   # Skip confirmation
 
 # Batch Operations
-gho posts batch create --file posts.json
-gho posts batch update --file updates.json
-gho posts batch delete --file ids.json
+gho posts batch publish <id1> <id2> ...
+gho posts batch delete <id1> <id2> ...
 ```
 
 ### Pages
@@ -635,9 +634,8 @@ gho applies these same principles to the Ghost Admin API, aiming to provide the 
 - `internal/config/` — Configuration management
 
 For more details:
-- [Project Status](./docs/PROJECT_STATUS.md)
-- [gogcli Alignment Status](./docs/gogcli-alignment-status.md)
-- [Implementation Guide](./docs/remaining-tasks-guide.md)
+- [Architecture Documentation](./docs/ARCHITECTURE.md)
+- [Development Guide](./docs/DEVELOPMENT_GUIDE.md)
 
 ## License
 
