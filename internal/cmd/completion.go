@@ -1,8 +1,8 @@
 /**
  * completion.go
- * シェル補完機能
+ * Shell completion functionality
  *
- * bash/zsh/fish/powershell用の補完スクリプトを生成します。
+ * Generates completion scripts for bash/zsh/fish/powershell.
  */
 
 package cmd
@@ -13,12 +13,12 @@ import (
 	"os"
 )
 
-// CompletionCmd はシェル補完スクリプトを生成するコマンドです
+// CompletionCmd is the command to generate shell completion scripts
 type CompletionCmd struct {
 	Shell string `arg:"" name:"shell" help:"Shell (bash|zsh|fish|powershell)" enum:"bash,zsh,fish,powershell"`
 }
 
-// Run はcompletionコマンドを実行します
+// Run executes the completion command
 func (c *CompletionCmd) Run(_ context.Context) error {
 	script, err := completionScript(c.Shell)
 	if err != nil {
@@ -28,13 +28,13 @@ func (c *CompletionCmd) Run(_ context.Context) error {
 	return err
 }
 
-// CompletionInternalCmd は補完候補を提供する隠しコマンドです
+// CompletionInternalCmd is a hidden command that provides completion candidates
 type CompletionInternalCmd struct {
 	Cword int      `name:"cword" help:"Index of the current word" default:"-1"`
 	Words []string `arg:"" optional:"" name:"words" help:"Words to complete"`
 }
 
-// Run は__completeコマンドを実行します
+// Run executes the __complete command
 func (c *CompletionInternalCmd) Run(_ context.Context) error {
 	items, err := completeWords(c.Cword, c.Words)
 	if err != nil {

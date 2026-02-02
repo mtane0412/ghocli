@@ -1,8 +1,8 @@
 /**
  * images.go
- * 画像管理コマンド
+ * Image management commands
  *
- * Ghost画像のアップロード機能を提供します。
+ * Provides functionality for uploading Ghost images.
  */
 
 package cmd
@@ -16,12 +16,12 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// ImagesCmd は画像管理コマンドです
+// ImagesCmd is the image management command
 type ImagesCmd struct {
 	Upload ImagesUploadCmd `cmd:"" help:"Upload an image"`
 }
 
-// ImagesUploadCmd is the command to upload 画像
+// ImagesUploadCmd is the command to upload image
 type ImagesUploadCmd struct {
 	File    string `arg:"" help:"Path to image file" type:"existingfile"`
 	Purpose string `help:"Image purpose (image, profile_image, icon)" short:"p" default:"image"`
@@ -66,7 +66,7 @@ func (c *ImagesUploadCmd) Run(ctx context.Context, root *RootFlags) error {
 		return formatter.Print(image)
 	}
 
-	// 成功メッセージと画像URLを表示
+	// Show success message and image URL
 	formatter.PrintMessage(fmt.Sprintf("uploaded image: %s", image.URL))
 
 	return nil

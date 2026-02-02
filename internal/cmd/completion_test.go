@@ -13,46 +13,46 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestCompletionScript_Bash はbashスクリプトが生成されることをテストします
+// TestCompletionScript_Bash verifies that bash script is generated
 func TestCompletionScript_Bash(t *testing.T) {
 	script, err := completionScript("bash")
-	require.NoError(t, err, "bashスクリプトの生成に成功するべき")
-	assert.Contains(t, script, "_gho_complete", "bashスクリプトに_gho_complete関数が含まれるべき")
-	assert.Contains(t, script, "gho __complete", "bashスクリプトにgho __completeコマンドが含まれるべき")
+	require.NoError(t, err, "bash script generation should succeed")
+	assert.Contains(t, script, "_gho_complete", "bash script should contain _gho_complete function")
+	assert.Contains(t, script, "gho __complete", "bash script should contain gho __complete command")
 }
 
-// TestCompletionScript_Zsh はzshスクリプトが生成されることをテストします
+// TestCompletionScript_Zsh verifies that zsh script is generated
 func TestCompletionScript_Zsh(t *testing.T) {
 	script, err := completionScript("zsh")
-	require.NoError(t, err, "zshスクリプトの生成に成功するべき")
-	assert.Contains(t, script, "#compdef gho", "zshスクリプトに#compdef ghoが含まれるべき")
-	assert.Contains(t, script, "_gho_complete", "zshスクリプトに_gho_complete関数が含まれるべき")
+	require.NoError(t, err, "zsh script generation should succeed")
+	assert.Contains(t, script, "#compdef gho", "zsh script should contain #compdef gho")
+	assert.Contains(t, script, "_gho_complete", "zsh script should contain _gho_complete function")
 }
 
-// TestCompletionScript_Fish はfishスクリプトが生成されることをテストします
+// TestCompletionScript_Fish verifies that fish script is generated
 func TestCompletionScript_Fish(t *testing.T) {
 	script, err := completionScript("fish")
-	require.NoError(t, err, "fishスクリプトの生成に成功するべき")
-	assert.Contains(t, script, "__gho_complete", "fishスクリプトに__gho_complete関数が含まれるべき")
-	assert.Contains(t, script, "gho __complete", "fishスクリプトにgho __completeコマンドが含まれるべき")
+	require.NoError(t, err, "fish script generation should succeed")
+	assert.Contains(t, script, "__gho_complete", "fish script should contain __gho_complete function")
+	assert.Contains(t, script, "gho __complete", "fish script should contain gho __complete command")
 }
 
-// TestCompletionScript_PowerShell はpowershellスクリプトが生成されることをテストします
+// TestCompletionScript_PowerShell verifies that powershell script is generated
 func TestCompletionScript_PowerShell(t *testing.T) {
 	script, err := completionScript("powershell")
-	require.NoError(t, err, "powershellスクリプトの生成に成功するべき")
-	assert.Contains(t, script, "Register-ArgumentCompleter", "powershellスクリプトにRegister-ArgumentCompleterが含まれるべき")
-	assert.Contains(t, script, "gho __complete", "powershellスクリプトにgho __completeコマンドが含まれるべき")
+	require.NoError(t, err, "powershell script generation should succeed")
+	assert.Contains(t, script, "Register-ArgumentCompleter", "powershell script should contain Register-ArgumentCompleter")
+	assert.Contains(t, script, "gho __complete", "powershell script should contain gho __complete command")
 }
 
-// TestCompletionScript_UnsupportedShell は未サポートのシェルでエラーを返すことをテストします
+// TestCompletionScript_UnsupportedShell verifies that an error is returned for unsupported shells
 func TestCompletionScript_UnsupportedShell(t *testing.T) {
 	_, err := completionScript("unsupported")
-	require.Error(t, err, "未サポートのシェルでエラーを返すべき")
-	assert.Contains(t, err.Error(), "unsupported shell", "エラーメッセージに'unsupported shell'が含まれるべき")
+	require.Error(t, err, "should return error for unsupported shell")
+	assert.Contains(t, err.Error(), "unsupported shell", "error message should contain 'unsupported shell'")
 }
 
-// TestCompleteWords_Commands はコマンド補完が動作することをテストします
+// TestCompleteWords_Commands verifies that command completion works
 func TestCompleteWords_Commands(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -62,21 +62,21 @@ func TestCompleteWords_Commands(t *testing.T) {
 		wantMany []string
 	}{
 		{
-			name:     "postsで始まるコマンドを補完",
+			name:     "complete command starting with posts",
 			words:    []string{"gho", "po"},
 			cword:    1,
 			wantOne:  "posts",
 			wantMany: nil,
 		},
 		{
-			name:     "pエイリアスも補完候補に含まれる",
+			name:     "p alias is also included in completion candidates",
 			words:    []string{"gho", "p"},
 			cword:    1,
 			wantOne:  "posts",
 			wantMany: []string{"posts", "pages"},
 		},
 		{
-			name:     "tagsで始まるコマンドを補完",
+			name:     "complete command starting with tags",
 			words:    []string{"gho", "ta"},
 			cword:    1,
 			wantOne:  "tags",
@@ -87,21 +87,21 @@ func TestCompleteWords_Commands(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			items, err := completeWords(tc.cword, tc.words)
-			require.NoError(t, err, "補完候補の取得に成功するべき")
+			require.NoError(t, err, "completion candidates retrieval should succeed")
 
 			if tc.wantOne != "" {
-				assert.Contains(t, items, tc.wantOne, "補完候補に%sが含まれるべき", tc.wantOne)
+				assert.Contains(t, items, tc.wantOne, "completion candidates should contain %s", tc.wantOne)
 			}
 			if tc.wantMany != nil {
 				for _, want := range tc.wantMany {
-					assert.Contains(t, items, want, "補完候補に%sが含まれるべき", want)
+					assert.Contains(t, items, want, "completion candidates should contain %s", want)
 				}
 			}
 		})
 	}
 }
 
-// TestCompleteWords_Flags はフラグ補完が動作することをテストします
+// TestCompleteWords_Flags verifies that flag completion works
 func TestCompleteWords_Flags(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -110,19 +110,19 @@ func TestCompleteWords_Flags(t *testing.T) {
 		wantFlag string
 	}{
 		{
-			name:     "--siteフラグを補完",
+			name:     "complete --site flag",
 			words:    []string{"gho", "--si"},
 			cword:    1,
 			wantFlag: "--site",
 		},
 		{
-			name:     "--jsonフラグを補完",
+			name:     "complete --json flag",
 			words:    []string{"gho", "--js"},
 			cword:    1,
 			wantFlag: "--json",
 		},
 		{
-			name:     "-sショートフラグを補完",
+			name:     "complete -s short flag",
 			words:    []string{"gho", "-s"},
 			cword:    1,
 			wantFlag: "-s",
@@ -132,13 +132,13 @@ func TestCompleteWords_Flags(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			items, err := completeWords(tc.cword, tc.words)
-			require.NoError(t, err, "補完候補の取得に成功するべき")
-			assert.Contains(t, items, tc.wantFlag, "補完候補に%sが含まれるべき", tc.wantFlag)
+			require.NoError(t, err, "completion candidates retrieval should succeed")
+			assert.Contains(t, items, tc.wantFlag, "completion candidates should contain %s", tc.wantFlag)
 		})
 	}
 }
 
-// TestCompleteWords_Subcommands はサブコマンド補完が動作することをテストします
+// TestCompleteWords_Subcommands verifies that subcommand completion works
 func TestCompleteWords_Subcommands(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -147,13 +147,13 @@ func TestCompleteWords_Subcommands(t *testing.T) {
 		wantCommand string
 	}{
 		{
-			name:        "posts listサブコマンドを補完",
+			name:        "complete posts list subcommand",
 			words:       []string{"gho", "posts", "li"},
 			cword:       2,
 			wantCommand: "list",
 		},
 		{
-			name:        "posts getサブコマンドを補完",
+			name:        "complete posts get subcommand",
 			words:       []string{"gho", "posts", "ge"},
 			cword:       2,
 			wantCommand: "get",
@@ -163,13 +163,13 @@ func TestCompleteWords_Subcommands(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			items, err := completeWords(tc.cword, tc.words)
-			require.NoError(t, err, "補完候補の取得に成功するべき")
-			assert.Contains(t, items, tc.wantCommand, "補完候補に%sが含まれるべき", tc.wantCommand)
+			require.NoError(t, err, "completion candidates retrieval should succeed")
+			assert.Contains(t, items, tc.wantCommand, "completion candidates should contain %s", tc.wantCommand)
 		})
 	}
 }
 
-// TestIsProgramName はプログラム名の判定をテストします
+// TestIsProgramName verifies program name detection
 func TestIsProgramName(t *testing.T) {
 	testCases := []struct {
 		name string
@@ -192,29 +192,29 @@ func TestIsProgramName(t *testing.T) {
 	}
 }
 
-// TestBuildCompletionNode はKongモデルから補完ノードを構築することをテストします
+// TestBuildCompletionNode verifies that completion node is built from Kong model
 func TestBuildCompletionNode(t *testing.T) {
-	// パーサーを作成
+	// Create parser
 	parser, _, err := newParser()
-	require.NoError(t, err, "パーサーの作成に成功するべき")
+	require.NoError(t, err, "parser creation should succeed")
 
-	// 補完ノードを構築
+	// Build completion node
 	root := buildCompletionNode(parser.Model.Node)
 
-	// トップレベルコマンドが含まれることを確認
-	assert.Contains(t, root.children, "posts", "postsコマンドが含まれるべき")
-	assert.Contains(t, root.children, "post", "postエイリアスが含まれるべき")
-	assert.Contains(t, root.children, "p", "pエイリアスが含まれるべき")
-	assert.Contains(t, root.children, "tags", "tagsコマンドが含まれるべき")
-	assert.Contains(t, root.children, "auth", "authコマンドが含まれるべき")
+	// Verify that top-level commands are included
+	assert.Contains(t, root.children, "posts", "should contain posts command")
+	assert.Contains(t, root.children, "post", "should contain post alias")
+	assert.Contains(t, root.children, "p", "should contain p alias")
+	assert.Contains(t, root.children, "tags", "should contain tags command")
+	assert.Contains(t, root.children, "auth", "should contain auth command")
 
-	// フラグが含まれることを確認
-	assert.Contains(t, root.flags, "--site", "--siteフラグが含まれるべき")
-	assert.Contains(t, root.flags, "-s", "-sショートフラグが含まれるべき")
-	assert.Contains(t, root.flags, "--json", "--jsonフラグが含まれるべき")
+	// Verify that flags are included
+	assert.Contains(t, root.flags, "--site", "should contain --site flag")
+	assert.Contains(t, root.flags, "-s", "should contain -s short flag")
+	assert.Contains(t, root.flags, "--json", "should contain --json flag")
 }
 
-// TestMatchingCommands はコマンドマッチングをテストします
+// TestMatchingCommands verifies command matching
 func TestMatchingCommands(t *testing.T) {
 	node := &completionNode{
 		children: map[string]*completionNode{
@@ -244,13 +244,13 @@ func TestMatchingCommands(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := matchingCommands(node, tc.prefix)
 			for _, want := range tc.want {
-				assert.Contains(t, got, want, "matchingCommands(%q)に%sが含まれるべき", tc.prefix, want)
+				assert.Contains(t, got, want, "matchingCommands(%q) should contain %s", tc.prefix, want)
 			}
 		})
 	}
 }
 
-// TestMatchingFlags はフラグマッチングをテストします
+// TestMatchingFlags verifies flag matching
 func TestMatchingFlags(t *testing.T) {
 	node := &completionNode{
 		flags: map[string]completionFlag{
@@ -278,13 +278,13 @@ func TestMatchingFlags(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := matchingFlags(node, tc.prefix)
 			for _, want := range tc.want {
-				assert.Contains(t, got, want, "matchingFlags(%q)に%sが含まれるべき", tc.prefix, want)
+				assert.Contains(t, got, want, "matchingFlags(%q) should contain %s", tc.prefix, want)
 			}
 		})
 	}
 }
 
-// TestSplitFlagToken はフラグトークンの分割をテストします
+// TestSplitFlagToken verifies flag token splitting
 func TestSplitFlagToken(t *testing.T) {
 	testCases := []struct {
 		name      string
@@ -307,35 +307,35 @@ func TestSplitFlagToken(t *testing.T) {
 	}
 }
 
-// TestCompletionInternalCmd_Run は__completeコマンドが動作することをテストします
+// TestCompletionInternalCmd_Run verifies that __complete command works
 func TestCompletionInternalCmd_Run(t *testing.T) {
-	// __completeは隠しコマンドのため、completeWords関数を直接テストする
+	// Since __complete is a hidden command, test the completeWords function directly
 	words := []string{"gho", "po"}
 	cword := 1
 
 	items, err := completeWords(cword, words)
-	require.NoError(t, err, "補完候補の取得に成功するべき")
-	assert.Contains(t, items, "posts", "補完候補にpostsが含まれるべき")
+	require.NoError(t, err, "completion candidates retrieval should succeed")
+	assert.Contains(t, items, "posts", "completion candidates should contain posts")
 }
 
-// TestCompletionCmd_Run はcompletionコマンドが動作することをテストします
+// TestCompletionCmd_Run verifies that completion command works
 func TestCompletionCmd_Run(t *testing.T) {
-	// このテストはactualの実行は難しいため、基本的なパース確認のみ
+	// This test only verifies basic parsing since actual execution is difficult
 	var cli CLI
 	parser, err := NewParserForTest(&cli)
 	require.NoError(t, err)
 
-	// completionコマンドがパースできることを確認
+	// Verify that completion command can be parsed
 	testCases := []string{"bash", "zsh", "fish", "powershell"}
 	for _, shell := range testCases {
 		t.Run(shell, func(t *testing.T) {
 			_, err = parser.Parse([]string{"completion", shell})
-			require.NoError(t, err, "completion %sコマンドがパースできるべき", shell)
+			require.NoError(t, err, "completion %s command should be parseable", shell)
 		})
 	}
 }
 
-// NewParserForTest はテスト用のパーサーを作成します
+// NewParserForTest creates a parser for testing
 func NewParserForTest(cli *CLI) (*kong.Kong, error) {
 	parser, err := kong.New(cli,
 		kong.Name("gho"),

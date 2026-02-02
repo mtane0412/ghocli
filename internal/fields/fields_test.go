@@ -1,8 +1,8 @@
 /**
  * fields_test.go
- * フィールド定義のテスト
+ * Tests for field definitions
  *
- * フィールドパーサーとバリデーション機能のテストを提供します。
+ * Provides tests for field parser and validation functionality.
  */
 
 package fields
@@ -12,134 +12,134 @@ import (
 	"testing"
 )
 
-// TestParse_正常系_カンマ区切り指定 はカンマ区切りフィールド指定をパースできることを確認します
-func TestParse_正常系_カンマ区切り指定(t *testing.T) {
-	// テストデータ：利用可能なフィールド
+// TestParse_Success_CommaSeparated verifies that comma-separated field specifications can be parsed
+func TestParse_Success_CommaSeparated(t *testing.T) {
+	// Test data: available fields
 	fieldSet := FieldSet{
 		Default: []string{"id", "title"},
 		Detail:  []string{"id", "title", "status", "html"},
 		All:     []string{"id", "title", "status", "html", "slug", "url"},
 	}
 
-	// フィールド指定をパース
+	// Parse field specification
 	result, err := Parse("id,title,status", fieldSet)
 	if err != nil {
-		t.Fatalf("パースに失敗: %v", err)
+		t.Fatalf("Parse failed: %v", err)
 	}
 
-	// 期待値
+	// Expected value
 	expected := []string{"id", "title", "status"}
 
-	// 結果を検証
+	// Verify result
 	if len(result) != len(expected) {
-		t.Errorf("結果の長さが不正: got=%d, want=%d", len(result), len(expected))
+		t.Errorf("Invalid result length: got=%d, want=%d", len(result), len(expected))
 	}
 	for i, field := range expected {
 		if result[i] != field {
-			t.Errorf("結果[%d]が不正: got=%s, want=%s", i, result[i], field)
+			t.Errorf("Invalid result[%d]: got=%s, want=%s", i, result[i], field)
 		}
 	}
 }
 
-// TestParse_正常系_all指定 は"all"指定で全フィールドを取得できることを確認します
-func TestParse_正常系_all指定(t *testing.T) {
-	// テストデータ
+// TestParse_Success_AllSpecification verifies that "all" specification returns all fields
+func TestParse_Success_AllSpecification(t *testing.T) {
+	// Test data
 	fieldSet := FieldSet{
 		Default: []string{"id", "title"},
 		Detail:  []string{"id", "title", "status"},
 		All:     []string{"id", "title", "status", "html", "slug"},
 	}
 
-	// "all"を指定
+	// Specify "all"
 	result, err := Parse("all", fieldSet)
 	if err != nil {
-		t.Fatalf("パースに失敗: %v", err)
+		t.Fatalf("Parse failed: %v", err)
 	}
 
-	// 全フィールドが返されることを確認
+	// Verify all fields are returned
 	if len(result) != len(fieldSet.All) {
-		t.Errorf("結果の長さが不正: got=%d, want=%d", len(result), len(fieldSet.All))
+		t.Errorf("Invalid result length: got=%d, want=%d", len(result), len(fieldSet.All))
 	}
 	for i, field := range fieldSet.All {
 		if result[i] != field {
-			t.Errorf("結果[%d]が不正: got=%s, want=%s", i, result[i], field)
+			t.Errorf("Invalid result[%d]: got=%s, want=%s", i, result[i], field)
 		}
 	}
 }
 
-// TestParse_異常系_無効なフィールド は無効なフィールド指定でエラーを返すことを確認します
-func TestParse_異常系_無効なフィールド(t *testing.T) {
-	// テストデータ
+// TestParse_Error_InvalidField verifies that an error is returned for invalid field specification
+func TestParse_Error_InvalidField(t *testing.T) {
+	// Test data
 	fieldSet := FieldSet{
 		Default: []string{"id", "title"},
 		Detail:  []string{"id", "title", "status"},
 		All:     []string{"id", "title", "status"},
 	}
 
-	// 無効なフィールドを指定
+	// Specify invalid field
 	_, err := Parse("id,invalid_field", fieldSet)
 	if err == nil {
-		t.Fatal("エラーが返されませんでした")
+		t.Fatal("No error was returned")
 	}
 
-	// エラーメッセージに"invalid_field"が含まれることを確認
+	// Verify error message contains "invalid_field"
 	if !strings.Contains(err.Error(), "invalid_field") {
-		t.Errorf("エラーメッセージに無効なフィールド名が含まれていません: %v", err)
+		t.Errorf("Error message does not contain invalid field name: %v", err)
 	}
 }
 
-// TestValidate_正常系 は有効なフィールドリストでエラーが返されないことを確認します
-func TestValidate_正常系(t *testing.T) {
-	// テストデータ
+// TestValidate_Success verifies that no error is returned for a valid field list
+func TestValidate_Success(t *testing.T) {
+	// Test data
 	available := []string{"id", "title", "status", "html"}
 	fields := []string{"id", "title"}
 
-	// バリデーション
+	// Validation
 	err := Validate(fields, available)
 	if err != nil {
-		t.Errorf("バリデーションエラー: %v", err)
+		t.Errorf("Validation error: %v", err)
 	}
 }
 
-// TestValidate_異常系_無効なフィールド は無効なフィールドでエラーを返すことを確認します
-func TestValidate_異常系_無効なフィールド(t *testing.T) {
-	// テストデータ
+// TestValidate_Error_InvalidField verifies that an error is returned for invalid fields
+func TestValidate_Error_InvalidField(t *testing.T) {
+	// Test data
 	available := []string{"id", "title", "status"}
 	fields := []string{"id", "invalid"}
 
-	// バリデーション
+	// Validation
 	err := Validate(fields, available)
 	if err == nil {
-		t.Fatal("エラーが返されませんでした")
+		t.Fatal("No error was returned")
 	}
 
-	// エラーメッセージに"invalid"が含まれることを確認
+	// Verify error message contains "invalid"
 	if !strings.Contains(err.Error(), "invalid") {
-		t.Errorf("エラーメッセージに無効なフィールド名が含まれていません: %v", err)
+		t.Errorf("Error message does not contain invalid field name: %v", err)
 	}
 }
 
-// TestListAvailable はフィールド一覧を文字列として取得できることを確認します
+// TestListAvailable verifies that the field list can be retrieved as a string
 func TestListAvailable(t *testing.T) {
-	// テストデータ
+	// Test data
 	fieldSet := FieldSet{
 		Default: []string{"id", "title"},
 		Detail:  []string{"id", "title", "status"},
 		All:     []string{"id", "title", "status", "html", "slug"},
 	}
 
-	// フィールド一覧を取得
+	// Get field list
 	result := ListAvailable(fieldSet)
 
-	// 結果が空でないことを確認
+	// Verify result is not empty
 	if result == "" {
-		t.Error("フィールド一覧が空です")
+		t.Error("Field list is empty")
 	}
 
-	// 全フィールドが含まれることを確認
+	// Verify all fields are included
 	for _, field := range fieldSet.All {
 		if !strings.Contains(result, field) {
-			t.Errorf("フィールド一覧に'%s'が含まれていません: %s", field, result)
+			t.Errorf("Field list does not contain '%s': %s", field, result)
 		}
 	}
 }

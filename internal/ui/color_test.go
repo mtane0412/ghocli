@@ -1,6 +1,6 @@
 /**
  * color_test.go
- * カラー出力機能のテスト
+ * Test code for color output functionality
  */
 
 package ui
@@ -12,36 +12,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestShouldUseColor_NeverMode はNeverモードでカラー出力が無効になることをテストします
+// TestShouldUseColor_NeverMode tests that color output is disabled in Never mode
 func TestShouldUseColor_NeverMode(t *testing.T) {
-	// Neverモードでは常にfalseを返すべき
-	assert.False(t, ShouldUseColor(ColorNever), "ColorNeverモードではfalseを返すべき")
+	// Should always return false in Never mode
+	assert.False(t, ShouldUseColor(ColorNever), "Should return false in ColorNever mode")
 }
 
-// TestShouldUseColor_AlwaysMode はAlwaysモードでカラー出力が有効になることをテストします
+// TestShouldUseColor_AlwaysMode tests that color output is enabled in Always mode
 func TestShouldUseColor_AlwaysMode(t *testing.T) {
-	// NO_COLOR環境変数がない場合、Alwaysモードでtrueを返すべき
+	// Should return true in Always mode when NO_COLOR environment variable is not set
 	os.Unsetenv("NO_COLOR")
-	assert.True(t, ShouldUseColor(ColorAlways), "ColorAlwaysモードではtrueを返すべき")
+	assert.True(t, ShouldUseColor(ColorAlways), "Should return true in ColorAlways mode")
 }
 
-// TestShouldUseColor_NO_COLOR はNO_COLOR環境変数が設定されている場合にカラー出力が無効になることをテストします
+// TestShouldUseColor_NO_COLOR tests that color output is disabled when NO_COLOR environment variable is set
 func TestShouldUseColor_NO_COLOR(t *testing.T) {
-	// NO_COLORSet environment variable
+	// Set NO_COLOR environment variable
 	os.Setenv("NO_COLOR", "1")
 	defer os.Unsetenv("NO_COLOR")
 
-	// NO_COLORが設定されている場合、Alwaysモードでもfalseを返すべき
-	assert.False(t, ShouldUseColor(ColorAlways), "NO_COLOR環境変数が設定されている場合、Alwaysモードでもfalseを返すべき")
+	// Should return false even in Always mode when NO_COLOR is set
+	assert.False(t, ShouldUseColor(ColorAlways), "Should return false even in Always mode when NO_COLOR environment variable is set")
 }
 
-// TestShouldUseColor_AutoMode はAutoモードでTTY判定が行われることをテストします
+// TestShouldUseColor_AutoMode tests that TTY detection is performed in Auto mode
 func TestShouldUseColor_AutoMode(t *testing.T) {
-	// NO_COLOR環境変数がない場合
+	// When NO_COLOR environment variable is not set
 	os.Unsetenv("NO_COLOR")
 
-	// Autoモードでは、TTY判定の結果を返す
-	// CIではTTYではないので、通常はfalseになる
-	// このテストでは、関数が呼び出せることのみ確認
+	// In Auto mode, returns the result of TTY detection
+	// In CI, it's not a TTY, so it usually returns false
+	// This test only verifies that the function can be called
 	_ = ShouldUseColor(ColorAuto)
 }

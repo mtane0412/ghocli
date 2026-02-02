@@ -1,9 +1,9 @@
 /**
  * users.go
- * ユーザー管理コマンド
+ * User management commands
  *
- * Ghostユーザー（サイト管理者・投稿者）の取得・更新機能を提供します。
- * ユーザーの作成・削除はGhostダッシュボードの招待機能を利用します。
+ * Provides functionality for retrieving and updating Ghost users (site administrators and contributors).
+ * User creation and deletion should be done using the Ghost dashboard's invitation feature.
  */
 
 package cmd
@@ -18,14 +18,14 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// UsersCmd はユーザー管理コマンドです
+// UsersCmd is the user management command
 type UsersCmd struct {
 	List   UsersListCmd   `cmd:"" help:"List users"`
 	Get    UsersInfoCmd   `cmd:"" help:"Show user information"`
 	Update UsersUpdateCmd `cmd:"" help:"Update a user"`
 }
 
-// UsersListCmd is the command to retrieve ユーザー list
+// UsersListCmd is the command to retrieve user list
 type UsersListCmd struct {
 	Limit   int    `help:"Number of users to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
@@ -102,7 +102,7 @@ func (c *UsersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// UsersInfoCmd is the command to show ユーザー information
+// UsersInfoCmd is the command to show user information
 type UsersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"User ID or slug (use 'slug:user-slug' format for slug)"`
 }
@@ -185,7 +185,7 @@ func (c *UsersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// UsersUpdateCmd is the command to update ユーザー
+// UsersUpdateCmd is the command to update user
 type UsersUpdateCmd struct {
 	ID       string `arg:"" help:"User ID"`
 	Name     string `help:"User name" short:"n"`

@@ -1,9 +1,9 @@
 /**
  * webhooks.go
- * Webhook管理コマンド
+ * Webhook management commands
  *
- * GhostのWebhookの作成、更新、削除機能を提供します。
- * 注意: Ghost APIはWebhookのList/Getをサポートしていません。
+ * Provides functionality for creating, updating, and deleting Ghost webhooks.
+ * Note: Ghost API does not support List/Get operations for webhooks.
  */
 
 package cmd
@@ -17,7 +17,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// WebhooksCmd はWebhook管理コマンドです
+// WebhooksCmd is the webhook management command
 type WebhooksCmd struct {
 	Create WebhooksCreateCmd `cmd:"" help:"Create a webhook"`
 	Update WebhooksUpdateCmd `cmd:"" help:"Update a webhook"`
@@ -140,7 +140,7 @@ func (c *WebhooksDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 
 	// Request confirmation unless skipping confirmation
 	if !root.Force {
-		fmt.Printf("本当にWebhook (ID: %s)を削除しますか? [y/N]: ", c.ID)
+		fmt.Printf("Are you sure you want to delete Webhook (ID: %s)? [y/N]: ", c.ID)
 		var response string
 		fmt.Scanln(&response)
 		if response != "y" && response != "Y" {

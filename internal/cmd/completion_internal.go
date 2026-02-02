@@ -1,8 +1,8 @@
 /**
  * completion_internal.go
- * 補完候補の生成ロジック
+ * Completion candidate generation logic
  *
- * Kongのパーサーモデルから動的に補完候補を生成します。
+ * Dynamically generates completion candidates from Kong's parser model.
  */
 
 package cmd
@@ -16,12 +16,12 @@ import (
 	"github.com/alecthomas/kong"
 )
 
-// completionFlag は補完用のフラグ情報です
+// completionFlag is flag information for completion
 type completionFlag struct {
 	takesValue bool
 }
 
-// completionNode は補完用のツリーノードです
+// completionNode is a tree node for completion
 type completionNode struct {
 	children map[string]*completionNode
 	flags    map[string]completionFlag
@@ -33,7 +33,7 @@ var (
 	completionRootErr  error
 )
 
-// completeWords は補完候補を返します
+// completeWords returns completion candidates
 func completeWords(cword int, words []string) ([]string, error) {
 	if len(words) == 0 {
 		return nil, nil
@@ -80,7 +80,7 @@ func completeWords(cword int, words []string) ([]string, error) {
 	return suggestions, nil
 }
 
-// completionRootNode は補完ツリーのルートノードを取得します
+// completionRootNode retrieves the root node of the completion tree
 func completionRootNode() (*completionNode, error) {
 	completionRootOnce.Do(func() {
 		parser, _, err := newParser()
@@ -93,7 +93,7 @@ func completionRootNode() (*completionNode, error) {
 	return completionRoot, completionRootErr
 }
 
-// newParser はgho用のKongパーサーを作成します
+// newParser creates a Kong parser for gho
 func newParser() (*kong.Kong, *CLI, error) {
 	cli := &CLI{}
 	parser, err := kong.New(cli,
@@ -106,7 +106,7 @@ func newParser() (*kong.Kong, *CLI, error) {
 	return parser, cli, nil
 }
 
-// normalizeCword は補完する単語のインデックスを正規化します
+// normalizeCword normalizes the index of the word to complete
 func normalizeCword(cword int, wordCount int) int {
 	if cword < 0 {
 		cword = wordCount - 1
@@ -120,7 +120,7 @@ func normalizeCword(cword int, wordCount int) int {
 	return cword
 }
 
-// completionStartIndex は補完を開始する単語のインデックスを返します
+// completionStartIndex returns the index of the word to start completion from
 func completionStartIndex(words []string) int {
 	if len(words) == 0 {
 		return 0
@@ -131,7 +131,7 @@ func completionStartIndex(words []string) int {
 	return 0
 }
 
-// advanceCompletionNode は補完ツリーを進めます
+// advanceCompletionNode advances through the completion tree
 func advanceCompletionNode(root *completionNode, words []string, start int, cword int) (*completionNode, int, bool) {
 	node := root
 	terminatorIndex := -1
@@ -168,7 +168,7 @@ func advanceCompletionNode(root *completionNode, words []string, start int, cwor
 	return node, terminatorIndex, false
 }
 
-// shouldStopAfterTerminator は"--"の後で補完を停止すべきか判定します
+// shouldStopAfterTerminator determines whether completion should stop after "--"
 func shouldStopAfterTerminator(terminatorIndex int, cword int, words []string) bool {
 	if terminatorIndex != -1 && cword >= terminatorIndex {
 		return true
@@ -179,7 +179,7 @@ func shouldStopAfterTerminator(terminatorIndex int, cword int, words []string) b
 	return false
 }
 
-// expectsFlagValue は現在の単語がフラグの値を期待しているか判定します
+// expectsFlagValue determines whether the current word expects a flag value
 func expectsFlagValue(node *completionNode, cword int, words []string, start int) bool {
 	if cword <= start || cword > len(words) {
 		return false
@@ -197,13 +197,13 @@ func expectsFlagValue(node *completionNode, cword int, words []string, start int
 	return false
 }
 
-// isProgramName はプログラム名かどうか判定します
+// isProgramName determines whether it is a program name
 func isProgramName(word string) bool {
 	base := filepath.Base(word)
 	return strings.EqualFold(base, "gho") || strings.EqualFold(base, "gho.exe")
 }
 
-// buildCompletionNode はKongモデルから補完ノードを構築します
+// buildCompletionNode builds a completion node from Kong model
 func buildCompletionNode(node *kong.Node) *completionNode {
 	current := &completionNode{
 		children: make(map[string]*completionNode),
@@ -234,7 +234,7 @@ func buildCompletionNode(node *kong.Node) *completionNode {
 	return current
 }
 
-// addFlagTokens はフラグのトークンを追加します
+// addFlagTokens adds flag tokens
 func addFlagTokens(flags map[string]completionFlag, flag *kong.Flag) {
 	takesValue := !flag.IsBool() && !flag.IsCounter()
 	addFlag(flags, "--"+flag.Name, takesValue)
@@ -249,7 +249,7 @@ func addFlagTokens(flags map[string]completionFlag, flag *kong.Flag) {
 	}
 }
 
-// negatedFlagName は否定形フラグ名を返します
+// negatedFlagName returns the negated flag name
 func negatedFlagName(flag *kong.Flag) string {
 	switch flag.Tag.Negatable {
 	case "":
@@ -261,7 +261,7 @@ func negatedFlagName(flag *kong.Flag) string {
 	}
 }
 
-// addFlag はフラグを追加します
+// addFlag adds a flag
 func addFlag(flags map[string]completionFlag, token string, takesValue bool) {
 	if token == "" {
 		return
@@ -272,7 +272,7 @@ func addFlag(flags map[string]completionFlag, token string, takesValue bool) {
 	flags[token] = completionFlag{takesValue: takesValue}
 }
 
-// splitFlagToken はフラグトークンを分割します（"--flag=value" -> "--flag", true）
+// splitFlagToken splits a flag token ("--flag=value" -> "--flag", true)
 func splitFlagToken(word string) (string, bool) {
 	if idx := strings.Index(word, "="); idx != -1 {
 		return word[:idx], true
@@ -280,7 +280,7 @@ func splitFlagToken(word string) (string, bool) {
 	return word, false
 }
 
-// matchingCommands はプレフィックスに一致するコマンドを返します
+// matchingCommands returns commands that match the prefix
 func matchingCommands(node *completionNode, prefix string) []string {
 	results := make([]string, 0, len(node.children))
 	for name := range node.children {
@@ -291,7 +291,7 @@ func matchingCommands(node *completionNode, prefix string) []string {
 	return results
 }
 
-// matchingFlags はプレフィックスに一致するフラグを返します
+// matchingFlags returns flags that match the prefix
 func matchingFlags(node *completionNode, prefix string) []string {
 	results := make([]string, 0, len(node.flags))
 	for name := range node.flags {

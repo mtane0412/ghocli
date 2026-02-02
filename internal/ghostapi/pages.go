@@ -169,13 +169,13 @@ func (c *Client) CreatePage(page *Page) (*Page, error) {
 
 // CreatePageWithOptions creates a new page with options
 //
-// 引数:
-//   - page: 作成するページのデータ
-//   - opts: 作成オプション（source="html"でHTML→Lexical変換）
+// Parameters:
+//   - page: Page data to create
+//   - opts: Creation options (source="html" converts HTML to Lexical)
 //
-// 戻り値:
-//   - *Page: 作成されたページ
-//   - error: エラー
+// Returns:
+//   - *Page: Created page
+//   - error: Error if any
 func (c *Client) CreatePageWithOptions(page *Page, opts CreateOptions) (*Page, error) {
 	path := "/ghost/api/admin/pages/"
 
@@ -226,14 +226,14 @@ func (c *Client) UpdatePage(id string, page *Page) (*Page, error) {
 
 // UpdatePageWithOptions updates a page with options
 //
-// 引数:
-//   - id: 更新するページのID
-//   - page: 更新するページのデータ
-//   - opts: 更新オプション（source="html"でHTML→Lexical変換）
+// Parameters:
+//   - id: ID of the page to update
+//   - page: Page data to update
+//   - opts: Update options (source="html" converts HTML to Lexical)
 //
-// 戻り値:
-//   - *Page: 更新されたページ
-//   - error: エラー
+// Returns:
+//   - *Page: Updated page
+//   - error: Error if any
 func (c *Client) UpdatePageWithOptions(id string, page *Page, opts CreateOptions) (*Page, error) {
 	path := fmt.Sprintf("/ghost/api/admin/pages/%s/", id)
 

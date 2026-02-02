@@ -1,6 +1,6 @@
 /**
  * tiers_test.go
- * Tiers APIのテストコード
+ * Test code for Tiers API
  */
 
 package ghostapi
@@ -12,31 +12,31 @@ import (
 	"testing"
 )
 
-// TestListTiers_ティア一覧の取得
-func TestListTiers_ティア一覧の取得(t *testing.T) {
+// TestListTiers_GetTierList tests fetching a list of tiers
+func TestListTiers_GetTierList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate the request
 		if r.URL.Path != "/ghost/api/admin/tiers/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/tiers/")
+			t.Errorf("request path = %q; want %q", r.URL.Path, "/ghost/api/admin/tiers/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify that Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"tiers": []map[string]interface{}{
 				{
 					"id":               "64fac5417c4c6b0001234567",
-					"name":             "無料会員",
-					"description":      "無料で記事を読めます",
+					"name":             "Free Member",
+					"description":      "Read articles for free",
 					"slug":             "free",
 					"active":           true,
 					"type":             "free",
@@ -47,8 +47,8 @@ func TestListTiers_ティア一覧の取得(t *testing.T) {
 				},
 				{
 					"id":               "64fac5417c4c6b0001234568",
-					"name":             "プレミアム会員",
-					"description":      "すべての記事にアクセス可能",
+					"name":             "Premium Member",
+					"description":      "Access to all articles",
 					"slug":             "premium",
 					"active":           true,
 					"type":             "paid",
@@ -76,54 +76,54 @@ func TestListTiers_ティア一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// ティア一覧を取得
+	// Get tier list
 	resp, err := client.ListTiers(TierListOptions{})
 	if err != nil {
-		t.Fatalf("ティア一覧取得エラー: %v", err)
+		t.Fatalf("tier list retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Validate response
 	if len(resp.Tiers) != 2 {
-		t.Errorf("ティア数 = %d; want 2", len(resp.Tiers))
+		t.Errorf("number of tiers = %d; want 2", len(resp.Tiers))
 	}
 
-	// 1つ目のティアを検証
+	// Validate first tier
 	firstTier := resp.Tiers[0]
-	if firstTier.Name != "無料会員" {
-		t.Errorf("ティア名 = %q; want %q", firstTier.Name, "無料会員")
+	if firstTier.Name != "Free Member" {
+		t.Errorf("tier name = %q; want %q", firstTier.Name, "Free Member")
 	}
 	if firstTier.Slug != "free" {
-		t.Errorf("スラッグ = %q; want %q", firstTier.Slug, "free")
+		t.Errorf("slug = %q; want %q", firstTier.Slug, "free")
 	}
 	if firstTier.Type != "free" {
-		t.Errorf("タイプ = %q; want %q", firstTier.Type, "free")
+		t.Errorf("type = %q; want %q", firstTier.Type, "free")
 	}
 }
 
-// TestListTiers_includeパラメータ
-func TestListTiers_includeパラメータ(t *testing.T) {
+// TestListTiers_IncludeParameter tests the include parameter
+func TestListTiers_IncludeParameter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Validate query parameters
 		if !r.URL.Query().Has("include") {
-			t.Error("includeパラメータが設定されていない")
+			t.Error("include parameter is not set")
 		}
 		if r.URL.Query().Get("include") != "monthly_price,yearly_price" {
-			t.Errorf("includeパラメータ = %q; want %q", r.URL.Query().Get("include"), "monthly_price,yearly_price")
+			t.Errorf("include parameter = %q; want %q", r.URL.Query().Get("include"), "monthly_price,yearly_price")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"tiers": []map[string]interface{}{
 				{
 					"id":            "64fac5417c4c6b0001234568",
-					"name":          "プレミアム会員",
+					"name":          "Premium Member",
 					"slug":          "premium",
 					"type":          "paid",
 					"active":        true,
@@ -150,46 +150,46 @@ func TestListTiers_includeパラメータ(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// ティア一覧を取得（monthly_price, yearly_priceを含む）
+	// Get tier list (including monthly_price, yearly_price)
 	resp, err := client.ListTiers(TierListOptions{
 		Include: "monthly_price,yearly_price",
 	})
 	if err != nil {
-		t.Fatalf("ティア一覧取得エラー: %v", err)
+		t.Fatalf("tier list retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Validate response
 	if len(resp.Tiers) != 1 {
-		t.Errorf("ティア数 = %d; want 1", len(resp.Tiers))
+		t.Errorf("number of tiers = %d; want 1", len(resp.Tiers))
 	}
 }
 
-// TestGetTier_IDでティアを取得
-func TestGetTier_IDでティアを取得(t *testing.T) {
+// TestGetTier_GetTierByID tests fetching a tier by ID
+func TestGetTier_GetTierByID(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate the request
 		expectedPath := "/ghost/api/admin/tiers/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"tiers": []map[string]interface{}{
 				{
 					"id":               "64fac5417c4c6b0001234567",
-					"name":             "無料会員",
-					"description":      "無料で記事を読めます",
+					"name":             "Free Member",
+					"description":      "Read articles for free",
 					"slug":             "free",
 					"active":           true,
 					"type":             "free",
@@ -206,47 +206,47 @@ func TestGetTier_IDでティアを取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// ティアを取得
+	// Get tier
 	tier, err := client.GetTier("64fac5417c4c6b0001234567")
 	if err != nil {
-		t.Fatalf("ティア取得エラー: %v", err)
+		t.Fatalf("tier retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
-	if tier.Name != "無料会員" {
-		t.Errorf("ティア名 = %q; want %q", tier.Name, "無料会員")
+	// Validate response
+	if tier.Name != "Free Member" {
+		t.Errorf("tier name = %q; want %q", tier.Name, "Free Member")
 	}
 	if tier.ID != "64fac5417c4c6b0001234567" {
-		t.Errorf("ティアID = %q; want %q", tier.ID, "64fac5417c4c6b0001234567")
+		t.Errorf("tier ID = %q; want %q", tier.ID, "64fac5417c4c6b0001234567")
 	}
 }
 
-// TestGetTier_スラッグでティアを取得
-func TestGetTier_スラッグでティアを取得(t *testing.T) {
+// TestGetTier_GetTierBySlug tests fetching a tier by slug
+func TestGetTier_GetTierBySlug(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate the request
 		expectedPath := "/ghost/api/admin/tiers/slug/free/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"tiers": []map[string]interface{}{
 				{
 					"id":               "64fac5417c4c6b0001234567",
-					"name":             "無料会員",
-					"description":      "無料で記事を読めます",
+					"name":             "Free Member",
+					"description":      "Read articles for free",
 					"slug":             "free",
 					"active":           true,
 					"type":             "free",
@@ -263,54 +263,54 @@ func TestGetTier_スラッグでティアを取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// ティアを取得
+	// Get tier
 	tier, err := client.GetTier("slug:free")
 	if err != nil {
-		t.Fatalf("ティア取得エラー: %v", err)
+		t.Fatalf("tier retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Validate response
 	if tier.Slug != "free" {
-		t.Errorf("スラッグ = %q; want %q", tier.Slug, "free")
+		t.Errorf("slug = %q; want %q", tier.Slug, "free")
 	}
 }
 
-// TestCreateTier_ティアの作成
-func TestCreateTier_ティアの作成(t *testing.T) {
+// TestCreateTier_CreateTier tests creating a tier
+func TestCreateTier_CreateTier(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate the request
 		if r.URL.Path != "/ghost/api/admin/tiers/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/tiers/")
+			t.Errorf("request path = %q; want %q", r.URL.Path, "/ghost/api/admin/tiers/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// リクエストボディを検証
+		// Validate request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+			t.Fatalf("failed to parse request body: %v", err)
 		}
 
 		tiers, ok := reqBody["tiers"].([]interface{})
 		if !ok || len(tiers) == 0 {
-			t.Error("tiersフィールドが正しくない")
+			t.Error("tiers field is incorrect")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"tiers": []map[string]interface{}{
 				{
 					"id":               "64fac5417c4c6b0001234569",
-					"name":             "新規プラン",
-					"description":      "テスト用プラン",
+					"name":             "New Plan",
+					"description":      "Test Plan",
 					"slug":             "new-plan",
 					"active":           true,
 					"type":             "paid",
@@ -330,16 +330,16 @@ func TestCreateTier_ティアの作成(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// ティアを作成
+	// Create tier
 	newTier := &Tier{
-		Name:           "新規プラン",
-		Description:    "テスト用プラン",
+		Name:           "New Plan",
+		Description:    "Test Plan",
 		Type:           "paid",
 		Visibility:     "public",
 		MonthlyPrice:   1000,
@@ -350,49 +350,49 @@ func TestCreateTier_ティアの作成(t *testing.T) {
 
 	createdTier, err := client.CreateTier(newTier)
 	if err != nil {
-		t.Fatalf("ティア作成エラー: %v", err)
+		t.Fatalf("tier creation error: %v", err)
 	}
 
-	// レスポンスの検証
-	if createdTier.Name != "新規プラン" {
-		t.Errorf("ティア名 = %q; want %q", createdTier.Name, "新規プラン")
+	// Validate response
+	if createdTier.Name != "New Plan" {
+		t.Errorf("tier name = %q; want %q", createdTier.Name, "New Plan")
 	}
 	if createdTier.ID == "" {
-		t.Error("ティアIDが設定されていない")
+		t.Error("tier ID is not set")
 	}
 }
 
-// TestUpdateTier_ティアの更新
-func TestUpdateTier_ティアの更新(t *testing.T) {
+// TestUpdateTier_UpdateTier tests updating a tier
+func TestUpdateTier_UpdateTier(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Validate the request
 		expectedPath := "/ghost/api/admin/tiers/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディを検証
+		// Validate request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+			t.Fatalf("failed to parse request body: %v", err)
 		}
 
 		tiers, ok := reqBody["tiers"].([]interface{})
 		if !ok || len(tiers) == 0 {
-			t.Error("tiersフィールドが正しくない")
+			t.Error("tiers field is incorrect")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"tiers": []map[string]interface{}{
 				{
 					"id":               "64fac5417c4c6b0001234567",
-					"name":             "更新されたプラン",
-					"description":      "更新後の説明",
+					"name":             "Updated Plan",
+					"description":      "Updated description",
 					"slug":             "premium",
 					"active":           true,
 					"type":             "paid",
@@ -412,16 +412,16 @@ func TestUpdateTier_ティアの更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("client creation error: %v", err)
 	}
 
-	// ティアを更新
+	// Update tier
 	updateTier := &Tier{
-		Name:           "更新されたプラン",
-		Description:    "更新後の説明",
+		Name:           "Updated Plan",
+		Description:    "Updated description",
 		MonthlyPrice:   1500,
 		YearlyPrice:    15000,
 		WelcomePageURL: "/updated-welcome",
@@ -429,14 +429,14 @@ func TestUpdateTier_ティアの更新(t *testing.T) {
 
 	updatedTier, err := client.UpdateTier("64fac5417c4c6b0001234567", updateTier)
 	if err != nil {
-		t.Fatalf("ティア更新エラー: %v", err)
+		t.Fatalf("tier update error: %v", err)
 	}
 
-	// レスポンスの検証
-	if updatedTier.Name != "更新されたプラン" {
-		t.Errorf("ティア名 = %q; want %q", updatedTier.Name, "更新されたプラン")
+	// Validate response
+	if updatedTier.Name != "Updated Plan" {
+		t.Errorf("tier name = %q; want %q", updatedTier.Name, "Updated Plan")
 	}
-	if updatedTier.Description != "更新後の説明" {
-		t.Errorf("説明 = %q; want %q", updatedTier.Description, "更新後の説明")
+	if updatedTier.Description != "Updated description" {
+		t.Errorf("description = %q; want %q", updatedTier.Description, "Updated description")
 	}
 }

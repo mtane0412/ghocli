@@ -1,8 +1,8 @@
 /**
  * tags.go
- * タグ管理コマンド
+ * Tag management commands
  *
- * Ghostタグの作成、更新、削除機能を提供します。
+ * Provides functionality for creating, updating, and deleting Ghost tags.
  */
 
 package cmd
@@ -17,7 +17,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// TagsCmd はタグ管理コマンドです
+// TagsCmd is the tag management command
 type TagsCmd struct {
 	List   TagsListCmd   `cmd:"" help:"List tags"`
 	Get    TagsInfoCmd   `cmd:"" help:"Show tag information"`
@@ -26,7 +26,7 @@ type TagsCmd struct {
 	Delete TagsDeleteCmd `cmd:"" help:"Delete a tag"`
 }
 
-// TagsListCmd is the command to retrieve タグ list
+// TagsListCmd is the command to retrieve tag list
 type TagsListCmd struct {
 	Limit   int    `help:"Number of tags to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
@@ -101,7 +101,7 @@ func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TagsInfoCmd is the command to show タグ information
+// TagsInfoCmd is the command to show tag information
 type TagsInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Tag ID or slug (use 'slug:tag-name' format for slug)"`
 }
@@ -168,7 +168,7 @@ func (c *TagsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// TagsCreateCmd is the command to create タグ
+// TagsCreateCmd is the command to create tag
 type TagsCreateCmd struct {
 	Name        string `help:"Tag name" short:"n" required:""`
 	Description string `help:"Tag description" short:"d"`
@@ -211,7 +211,7 @@ func (c *TagsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// TagsUpdateCmd is the command to update タグ
+// TagsUpdateCmd is the command to update tag
 type TagsUpdateCmd struct {
 	ID          string `arg:"" help:"Tag ID"`
 	Name        string `help:"Tag name" short:"n"`
@@ -273,7 +273,7 @@ func (c *TagsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// TagsDeleteCmd is the command to delete タグ
+// TagsDeleteCmd is the command to delete tag
 type TagsDeleteCmd struct {
 	ID string `arg:"" help:"Tag ID"`
 }

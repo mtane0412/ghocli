@@ -1,15 +1,15 @@
 /**
  * tags.go
- * Tag用フィールド定義
+ * Tag field definitions
  *
- * Ghost Admin APIのTagリソースの全フィールドを定義します。
+ * Defines all fields for Ghost Admin API Tag resources.
  */
 
 package fields
 
-// TagFields はTag用のフィールドセットです
+// TagFields is the field set for Tag resources
 var TagFields = FieldSet{
-	// Default はlist用デフォルトフィールド（テーブル表示で使用）
+	// Default fields for list operations (used in table display)
 	Default: []string{
 		"id",
 		"name",
@@ -18,7 +18,7 @@ var TagFields = FieldSet{
 		"created_at",
 	},
 
-	// Detail はget用デフォルトフィールド（詳細表示で使用）
+	// Detail fields for get operations (used in detail display)
 	Detail: []string{
 		"id",
 		"name",
@@ -29,7 +29,7 @@ var TagFields = FieldSet{
 		"updated_at",
 	},
 
-	// All は全フィールド（Ghost Admin APIのTagリソースが持つ全フィールド）
+	// All fields (all fields available in Ghost Admin API Tag resource)
 	All: []string{
 		"id",
 		"name",

@@ -1,6 +1,6 @@
 /**
  * client_test.go
- * Ghost Admin APIクライアントのテストコード
+ * Test code for Ghost Admin API client
  */
 
 package ghostapi
@@ -12,19 +12,19 @@ import (
 	"testing"
 )
 
-// TestNewClient_クライアントの作成
-func TestNewClient_クライアントの作成(t *testing.T) {
+// TestNewClient_CreateClient creates a client
+func TestNewClient_CreateClient(t *testing.T) {
 	keyID := "64fac5417c4c6b0001234567"
 	secret := "89abcdef01234567890123456789abcd01234567890123456789abcdef0123"
 	siteURL := "https://test.ghost.io"
 
 	client, err := NewClient(siteURL, keyID, secret)
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
 	if client == nil {
-		t.Fatal("クライアントがnilです")
+		t.Fatal("Client is nil")
 	}
 
 	if client.baseURL != siteURL {
@@ -32,33 +32,33 @@ func TestNewClient_クライアントの作成(t *testing.T) {
 	}
 }
 
-// TestNewClient_無効なURLでエラー
-func TestNewClient_無効なURLでエラー(t *testing.T) {
+// TestNewClient_ErrorWithInvalidURL tests error with invalid URL
+func TestNewClient_ErrorWithInvalidURL(t *testing.T) {
 	_, err := NewClient("", "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err == nil {
-		t.Error("空のURLでエラーが返されなかった")
+		t.Error("No error returned with empty URL")
 	}
 }
 
-// TestGetSite_サイト情報の取得
-func TestGetSite_サイト情報の取得(t *testing.T) {
+// TestGetSite_RetrieveSiteInformation retrieves site information
+func TestGetSite_RetrieveSiteInformation(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/site/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/site/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/site/")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 		if len(auth) < 6 || auth[:6] != "Ghost " {
-			t.Errorf("Authorizationヘッダーが不正: %s", auth)
+			t.Errorf("Authorization header is invalid: %s", auth)
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"site": map[string]interface{}{
 				"title":       "Test Blog",
@@ -72,19 +72,19 @@ func TestGetSite_サイト情報の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// サイト情報を取得
+	// Retrieve site information
 	site, err := client.GetSite()
 	if err != nil {
-		t.Fatalf("サイト情報の取得に失敗: %v", err)
+		t.Fatalf("Failed to retrieve site information: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if site.Title != "Test Blog" {
 		t.Errorf("Title = %q; want %q", site.Title, "Test Blog")
 	}
@@ -99,9 +99,9 @@ func TestGetSite_サイト情報の取得(t *testing.T) {
 	}
 }
 
-// TestGetSite_APIエラー
-func TestGetSite_APIエラー(t *testing.T) {
-	// エラーを返すHTTPサーバーを作成
+// TestGetSite_APIError tests API error
+func TestGetSite_APIError(t *testing.T) {
+	// Create HTTP server that returns error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		response := map[string]interface{}{
@@ -116,44 +116,44 @@ func TestGetSite_APIエラー(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "invalid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// サイト情報を取得（エラーが返されることを期待）
+	// Retrieve site information (expect error)
 	_, err = client.GetSite()
 	if err == nil {
 		t.Error("expected error but got nil")
 	}
 }
 
-// TestDoRequestWithOptions_日本語を含むクエリパラメータがエンコードされる
-func TestDoRequestWithOptions_日本語を含むクエリパラメータがエンコードされる(t *testing.T) {
-	// HTTPサーバーを作成
+// TestDoRequestWithOptions_QueryParamsWithJapaneseAreEncoded tests Japanese query parameters are encoded
+func TestDoRequestWithOptions_QueryParamsWithJapaneseAreEncoded(t *testing.T) {
+	// Create HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		query := r.URL.Query()
 		title := query.Get("title")
 		if title != "テスト投稿" {
 			t.Errorf("title = %q; want %q", title, "テスト投稿")
 		}
 
-		// レスポンスを返す
+		// Return response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// クエリパラメータ付きでリクエスト実行
+	// Execute request with query parameters
 	opts := &RequestOptions{
 		QueryParams: map[string]string{
 			"title": "テスト投稿",
@@ -161,35 +161,35 @@ func TestDoRequestWithOptions_日本語を含むクエリパラメータがエ�
 	}
 	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
 	if err != nil {
-		t.Fatalf("リクエスト実行に失敗: %v", err)
+		t.Fatalf("Failed to execute request: %v", err)
 	}
 }
 
-// TestDoRequestWithOptions_アンパサンドを含むクエリパラメータがエンコードされる
-func TestDoRequestWithOptions_アンパサンドを含むクエリパラメータがエンコードされる(t *testing.T) {
-	// HTTPサーバーを作成
+// TestDoRequestWithOptions_QueryParamsWithAmpersandAreEncoded tests ampersand query parameters are encoded
+func TestDoRequestWithOptions_QueryParamsWithAmpersandAreEncoded(t *testing.T) {
+	// Create HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		query := r.URL.Query()
 		value := query.Get("value")
 		if value != "foo&bar" {
 			t.Errorf("value = %q; want %q", value, "foo&bar")
 		}
 
-		// レスポンスを返す
+		// Return response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// クエリパラメータ付きでリクエスト実行
+	// Execute request with query parameters
 	opts := &RequestOptions{
 		QueryParams: map[string]string{
 			"value": "foo&bar",
@@ -197,35 +197,35 @@ func TestDoRequestWithOptions_アンパサンドを含むクエリパラメー�
 	}
 	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
 	if err != nil {
-		t.Fatalf("リクエスト実行に失敗: %v", err)
+		t.Fatalf("Failed to execute request: %v", err)
 	}
 }
 
-// TestDoRequestWithOptions_イコールを含むクエリパラメータがエンコードされる
-func TestDoRequestWithOptions_イコールを含むクエリパラメータがエンコードされる(t *testing.T) {
-	// HTTPサーバーを作成
+// TestDoRequestWithOptions_QueryParamsWithEqualsAreEncoded tests equals query parameters are encoded
+func TestDoRequestWithOptions_QueryParamsWithEqualsAreEncoded(t *testing.T) {
+	// Create HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		query := r.URL.Query()
 		value := query.Get("value")
 		if value != "foo=bar" {
 			t.Errorf("value = %q; want %q", value, "foo=bar")
 		}
 
-		// レスポンスを返す
+		// Return response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// クエリパラメータ付きでリクエスト実行
+	// Execute request with query parameters
 	opts := &RequestOptions{
 		QueryParams: map[string]string{
 			"value": "foo=bar",
@@ -233,35 +233,35 @@ func TestDoRequestWithOptions_イコールを含むクエリパラメータが�
 	}
 	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
 	if err != nil {
-		t.Fatalf("リクエスト実行に失敗: %v", err)
+		t.Fatalf("Failed to execute request: %v", err)
 	}
 }
 
-// TestDoRequestWithOptions_スペースを含むクエリパラメータがエンコードされる
-func TestDoRequestWithOptions_スペースを含むクエリパラメータがエンコードされる(t *testing.T) {
-	// HTTPサーバーを作成
+// TestDoRequestWithOptions_QueryParamsWithSpaceAreEncoded tests space query parameters are encoded
+func TestDoRequestWithOptions_QueryParamsWithSpaceAreEncoded(t *testing.T) {
+	// Create HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		query := r.URL.Query()
 		value := query.Get("value")
 		if value != "foo bar" {
 			t.Errorf("value = %q; want %q", value, "foo bar")
 		}
 
-		// レスポンスを返す
+		// Return response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// クエリパラメータ付きでリクエスト実行
+	// Execute request with query parameters
 	opts := &RequestOptions{
 		QueryParams: map[string]string{
 			"value": "foo bar",
@@ -269,47 +269,47 @@ func TestDoRequestWithOptions_スペースを含むクエリパラメータが�
 	}
 	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
 	if err != nil {
-		t.Fatalf("リクエスト実行に失敗: %v", err)
+		t.Fatalf("Failed to execute request: %v", err)
 	}
 }
 
-// TestDoRequestWithOptions_複数のクエリパラメータがエンコードされる
-func TestDoRequestWithOptions_複数のクエリパラメータがエンコードされる(t *testing.T) {
-	// HTTPサーバーを作成
+// TestDoRequestWithOptions_MultipleQueryParamsAreEncoded tests multiple query parameters are encoded
+func TestDoRequestWithOptions_MultipleQueryParamsAreEncoded(t *testing.T) {
+	// Create HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		query := r.URL.Query()
 		name := query.Get("name")
 		value := query.Get("value")
-		if name != "山田太郎" {
-			t.Errorf("name = %q; want %q", name, "山田太郎")
+		if name != "John Doe" {
+			t.Errorf("name = %q; want %q", name, "John Doe")
 		}
 		if value != "foo&bar=baz" {
 			t.Errorf("value = %q; want %q", value, "foo&bar=baz")
 		}
 
-		// レスポンスを返す
+		// Return response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアントの作成に失敗: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// 複数のクエリパラメータ付きでリクエスト実行
+	// Execute request with multiple query parameters
 	opts := &RequestOptions{
 		QueryParams: map[string]string{
-			"name":  "山田太郎",
+			"name":  "John Doe",
 			"value": "foo&bar=baz",
 		},
 	}
 	_, err = client.doRequestWithOptions("GET", "/test", nil, opts)
 	if err != nil {
-		t.Fatalf("リクエスト実行に失敗: %v", err)
+		t.Fatalf("Failed to execute request: %v", err)
 	}
 }

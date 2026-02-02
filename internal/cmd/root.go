@@ -1,8 +1,8 @@
 /**
  * root.go
- * gho CLIのルート定義
+ * Root definition for gho CLI
  *
- * Kongを使用したCLI構造の定義
+ * Defines CLI structure using Kong
  */
 
 package cmd
@@ -17,7 +17,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/ui"
 )
 
-// RootFlags はすべてのコマンドで共通のフラグです
+// RootFlags are common flags for all commands
 type RootFlags struct {
 	Site    string `help:"Site alias or URL" short:"s" env:"GHO_SITE"`
 	JSON    bool   `help:"Output JSON" env:"GHO_JSON"`
@@ -29,7 +29,7 @@ type RootFlags struct {
 	Color   string `help:"Color output (auto, always, never)" enum:"auto,always,never" default:"auto" env:"GHO_COLOR"`
 }
 
-// CLI はgho CLIのルート構造体です
+// CLI is the root structure for gho CLI
 type CLI struct {
 	RootFlags `embed:""`
 	Version   kong.VersionFlag `help:"Print version"`
@@ -54,7 +54,7 @@ type CLI struct {
 	CompletionInternal CompletionInternalCmd `cmd:"" name:"__complete" hidden:"" help:""`
 }
 
-// GetOutputMode はRootFlagsから出力モードを決定します
+// GetOutputMode determines the output mode from RootFlags
 func (r *RootFlags) GetOutputMode() string {
 	if r.JSON {
 		return "json"
@@ -65,25 +65,25 @@ func (r *RootFlags) GetOutputMode() string {
 	return "table"
 }
 
-// ExecuteOptions はExecute関数のオプションです
+// ExecuteOptions are options for the Execute function
 type ExecuteOptions struct {
-	// Version はバージョン文字列（省略時は"dev"）
+	// Version is the version string (defaults to "dev" if omitted)
 	Version string
 }
 
-// Execute はgho CLIのエントリーポイントです
-// argsにはコマンドライン引数を渡します（os.Argsなど）
+// Execute is the entry point for gho CLI
+// args should contain command line arguments (such as os.Args)
 func Execute(args []string, opts ...ExecuteOptions) (err error) {
-	// オプションの取得
+	// Get options
 	version := "dev"
 	if len(opts) > 0 && opts[0].Version != "" {
 		version = opts[0].Version
 	}
 
-	// CLIを初期化
+	// Initialize CLI
 	cli := &CLI{}
 
-	// Kongパーサーを作成
+	// Create Kong parser
 	parser, err := kong.New(cli,
 		kong.Name("gho"),
 		kong.Description("Ghost Admin API CLI"),
@@ -98,40 +98,40 @@ func Execute(args []string, opts ...ExecuteOptions) (err error) {
 		return err
 	}
 
-	// コマンドライン引数をパース（最初の要素はプログラム名なのでスキップ）
+	// Parse command line arguments (skip first element as it's the program name)
 	var parseArgs []string
 	if len(args) > 0 {
 		parseArgs = args[1:]
 	}
 
-	// Kongでパース
+	// Parse with Kong
 	kctx, err := parser.Parse(parseArgs)
 	if err != nil {
-		// パースエラーをstderrに出力
+		// Output parse error to stderr
 		fmt.Fprintln(os.Stderr, err)
 		return err
 	}
 
-	// contextを初期化
+	// Initialize context
 	ctx := context.Background()
 
-	// 出力モードを設定
+	// Set output mode
 	mode := outfmt.Mode{
 		JSON:  cli.JSON,
 		Plain: cli.Plain,
 	}
 	ctx = outfmt.WithMode(ctx, mode)
 
-	// UI出力を設定
+	// Set UI output
 	uiOutput := ui.NewOutput(os.Stdout, os.Stderr)
 	ctx = ui.WithUI(ctx, uiOutput)
 
-	// contextをKongにバインド
+	// Bind context to Kong
 	kctx.BindTo(ctx, (*context.Context)(nil))
 
-	// RootFlagsをバインド
+	// Bind RootFlags
 	kctx.Bind(&cli.RootFlags)
 
-	// コマンドを実行
+	// Execute command
 	return kctx.Run()
 }

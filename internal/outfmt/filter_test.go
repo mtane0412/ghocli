@@ -1,8 +1,8 @@
 /**
  * filter_test.go
- * フィールドフィルタリング機能のテスト
+ * Test code for field filtering functionality
  *
- * 指定されたフィールドのみを出力する機能のテストを提供します。
+ * Provides tests for functionality that outputs only specified fields.
  */
 
 package outfmt
@@ -14,194 +14,194 @@ import (
 	"testing"
 )
 
-// TestFilterFields_JSON出力 はJSON形式で指定フィールドのみ出力できることを確認します
-func TestFilterFields_JSON出力(t *testing.T) {
-	// テストデータ
+// TestFilterFields_JSONOutput verifies outputting only specified fields in JSON format
+func TestFilterFields_JSONOutput(t *testing.T) {
+	// Test data
 	data := map[string]interface{}{
 		"id":     "abc123",
-		"title":  "テスト記事",
+		"title":  "Test Article",
 		"status": "published",
-		"html":   "<p>HTMLコンテンツ</p>",
+		"html":   "<p>HTML Content</p>",
 		"slug":   "test-post",
 	}
 
-	// 出力先バッファ
+	// Output buffer
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "json")
 
-	// フィールド指定で出力
+	// Output with field specification
 	fields := []string{"id", "title", "status"}
 	err := FilterFields(formatter, data, fields)
 	if err != nil {
-		t.Fatalf("FilterFieldsに失敗: %v", err)
+		t.Fatalf("FilterFields failed: %v", err)
 	}
 
-	// 結果を検証
+	// Verify result
 	var result map[string]interface{}
 	if err := json.Unmarshal(buf.Bytes(), &result); err != nil {
-		t.Fatalf("JSONパースに失敗: %v", err)
+		t.Fatalf("Failed to parse JSON: %v", err)
 	}
 
-	// 指定したフィールドのみ含まれることを確認
+	// Verify only specified fields are included
 	if result["id"] != "abc123" {
-		t.Errorf("idが含まれていません")
+		t.Errorf("id is not included")
 	}
-	if result["title"] != "テスト記事" {
-		t.Errorf("titleが含まれていません")
+	if result["title"] != "Test Article" {
+		t.Errorf("title is not included")
 	}
 	if result["status"] != "published" {
-		t.Errorf("statusが含まれていません")
+		t.Errorf("status is not included")
 	}
 
-	// 指定していないフィールドが含まれないことを確認
+	// Verify unspecified fields are not included
 	if _, ok := result["html"]; ok {
-		t.Errorf("htmlが含まれています（除外されるべき）")
+		t.Errorf("html is included (should be excluded)")
 	}
 	if _, ok := result["slug"]; ok {
-		t.Errorf("slugが含まれています（除外されるべき）")
+		t.Errorf("slug is included (should be excluded)")
 	}
 }
 
-// TestFilterFields_スライスJSON出力 はスライスデータで指定フィールドのみ出力できることを確認します
-func TestFilterFields_スライスJSON出力(t *testing.T) {
-	// テストデータ（複数のアイテム）
+// TestFilterFields_SliceJSONOutput verifies outputting only specified fields in slice data
+func TestFilterFields_SliceJSONOutput(t *testing.T) {
+	// Test data (multiple items)
 	data := []map[string]interface{}{
 		{
 			"id":     "abc123",
-			"title":  "記事1",
+			"title":  "Article 1",
 			"status": "published",
 			"html":   "<p>HTML1</p>",
 		},
 		{
 			"id":     "def456",
-			"title":  "記事2",
+			"title":  "Article 2",
 			"status": "draft",
 			"html":   "<p>HTML2</p>",
 		},
 	}
 
-	// 出力先バッファ
+	// Output buffer
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "json")
 
-	// フィールド指定で出力
+	// Output with field specification
 	fields := []string{"id", "title"}
 	err := FilterFields(formatter, data, fields)
 	if err != nil {
-		t.Fatalf("FilterFieldsに失敗: %v", err)
+		t.Fatalf("FilterFields failed: %v", err)
 	}
 
-	// 結果を検証
+	// Verify result
 	var result []map[string]interface{}
 	if err := json.Unmarshal(buf.Bytes(), &result); err != nil {
-		t.Fatalf("JSONパースに失敗: %v", err)
+		t.Fatalf("Failed to parse JSON: %v", err)
 	}
 
-	// 要素数を確認
+	// Verify element count
 	if len(result) != 2 {
-		t.Fatalf("要素数が不正: got=%d, want=2", len(result))
+		t.Fatalf("Invalid element count: got=%d, want=2", len(result))
 	}
 
-	// 1つ目の要素を確認
+	// Verify first element
 	if result[0]["id"] != "abc123" {
-		t.Errorf("result[0].idが不正")
+		t.Errorf("result[0].id is invalid")
 	}
-	if result[0]["title"] != "記事1" {
-		t.Errorf("result[0].titleが不正")
+	if result[0]["title"] != "Article 1" {
+		t.Errorf("result[0].title is invalid")
 	}
 	if _, ok := result[0]["status"]; ok {
-		t.Errorf("result[0].statusが含まれています（除外されるべき）")
+		t.Errorf("result[0].status is included (should be excluded)")
 	}
 
-	// 2つ目の要素を確認
+	// Verify second element
 	if result[1]["id"] != "def456" {
-		t.Errorf("result[1].idが不正")
+		t.Errorf("result[1].id is invalid")
 	}
-	if result[1]["title"] != "記事2" {
-		t.Errorf("result[1].titleが不正")
+	if result[1]["title"] != "Article 2" {
+		t.Errorf("result[1].title is invalid")
 	}
 }
 
-// TestFilterFields_Plain出力 はPlain形式（TSV）で指定フィールドのみ出力できることを確認します
-func TestFilterFields_Plain出力(t *testing.T) {
-	// テストデータ
+// TestFilterFields_PlainOutput verifies outputting only specified fields in Plain format (TSV)
+func TestFilterFields_PlainOutput(t *testing.T) {
+	// Test data
 	data := []map[string]interface{}{
 		{
 			"id":     "abc123",
-			"title":  "記事1",
+			"title":  "Article 1",
 			"status": "published",
 		},
 		{
 			"id":     "def456",
-			"title":  "記事2",
+			"title":  "Article 2",
 			"status": "draft",
 		},
 	}
 
-	// 出力先バッファ
+	// Output buffer
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "plain")
 
-	// フィールド指定で出力
+	// Output with field specification
 	fields := []string{"id", "title"}
 	err := FilterFields(formatter, data, fields)
 	if err != nil {
-		t.Fatalf("FilterFieldsに失敗: %v", err)
+		t.Fatalf("FilterFields failed: %v", err)
 	}
 
-	// 結果を検証
+	// Verify result
 	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
 	if len(lines) != 3 {
-		t.Fatalf("行数が不正: got=%d, want=3（ヘッダー+データ2行）", len(lines))
+		t.Fatalf("Invalid line count: got=%d, want=3 (header + 2 data rows)", len(lines))
 	}
 
-	// ヘッダー行を確認
+	// Verify header row
 	header := lines[0]
 	if !strings.Contains(header, "id") || !strings.Contains(header, "title") {
-		t.Errorf("ヘッダーが不正: %s", header)
+		t.Errorf("Invalid header: %s", header)
 	}
 	if strings.Contains(header, "status") {
-		t.Errorf("ヘッダーにstatusが含まれています（除外されるべき）: %s", header)
+		t.Errorf("Header contains status (should be excluded): %s", header)
 	}
 
-	// データ行を確認
-	if !strings.Contains(lines[1], "abc123") || !strings.Contains(lines[1], "記事1") {
-		t.Errorf("1行目のデータが不正: %s", lines[1])
+	// Verify data rows
+	if !strings.Contains(lines[1], "abc123") || !strings.Contains(lines[1], "Article 1") {
+		t.Errorf("Invalid data in row 1: %s", lines[1])
 	}
-	if !strings.Contains(lines[2], "def456") || !strings.Contains(lines[2], "記事2") {
-		t.Errorf("2行目のデータが不正: %s", lines[2])
+	if !strings.Contains(lines[2], "def456") || !strings.Contains(lines[2], "Article 2") {
+		t.Errorf("Invalid data in row 2: %s", lines[2])
 	}
 }
 
-// TestFilterFields_フィールド未指定 はフィールド未指定の場合に全フィールドを出力することを確認します
-func TestFilterFields_フィールド未指定(t *testing.T) {
-	// テストデータ
+// TestFilterFields_NoFieldsSpecified verifies outputting all fields when no fields are specified
+func TestFilterFields_NoFieldsSpecified(t *testing.T) {
+	// Test data
 	data := map[string]interface{}{
 		"id":    "abc123",
-		"title": "テスト記事",
+		"title": "Test Article",
 	}
 
-	// 出力先バッファ
+	// Output buffer
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "json")
 
-	// フィールド未指定（nilまたは空スライス）で出力
+	// Output without field specification (nil or empty slice)
 	err := FilterFields(formatter, data, nil)
 	if err != nil {
-		t.Fatalf("FilterFieldsに失敗: %v", err)
+		t.Fatalf("FilterFields failed: %v", err)
 	}
 
-	// 結果を検証
+	// Verify result
 	var result map[string]interface{}
 	if err := json.Unmarshal(buf.Bytes(), &result); err != nil {
-		t.Fatalf("JSONパースに失敗: %v", err)
+		t.Fatalf("Failed to parse JSON: %v", err)
 	}
 
-	// 全フィールドが含まれることを確認
+	// Verify all fields are included
 	if result["id"] != "abc123" {
-		t.Errorf("idが含まれていません")
+		t.Errorf("id is not included")
 	}
-	if result["title"] != "テスト記事" {
-		t.Errorf("titleが含まれていません")
+	if result["title"] != "Test Article" {
+		t.Errorf("title is not included")
 	}
 }

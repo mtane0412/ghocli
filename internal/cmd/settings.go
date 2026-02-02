@@ -1,8 +1,8 @@
 /**
  * settings.go
- * 設定管理コマンド
+ * Settings management commands
  *
- * Ghostサイト設定の表示、更新機能を提供します。
+ * Provides functionality for viewing and updating Ghost site settings.
  */
 
 package cmd
@@ -16,14 +16,14 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// SettingsCmd は設定管理コマンドです
+// SettingsCmd is the settings management command
 type SettingsCmd struct {
 	List SettingsListCmd `cmd:"" help:"List all settings"`
 	Get  SettingsGetCmd  `cmd:"" help:"Get a specific setting"`
 	Set  SettingsSetCmd  `cmd:"" help:"Set a setting value"`
 }
 
-// SettingsListCmd is the command to retrieve 設定 list
+// SettingsListCmd is the command to retrieve settings list
 type SettingsListCmd struct{}
 
 // Run executes the list subcommand of the settings command
@@ -112,7 +112,7 @@ func (c *SettingsGetCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// SettingsSetCmd is the command to update 設定 value
+// SettingsSetCmd is the command to update setting value
 type SettingsSetCmd struct {
 	Key   string `arg:"" help:"Setting key"`
 	Value string `arg:"" help:"Setting value"`

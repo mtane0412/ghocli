@@ -1,6 +1,6 @@
 /**
  * images_test.go
- * Images APIのテストコード
+ * Test code for Images API
  */
 
 package ghostapi
@@ -14,59 +14,59 @@ import (
 	"testing"
 )
 
-// TestUploadImage_画像のアップロード
-func TestUploadImage_画像のアップロード(t *testing.T) {
+// TestUploadImage_UploadImage uploads an image
+func TestUploadImage_UploadImage(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/images/upload/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/images/upload/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/images/upload/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// Content-Typeがmultipart/form-dataであることを確認
+		// Verify Content-Type is multipart/form-data
 		contentType := r.Header.Get("Content-Type")
 		if !strings.HasPrefix(contentType, "multipart/form-data") {
 			t.Errorf("Content-Type = %q; want multipart/form-data", contentType)
 		}
 
-		// マルチパートフォームをパース
+		// Parse multipart form
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
-			t.Fatalf("マルチパートフォームのパースエラー: %v", err)
+			t.Fatalf("Failed to parse multipart form: %v", err)
 		}
 
-		// ファイルが存在することを確認
+		// Verify file exists
 		file, header, err := r.FormFile("file")
 		if err != nil {
-			t.Fatalf("ファイルの取得エラー: %v", err)
+			t.Fatalf("Failed to retrieve file: %v", err)
 		}
 		defer file.Close()
 
-		// ファイル名を確認
+		// Verify file name
 		if header.Filename != "test-image.jpg" {
-			t.Errorf("ファイル名 = %q; want %q", header.Filename, "test-image.jpg")
+			t.Errorf("File name = %q; want %q", header.Filename, "test-image.jpg")
 		}
 
-		// ファイル内容を確認
+		// Verify file content
 		fileContent, err := io.ReadAll(file)
 		if err != nil {
-			t.Fatalf("ファイル内容の読み込みエラー: %v", err)
+			t.Fatalf("Failed to read file content: %v", err)
 		}
 		expectedContent := "fake image content"
 		if string(fileContent) != expectedContent {
-			t.Errorf("ファイル内容 = %q; want %q", string(fileContent), expectedContent)
+			t.Errorf("File content = %q; want %q", string(fileContent), expectedContent)
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"images": []map[string]interface{}{
 				{
@@ -82,49 +82,49 @@ func TestUploadImage_画像のアップロード(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// 画像をアップロード
+	// Upload image
 	fakeImageContent := strings.NewReader("fake image content")
 	image, err := client.UploadImage(fakeImageContent, "test-image.jpg", ImageUploadOptions{})
 	if err != nil {
-		t.Fatalf("画像アップロードエラー: %v", err)
+		t.Fatalf("Failed to upload image: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	expectedURL := "https://example.com/content/images/2024/01/test-image.jpg"
 	if image.URL != expectedURL {
-		t.Errorf("画像URL = %q; want %q", image.URL, expectedURL)
+		t.Errorf("Image URL = %q; want %q", image.URL, expectedURL)
 	}
 }
 
-// TestUploadImage_purposeパラメータ
-func TestUploadImage_purposeパラメータ(t *testing.T) {
+// TestUploadImage_PurposeParameter tests purpose parameter
+func TestUploadImage_PurposeParameter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// マルチパートフォームをパース
+		// Parse multipart form
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
-			t.Fatalf("マルチパートフォームのパースエラー: %v", err)
+			t.Fatalf("Failed to parse multipart form: %v", err)
 		}
 
-		// purposeパラメータを確認
+		// Verify purpose parameter
 		purpose := r.FormValue("purpose")
 		if purpose != "profile_image" {
 			t.Errorf("purpose = %q; want %q", purpose, "profile_image")
 		}
 
-		// refパラメータを確認
+		// Verify ref parameter
 		ref := r.FormValue("ref")
 		if ref != "test-ref-12345" {
 			t.Errorf("ref = %q; want %q", ref, "test-ref-12345")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"images": []map[string]interface{}{
 				{
@@ -140,23 +140,23 @@ func TestUploadImage_purposeパラメータ(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// 画像をアップロード（purposeとrefを指定）
+	// Upload image with purpose and ref
 	fakeImageContent := strings.NewReader("fake profile image")
 	image, err := client.UploadImage(fakeImageContent, "profile.jpg", ImageUploadOptions{
 		Purpose: "profile_image",
 		Ref:     "test-ref-12345",
 	})
 	if err != nil {
-		t.Fatalf("画像アップロードエラー: %v", err)
+		t.Fatalf("Failed to upload image: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if image.Ref != "test-ref-12345" {
 		t.Errorf("ref = %q; want %q", image.Ref, "test-ref-12345")
 	}

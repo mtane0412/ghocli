@@ -2,7 +2,7 @@
  * main.go
  * gho - Ghost Admin API CLI
  *
- * gog-cliの使用感を備えたGhost Admin APIのCLIツール
+ * Ghost Admin API CLI tool with a user experience similar to gog-cli
  */
 
 package main
@@ -15,26 +15,26 @@ import (
 )
 
 var (
-	// バージョン情報（ビルド時に-ldflagsで設定される）
+	// Version information (set via -ldflags at build time)
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"
 )
 
 func main() {
-	// Execute関数を呼び出してコマンドを実行
+	// Call Execute function to run the command
 	err := cmd.Execute(os.Args, cmd.ExecuteOptions{
 		Version: buildVersion(),
 	})
 
-	// エラーがあればstderrに出力して終了コードを設定して終了
+	// If error exists, output to stderr and exit with appropriate exit code
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(cmd.ExitCode(err))
 	}
 }
 
-// buildVersion はバージョン文字列を構築します
+// buildVersion constructs the version string
 func buildVersion() string {
 	if version == "dev" {
 		return "gho dev (commit: " + commit + ", built at: " + date + ")"

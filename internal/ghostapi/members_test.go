@@ -1,6 +1,6 @@
 /**
  * members_test.go
- * Members APIのテストコード
+ * Test code for Members API
  */
 
 package ghostapi
@@ -13,33 +13,33 @@ import (
 	"time"
 )
 
-// TestListMembers_メンバー一覧の取得
-func TestListMembers_メンバー一覧の取得(t *testing.T) {
+// TestListMembers_RetrieveMemberList retrieves a list of members
+func TestListMembers_RetrieveMemberList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		if r.URL.Path != "/ghost/api/admin/members/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/members/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/members/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify that Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"members": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234567",
 					"uuid":       "abc123-def456-ghi789",
-					"email":      "yamada@example.co.jp",
-					"name":       "山田太郎",
-					"note":       "テストメンバー",
+					"email":      "john.smith@example.com",
+					"name":       "John Smith",
+					"note":       "Test member",
 					"status":     "free",
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": "2024-01-15T10:00:00.000Z",
@@ -47,8 +47,8 @@ func TestListMembers_メンバー一覧の取得(t *testing.T) {
 				{
 					"id":         "64fac5417c4c6b0001234568",
 					"uuid":       "xyz987-uvw654-rst321",
-					"email":      "tanaka@example.co.jp",
-					"name":       "田中花子",
+					"email":      "alice.johnson@example.com",
+					"name":       "Alice Johnson",
 					"note":       "",
 					"status":     "paid",
 					"created_at": "2024-01-16T10:00:00.000Z",
@@ -70,55 +70,55 @@ func TestListMembers_メンバー一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// メンバー一覧を取得
+	// Retrieve member list
 	resp, err := client.ListMembers(MemberListOptions{})
 	if err != nil {
-		t.Fatalf("メンバー一覧取得エラー: %v", err)
+		t.Fatalf("Member list retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if len(resp.Members) != 2 {
-		t.Errorf("メンバー数 = %d; want 2", len(resp.Members))
+		t.Errorf("Member count = %d; want 2", len(resp.Members))
 	}
 
-	// 1つ目のメンバーを検証
+	// Verify first member
 	firstMember := resp.Members[0]
-	if firstMember.Email != "yamada@example.co.jp" {
-		t.Errorf("Email = %q; want %q", firstMember.Email, "yamada@example.co.jp")
+	if firstMember.Email != "john.smith@example.com" {
+		t.Errorf("Email = %q; want %q", firstMember.Email, "john.smith@example.com")
 	}
-	if firstMember.Name != "山田太郎" {
-		t.Errorf("Name = %q; want %q", firstMember.Name, "山田太郎")
+	if firstMember.Name != "John Smith" {
+		t.Errorf("Name = %q; want %q", firstMember.Name, "John Smith")
 	}
 	if firstMember.Status != "free" {
 		t.Errorf("Status = %q; want %q", firstMember.Status, "free")
 	}
 }
 
-// TestListMembers_filterパラメータ
-func TestListMembers_filterパラメータ(t *testing.T) {
+// TestListMembers_FilterParameter tests the filter parameter
+func TestListMembers_FilterParameter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		if !r.URL.Query().Has("filter") {
-			t.Error("filterパラメータが設定されていない")
+			t.Error("filter parameter is not set")
 		}
 		if r.URL.Query().Get("filter") != "status:paid" {
-			t.Errorf("filterパラメータ = %q; want %q", r.URL.Query().Get("filter"), "status:paid")
+			t.Errorf("filter parameter = %q; want %q", r.URL.Query().Get("filter"), "status:paid")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"members": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234568",
-					"email":      "tanaka@example.co.jp",
-					"name":       "田中花子",
+					"email":      "alice.johnson@example.com",
+					"name":       "Alice Johnson",
 					"status":     "paid",
 					"created_at": "2024-01-16T10:00:00.000Z",
 					"updated_at": "2024-01-16T10:00:00.000Z",
@@ -139,51 +139,51 @@ func TestListMembers_filterパラメータ(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// メンバー一覧を取得（status:paidでフィルタ）
+	// Retrieve member list (filtered by status:paid)
 	resp, err := client.ListMembers(MemberListOptions{
 		Filter: "status:paid",
 	})
 	if err != nil {
-		t.Fatalf("メンバー一覧取得エラー: %v", err)
+		t.Fatalf("Member list retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if len(resp.Members) != 1 {
-		t.Errorf("メンバー数 = %d; want 1", len(resp.Members))
+		t.Errorf("Member count = %d; want 1", len(resp.Members))
 	}
 	if resp.Members[0].Status != "paid" {
 		t.Errorf("Status = %q; want %q", resp.Members[0].Status, "paid")
 	}
 }
 
-// TestGetMember_IDでメンバーを取得
-func TestGetMember_IDでメンバーを取得(t *testing.T) {
+// TestGetMember_RetrieveMemberByID retrieves a member by ID
+func TestGetMember_RetrieveMemberByID(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		expectedPath := "/ghost/api/admin/members/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"members": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234567",
 					"uuid":       "abc123-def456-ghi789",
-					"email":      "yamada@example.co.jp",
-					"name":       "山田太郎",
-					"note":       "テストメンバー",
+					"email":      "john.smith@example.com",
+					"name":       "John Smith",
+					"note":       "Test member",
 					"status":     "free",
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": "2024-01-15T10:00:00.000Z",
@@ -196,60 +196,60 @@ func TestGetMember_IDでメンバーを取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// メンバーを取得
+	// Retrieve member
 	member, err := client.GetMember("64fac5417c4c6b0001234567")
 	if err != nil {
-		t.Fatalf("メンバー取得エラー: %v", err)
+		t.Fatalf("Member retrieval error: %v", err)
 	}
 
-	// レスポンスの検証
-	if member.Email != "yamada@example.co.jp" {
-		t.Errorf("Email = %q; want %q", member.Email, "yamada@example.co.jp")
+	// Verify response
+	if member.Email != "john.smith@example.com" {
+		t.Errorf("Email = %q; want %q", member.Email, "john.smith@example.com")
 	}
 	if member.ID != "64fac5417c4c6b0001234567" {
 		t.Errorf("ID = %q; want %q", member.ID, "64fac5417c4c6b0001234567")
 	}
 }
 
-// TestCreateMember_メンバーの作成
-func TestCreateMember_メンバーの作成(t *testing.T) {
+// TestCreateMember_CreateMember creates a member
+func TestCreateMember_CreateMember(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		if r.URL.Path != "/ghost/api/admin/members/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/members/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/members/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースエラー: %v", err)
+			t.Fatalf("Request body parse error: %v", err)
 		}
 
 		members, ok := reqBody["members"].([]interface{})
 		if !ok || len(members) == 0 {
-			t.Error("リクエストボディに members 配列が存在しない")
+			t.Error("members array does not exist in request body")
 		}
 
-		// レスポンスを返す
+		// Return response
 		createdAt := time.Now().Format(time.RFC3339)
 		response := map[string]interface{}{
 			"members": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234999",
 					"uuid":       "new-uuid-123",
-					"email":      "new@example.co.jp",
-					"name":       "新規メンバー",
-					"note":       "新しく作成されたメンバー",
+					"email":      "new.member@example.com",
+					"name":       "New Member",
+					"note":       "Newly created member",
 					"status":     "free",
 					"created_at": createdAt,
 					"updated_at": createdAt,
@@ -263,61 +263,61 @@ func TestCreateMember_メンバーの作成(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// メンバーを作成
+	// Create member
 	newMember := &Member{
-		Email: "new@example.co.jp",
-		Name:  "新規メンバー",
-		Note:  "新しく作成されたメンバー",
+		Email: "new.member@example.com",
+		Name:  "New Member",
+		Note:  "Newly created member",
 	}
 
 	createdMember, err := client.CreateMember(newMember)
 	if err != nil {
-		t.Fatalf("メンバー作成エラー: %v", err)
+		t.Fatalf("Member creation error: %v", err)
 	}
 
-	// レスポンスの検証
-	if createdMember.Email != "new@example.co.jp" {
-		t.Errorf("Email = %q; want %q", createdMember.Email, "new@example.co.jp")
+	// Verify response
+	if createdMember.Email != "new.member@example.com" {
+		t.Errorf("Email = %q; want %q", createdMember.Email, "new.member@example.com")
 	}
 	if createdMember.ID == "" {
-		t.Error("IDが空")
+		t.Error("ID is empty")
 	}
 }
 
-// TestUpdateMember_メンバーの更新
-func TestUpdateMember_メンバーの更新(t *testing.T) {
+// TestUpdateMember_UpdateMember updates a member
+func TestUpdateMember_UpdateMember(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		expectedPath := "/ghost/api/admin/members/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースエラー: %v", err)
+			t.Fatalf("Request body parse error: %v", err)
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"members": []map[string]interface{}{
 				{
 					"id":         "64fac5417c4c6b0001234567",
 					"uuid":       "abc123-def456-ghi789",
-					"email":      "yamada@example.co.jp",
-					"name":       "更新後の名前",
-					"note":       "更新されたメンバー",
+					"email":      "john.smith@example.com",
+					"name":       "Updated Name",
+					"note":       "Updated member",
 					"status":     "free",
 					"created_at": "2024-01-15T10:00:00.000Z",
 					"updated_at": time.Now().Format(time.RFC3339),
@@ -330,56 +330,56 @@ func TestUpdateMember_メンバーの更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// メンバーを更新
+	// Update member
 	updateMember := &Member{
-		Name: "更新後の名前",
-		Note: "更新されたメンバー",
+		Name: "Updated Name",
+		Note: "Updated member",
 	}
 
 	updatedMember, err := client.UpdateMember("64fac5417c4c6b0001234567", updateMember)
 	if err != nil {
-		t.Fatalf("メンバー更新エラー: %v", err)
+		t.Fatalf("Member update error: %v", err)
 	}
 
-	// レスポンスの検証
-	if updatedMember.Name != "更新後の名前" {
-		t.Errorf("Name = %q; want %q", updatedMember.Name, "更新後の名前")
+	// Verify response
+	if updatedMember.Name != "Updated Name" {
+		t.Errorf("Name = %q; want %q", updatedMember.Name, "Updated Name")
 	}
 }
 
-// TestDeleteMember_メンバーの削除
-func TestDeleteMember_メンバーの削除(t *testing.T) {
+// TestDeleteMember_DeleteMember deletes a member
+func TestDeleteMember_DeleteMember(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		expectedPath := "/ghost/api/admin/members/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "DELETE" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "DELETE")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "DELETE")
 		}
 
-		// 204 No Content を返す
+		// Return 204 No Content
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Client creation error: %v", err)
 	}
 
-	// メンバーを削除
+	// Delete member
 	err = client.DeleteMember("64fac5417c4c6b0001234567")
 	if err != nil {
-		t.Fatalf("メンバー削除エラー: %v", err)
+		t.Fatalf("Member deletion error: %v", err)
 	}
 }

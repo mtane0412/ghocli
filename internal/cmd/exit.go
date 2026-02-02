@@ -2,31 +2,31 @@ package cmd
 
 import "errors"
 
-// ExitError は終了コードを持つエラー型
-// コマンドの実行結果に応じた適切な終了コードを返すために使用する
+// ExitError is an error type that holds an exit code
+// Used to return an appropriate exit code based on command execution results
 type ExitError struct {
-	// Code は終了コード（0は成功、1以上はエラー）
+	// Code is the exit code (0 for success, 1 or higher for errors)
 	Code int
-	// Err は内部エラー
+	// Err is the internal error
 	Err error
 }
 
-// Error はerrorインターフェースを実装する
-// 内部エラーのメッセージをそのまま返す
+// Error implements the error interface
+// Returns the internal error message as-is
 func (e *ExitError) Error() string {
 	return e.Err.Error()
 }
 
-// Unwrap はエラーチェーン対応のためにUnwrapメソッドを実装する
-// errors.As/errors.Isで正しく動作するために必要
+// Unwrap implements the Unwrap method for error chain support
+// Necessary for errors.As/errors.Is to work correctly
 func (e *ExitError) Unwrap() error {
 	return e.Err
 }
 
-// ExitCode はエラーから終了コードを取得する
-// - errがnilの場合は0を返す
-// - errがExitErrorの場合はそのコードを返す
-// - それ以外のエラーの場合は1を返す
+// ExitCode retrieves the exit code from an error
+// - Returns 0 if err is nil
+// - Returns the code if err is ExitError
+// - Returns 1 for other errors
 func ExitCode(err error) int {
 	if err == nil {
 		return 0

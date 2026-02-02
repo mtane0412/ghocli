@@ -55,7 +55,7 @@ type PostsCmd struct {
 	Copy PostsCopyCmd `cmd:"" help:"Copy a post"`
 }
 
-// PostsListCmd is the command to retrieve 投稿 list
+// PostsListCmd is the command to retrieve post list
 type PostsListCmd struct {
 	Status string `help:"Filter by status (draft, published, scheduled, all)" short:"S" default:"all"`
 	Limit  int    `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
@@ -134,7 +134,7 @@ func (c *PostsListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsInfoCmd is the command to show 投稿 information
+// PostsInfoCmd is the command to show post information
 type PostsInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 }
@@ -191,37 +191,37 @@ func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 		{"status", post.Status},
 	}
 
-	// visibilityを追加
+	// Add visibility
 	if post.Visibility != "" {
 		rows = append(rows, []string{"visibility", post.Visibility})
 	}
 
-	// urlを追加
+	// Add url
 	if post.URL != "" {
 		rows = append(rows, []string{"url", post.URL})
 	}
 
-	// authorsを追加（存在する場合のみ）
+	// Add authors (if present)
 	if len(post.Authors) > 0 {
 		rows = append(rows, []string{"authors", outfmt.FormatAuthors(post.Authors)})
 	}
 
-	// tagsを追加（存在する場合のみ）
+	// Add tags (if present)
 	if len(post.Tags) > 0 {
 		rows = append(rows, []string{"tags", outfmt.FormatTags(post.Tags)})
 	}
 
-	// featuredを追加（trueの場合のみ）
+	// Add featured (if true)
 	if post.Featured {
 		rows = append(rows, []string{"featured", "true"})
 	}
 
-	// excerptを追加（存在する場合のみ、140文字で切り詰め）
+	// Add excerpt (if present, truncated to 140 characters)
 	if post.Excerpt != "" {
 		rows = append(rows, []string{"excerpt", outfmt.TruncateExcerpt(post.Excerpt, 140)})
 	}
 
-	// 日時フィールド
+	// Date/time fields
 	rows = append(rows, []string{"created", post.CreatedAt.Format("2006-01-02 15:04:05")})
 	rows = append(rows, []string{"updated", post.UpdatedAt.Format("2006-01-02 15:04:05")})
 
@@ -236,7 +236,7 @@ func (c *PostsInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// PostsCreateCmd is the command to create 投稿
+// PostsCreateCmd is the command to create post
 type PostsCreateCmd struct {
 	Title    string `help:"Post title" short:"t" required:""`
 	HTML     string `help:"Post content (HTML)" short:"c"`
@@ -254,11 +254,11 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// コンテンツとフォーマットの決定
+	// Determine content and format
 	var htmlContent string
 	var format input.ContentFormat
 
-	// ファイル指定の場合はフォーマット自動検出
+	// Auto-detect format when file is specified
 	if c.File != "" {
 		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
 		if err != nil {
@@ -266,29 +266,29 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 		format = detectedFormat
 
-		// フォーマットに応じて処理
+		// Process according to format
 		switch format {
 		case input.FormatMarkdown:
-			// Markdown→HTML変換
+			// Convert Markdown to HTML
 			htmlContent, err = markdown.ConvertToHTML(fileContent)
 			if err != nil {
 				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
 			}
 		case input.FormatHTML:
-			// HTMLはそのまま使用
+			// Use HTML as-is
 			htmlContent = fileContent
 		case input.FormatLexical:
-			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			// Use Lexical JSON as-is (set to c.Lexical)
 			c.Lexical = fileContent
 		default:
-			// 不明な形式の場合はHTMLとして扱う
+			// Treat as HTML for unknown formats
 			htmlContent = fileContent
 		}
 	} else {
-		// インラインコンテンツの処理
+		// Process inline content
 		htmlContent = c.HTML
 
-		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		// Convert Markdown to HTML if Markdown flag is specified
 		if c.Markdown != "" {
 			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
 			if err != nil {
@@ -305,16 +305,16 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		Status:  c.Status,
 	}
 
-	// HTMLコンテンツが指定されている場合は、自動的にsource=htmlを適用
+	// Automatically apply source=html when HTML content is specified
 	var createdPost *ghostapi.Post
 	if htmlContent != "" && c.Lexical == "" {
-		// HTMLをサーバー側でLexical形式に変換
+		// Convert HTML to Lexical format on server side
 		opts := ghostapi.CreateOptions{
 			Source: "html",
 		}
 		createdPost, err = client.CreatePostWithOptions(newPost, opts)
 	} else {
-		// Lexical形式またはコンテンツなしの場合は通常の作成
+		// Normal creation for Lexical format or no content
 		createdPost, err = client.CreatePost(newPost)
 	}
 
@@ -338,7 +338,7 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PostsUpdateCmd is the command to update 投稿
+// PostsUpdateCmd is the command to update post
 type PostsUpdateCmd struct {
 	ID       string `arg:"" help:"Post ID"`
 	Title    string `help:"Post title" short:"t"`
@@ -363,11 +363,11 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return fmt.Errorf("failed to get post: %w", err)
 	}
 
-	// コンテンツとフォーマットの決定
+	// Determine content and format
 	var htmlContent string
 	var format input.ContentFormat
 
-	// ファイル指定の場合はフォーマット自動検出
+	// Auto-detect format when file is specified
 	if c.File != "" {
 		fileContent, detectedFormat, err := input.ReadContentWithFormat(c.File, "")
 		if err != nil {
@@ -375,29 +375,29 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		}
 		format = detectedFormat
 
-		// フォーマットに応じて処理
+		// Process according to format
 		switch format {
 		case input.FormatMarkdown:
-			// Markdown→HTML変換
+			// Convert Markdown to HTML
 			htmlContent, err = markdown.ConvertToHTML(fileContent)
 			if err != nil {
 				return fmt.Errorf("failed to convert markdown to HTML: %w", err)
 			}
 		case input.FormatHTML:
-			// HTMLはそのまま使用
+			// Use HTML as-is
 			htmlContent = fileContent
 		case input.FormatLexical:
-			// Lexical JSONはそのまま使用（c.Lexicalに設定）
+			// Use Lexical JSON as-is (set to c.Lexical)
 			c.Lexical = fileContent
 		default:
-			// 不明な形式の場合はHTMLとして扱う
+			// Treat as HTML for unknown formats
 			htmlContent = fileContent
 		}
 	} else {
-		// インラインコンテンツの処理
+		// Process inline content
 		htmlContent = c.HTML
 
-		// Markdownフラグが指定されている場合はMarkdown→HTML変換
+		// Convert Markdown to HTML if Markdown flag is specified
 		if c.Markdown != "" {
 			htmlContent, err = markdown.ConvertToHTML(c.Markdown)
 			if err != nil {
@@ -429,16 +429,16 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updatePost.Status = c.Status
 	}
 
-	// HTMLコンテンツが更新される場合は、自動的にsource=htmlを適用
+	// Automatically apply source=html when HTML content is updated
 	var updatedPost *ghostapi.Post
 	if htmlContent != "" && c.Lexical == "" {
-		// HTMLをサーバー側でLexical形式に変換
+		// Convert HTML to Lexical format on server side
 		opts := ghostapi.CreateOptions{
 			Source: "html",
 		}
 		updatedPost, err = client.UpdatePostWithOptions(c.ID, updatePost, opts)
 	} else {
-		// Lexical形式またはHTMLの更新なしの場合は通常の更新
+		// Normal update for Lexical format or no HTML update
 		updatedPost, err = client.UpdatePost(c.ID, updatePost)
 	}
 
@@ -462,7 +462,7 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PostsDeleteCmd is the command to delete 投稿
+// PostsDeleteCmd is the command to delete post
 type PostsDeleteCmd struct {
 	ID string `arg:"" help:"Post ID"`
 }
@@ -501,7 +501,7 @@ func (c *PostsDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// PostsPublishCmd is the command to publish 下書き投稿
+// PostsPublishCmd is the command to publish draft post
 type PostsPublishCmd struct {
 	ID string `arg:"" help:"Post ID"`
 }
@@ -558,10 +558,10 @@ func (c *PostsPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 1: ステータス別一覧ショートカット
+// Phase 1: Status-based list shortcuts
 // ========================================
 
-// PostsDraftsCmd is the command to retrieve draft 投稿 list
+// PostsDraftsCmd is the command to retrieve draft post list
 type PostsDraftsCmd struct {
 	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
@@ -582,7 +582,7 @@ func (c *PostsDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("下書きfailed to list posts: %w", err)
+		return fmt.Errorf("failed to list draft posts: %w", err)
 	}
 
 	// Create output formatter
@@ -609,7 +609,7 @@ func (c *PostsDraftsCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsPublishedCmd is the command to retrieve published 投稿 list
+// PostsPublishedCmd is the command to retrieve published post list
 type PostsPublishedCmd struct {
 	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
@@ -630,7 +630,7 @@ func (c *PostsPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("公開済みfailed to list posts: %w", err)
+		return fmt.Errorf("failed to list published posts: %w", err)
 	}
 
 	// Create output formatter
@@ -661,7 +661,7 @@ func (c *PostsPublishedCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// PostsScheduledCmd is the command to retrieve scheduled 投稿 list
+// PostsScheduledCmd is the command to retrieve scheduled post list
 type PostsScheduledCmd struct {
 	Limit int `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page  int `help:"Page number" short:"p" default:"1"`
@@ -682,7 +682,7 @@ func (c *PostsScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 		Page:   c.Page,
 	})
 	if err != nil {
-		return fmt.Errorf("予約failed to list posts: %w", err)
+		return fmt.Errorf("failed to list scheduled posts: %w", err)
 	}
 
 	// Create output formatter
@@ -714,10 +714,10 @@ func (c *PostsScheduledCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 1: URL取得
+// Phase 1: URL retrieval
 // ========================================
 
-// PostsURLCmd is the command to get 投稿 web URL
+// PostsURLCmd is the command to get post web URL
 type PostsURLCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 	Open     bool   `help:"Open URL in browser" short:"o"`
@@ -771,10 +771,10 @@ func (c *PostsURLCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 2: 状態変更
+// Phase 2: State changes
 // ========================================
 
-// PostsUnpublishCmd is the command to unpublish 公開済み投稿
+// PostsUnpublishCmd is the command to unpublish published post
 type PostsUnpublishCmd struct {
 	ID string `arg:"" help:"Post ID"`
 }
@@ -831,10 +831,10 @@ func (c *PostsUnpublishCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 3: 予約投稿
+// Phase 3: Scheduled posting
 // ========================================
 
-// PostsScheduleCmd is the command to schedule 投稿 for publishing
+// PostsScheduleCmd is the command to schedule post for publishing
 type PostsScheduleCmd struct {
 	ID string `arg:"" help:"Post ID"`
 	At string `help:"Schedule time (YYYY-MM-DD HH:MM)" required:""`
@@ -895,16 +895,16 @@ func (c *PostsScheduleCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 4: バッチ操作
+// Phase 4: Batch operations
 // ========================================
 
-// PostsBatchCmd はバッチ操作コマンドです
+// PostsBatchCmd is the batch operations command
 type PostsBatchCmd struct {
 	Publish PostsBatchPublishCmd `cmd:"" help:"Batch publish posts"`
 	Delete  PostsBatchDeleteCmd  `cmd:"" help:"Batch delete posts"`
 }
 
-// PostsBatchPublishCmd is the command to batch publish 投稿
+// PostsBatchPublishCmd is the command to batch publish posts
 type PostsBatchPublishCmd struct {
 	IDs []string `arg:"" help:"Post IDs to publish"`
 }
@@ -930,7 +930,7 @@ func (c *PostsBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 			continue
 		}
 
-		// すでに公開済みの場合はスキップ
+		// Skip if already published
 		if existingPost.Status == "published" {
 			formatter.PrintMessage(fmt.Sprintf("skipped (already published): %s (ID: %s)", existingPost.Title, id))
 			continue
@@ -957,12 +957,12 @@ func (c *PostsBatchPublishCmd) Run(ctx context.Context, root *RootFlags) error {
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のpublished post", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: published %d posts", successCount))
 
 	return nil
 }
 
-// PostsBatchDeleteCmd is the command to batch delete 投稿
+// PostsBatchDeleteCmd is the command to batch delete posts
 type PostsBatchDeleteCmd struct {
 	IDs []string `arg:"" help:"Post IDs to delete"`
 }
@@ -997,16 +997,16 @@ func (c *PostsBatchDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 		successCount++
 	}
 
-	formatter.PrintMessage(fmt.Sprintf("\ncompleted: %d件のdeleted post", successCount))
+	formatter.PrintMessage(fmt.Sprintf("\ncompleted: deleted %d posts", successCount))
 
 	return nil
 }
 
 // ========================================
-// Phase 4: 投稿検索
+// Phase 4: Post search
 // ========================================
 
-// PostsSearchCmd is the command to search 投稿
+// PostsSearchCmd is the command to search posts
 type PostsSearchCmd struct {
 	Query string `arg:"" help:"Search query"`
 	Limit int    `help:"Number of posts to retrieve" short:"l" aliases:"max,n" default:"15"`
@@ -1020,7 +1020,7 @@ func (c *PostsSearchCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
-	// Get post list（検索クエリはfilterとして渡す）
+	// Get post list (search query is passed as filter)
 	response, err := client.ListPosts(ghostapi.ListOptions{
 		Status: "all",
 		Limit:  c.Limit,
@@ -1062,34 +1062,34 @@ func (c *PostsSearchCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// ヘルパー関数
+// Helper functions
 // ========================================
 
-// fileExists はファイルが存在するかチェックします
+// fileExists checks if a file exists
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
 
-// runCommand はコマンドを実行します
+// runCommand executes a command
 func runCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	return cmd.Run()
 }
 
-// parseDateTime は日時文字列をパースします
+// parseDateTime parses a date/time string
 func parseDateTime(s string) (time.Time, error) {
-	// YYYY-MM-DD HH:MM形式をパース
+	// Parse YYYY-MM-DD HH:MM format
 	layout := "2006-01-02 15:04"
 	return time.Parse(layout, s)
 }
 
-// containsIgnoreCase は大文字小文字を区別せずに部分文字列を検索します
+// containsIgnoreCase searches for a substring case-insensitively
 func containsIgnoreCase(s, substr string) bool {
 	return len(s) >= len(substr) && (strings.EqualFold(s, substr) || hasSubstringIgnoreCase(s, substr))
 }
 
-// hasSubstringIgnoreCase は大文字小文字を区別せずに部分文字列が含まれているかチェックします
+// hasSubstringIgnoreCase checks if a substring is contained case-insensitively
 func hasSubstringIgnoreCase(s, substr string) bool {
 	s = strings.ToLower(s)
 	substr = strings.ToLower(substr)
@@ -1102,10 +1102,10 @@ func hasSubstringIgnoreCase(s, substr string) bool {
 }
 
 // ========================================
-// Phase 2: catコマンド
+// Phase 2: cat command
 // ========================================
 
-// PostsCatCmd is the command to show 投稿 content body
+// PostsCatCmd is the command to show post content body
 type PostsCatCmd struct {
 	IDOrSlug string `arg:"" help:"Post ID or slug"`
 	Format   string `help:"Output format (text, html, lexical)" default:"text"`
@@ -1139,7 +1139,7 @@ func (c *PostsCatCmd) Run(ctx context.Context, root *RootFlags) error {
 	case "lexical":
 		content = post.Lexical
 	default:
-		return fmt.Errorf("unsupported format: %s (html, text, lexical のいずれかを指定してください)", c.Format)
+		return fmt.Errorf("unsupported format: %s (please specify one of: html, text, lexical)", c.Format)
 	}
 
 	// Output content
@@ -1149,10 +1149,10 @@ func (c *PostsCatCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 8.3: copyコマンド
+// Phase 8.3: copy command
 // ========================================
 
-// PostsCopyCmd is the command to copy 投稿
+// PostsCopyCmd is the command to copy post
 type PostsCopyCmd struct {
 	IDOrSlug string `arg:"" help:"Source post ID or slug"`
 	Title    string `help:"New title (defaults to 'Original Title (Copy)')" short:"t"`

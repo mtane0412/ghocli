@@ -1,6 +1,6 @@
 /**
  * settings_test.go
- * Settings APIのテストコード
+ * Test code for Settings API
  */
 
 package ghostapi
@@ -12,25 +12,25 @@ import (
 	"testing"
 )
 
-// TestGetSettings_設定一覧の取得
-func TestGetSettings_設定一覧の取得(t *testing.T) {
+// TestGetSettings_RetrieveSettingsList retrieves the list of settings
+func TestGetSettings_RetrieveSettingsList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/settings/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/settings/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/settings/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"settings": []map[string]interface{}{
 				{
@@ -53,62 +53,62 @@ func TestGetSettings_設定一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// 設定一覧を取得
+	// Retrieve settings list
 	resp, err := client.GetSettings()
 	if err != nil {
-		t.Fatalf("設定一覧取得エラー: %v", err)
+		t.Fatalf("Failed to retrieve settings list: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if len(resp.Settings) != 3 {
-		t.Errorf("設定数 = %d; want 3", len(resp.Settings))
+		t.Errorf("Number of settings = %d; want 3", len(resp.Settings))
 	}
 
-	// 1つ目の設定を検証
+	// Verify first setting
 	firstSetting := resp.Settings[0]
 	if firstSetting.Key != "title" {
-		t.Errorf("設定キー = %q; want %q", firstSetting.Key, "title")
+		t.Errorf("Setting key = %q; want %q", firstSetting.Key, "title")
 	}
 	if firstSetting.Value != "My Ghost Site" {
-		t.Errorf("設定値 = %q; want %q", firstSetting.Value, "My Ghost Site")
+		t.Errorf("Setting value = %q; want %q", firstSetting.Value, "My Ghost Site")
 	}
 }
 
-// TestUpdateSettings_設定の更新
-func TestUpdateSettings_設定の更新(t *testing.T) {
+// TestUpdateSettings_UpdateSettings updates settings
+func TestUpdateSettings_UpdateSettings(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify request
 		if r.URL.Path != "/ghost/api/admin/settings/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/settings/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/settings/")
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディをパース
+		// Parse request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースエラー: %v", err)
+			t.Fatalf("Failed to parse request body: %v", err)
 		}
 
-		// settingsが含まれていることを確認
+		// Verify settings field exists
 		settings, ok := reqBody["settings"].([]interface{})
 		if !ok {
-			t.Fatal("settingsフィールドが存在しない")
+			t.Fatal("settings field does not exist")
 		}
 
 		if len(settings) != 1 {
-			t.Errorf("設定数 = %d; want 1", len(settings))
+			t.Errorf("Number of settings = %d; want 1", len(settings))
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"settings": []map[string]interface{}{
 				{
@@ -123,13 +123,13 @@ func TestUpdateSettings_設定の更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// 設定を更新
+	// Update settings
 	updates := []SettingUpdate{
 		{
 			Key:   "title",
@@ -138,19 +138,19 @@ func TestUpdateSettings_設定の更新(t *testing.T) {
 	}
 	resp, err := client.UpdateSettings(updates)
 	if err != nil {
-		t.Fatalf("設定更新エラー: %v", err)
+		t.Fatalf("Failed to update settings: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify response
 	if len(resp.Settings) != 1 {
-		t.Errorf("設定数 = %d; want 1", len(resp.Settings))
+		t.Errorf("Number of settings = %d; want 1", len(resp.Settings))
 	}
 
 	updatedSetting := resp.Settings[0]
 	if updatedSetting.Key != "title" {
-		t.Errorf("設定キー = %q; want %q", updatedSetting.Key, "title")
+		t.Errorf("Setting key = %q; want %q", updatedSetting.Key, "title")
 	}
 	if updatedSetting.Value != "Updated Title" {
-		t.Errorf("設定値 = %q; want %q", updatedSetting.Value, "Updated Title")
+		t.Errorf("Setting value = %q; want %q", updatedSetting.Value, "Updated Title")
 	}
 }

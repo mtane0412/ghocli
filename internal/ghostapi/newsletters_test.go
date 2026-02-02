@@ -1,6 +1,6 @@
 /**
  * newsletters_test.go
- * Newsletters APIのテストコード
+ * Test code for Newsletters API
  */
 
 package ghostapi
@@ -12,36 +12,36 @@ import (
 	"testing"
 )
 
-// TestListNewsletters_ニュースレター一覧の取得
-func TestListNewsletters_ニュースレター一覧の取得(t *testing.T) {
+// TestListNewsletters_GetNewsletterList retrieves a list of newsletters
+func TestListNewsletters_GetNewsletterList(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		if r.URL.Path != "/ghost/api/admin/newsletters/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/newsletters/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/newsletters/")
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// Authorization ヘッダーが存在することを確認
+		// Verify that Authorization header exists
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			t.Error("Authorizationヘッダーが設定されていない")
+			t.Error("Authorization header is not set")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"newsletters": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":                "メインニュースレター",
-					"description":         "週刊ニュースレター",
+					"name":                "Main Newsletter",
+					"description":         "Weekly Newsletter",
 					"slug":                "main-newsletter",
 					"status":              "active",
 					"visibility":          "members",
 					"subscribe_on_signup": true,
-					"sender_name":         "Ghost編集部",
+					"sender_name":         "Ghost Editorial Team",
 					"sender_email":        "newsletter@example.com",
 					"sender_reply_to":     "newsletter",
 					"sort_order":          0,
@@ -50,13 +50,13 @@ func TestListNewsletters_ニュースレター一覧の取得(t *testing.T) {
 				},
 				{
 					"id":                  "64fac5417c4c6b0001234568",
-					"name":                "プレミアムニュースレター",
-					"description":         "有料会員限定ニュースレター",
+					"name":                "Premium Newsletter",
+					"description":         "Paid Members Only Newsletter",
 					"slug":                "premium-newsletter",
 					"status":              "active",
 					"visibility":          "paid",
 					"subscribe_on_signup": false,
-					"sender_name":         "Ghost編集部",
+					"sender_name":         "Ghost Editorial Team",
 					"sender_email":        "premium@example.com",
 					"sender_reply_to":     "newsletter",
 					"sort_order":          1,
@@ -79,54 +79,54 @@ func TestListNewsletters_ニュースレター一覧の取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ニュースレター一覧を取得
+	// Get newsletter list
 	resp, err := client.ListNewsletters(NewsletterListOptions{})
 	if err != nil {
-		t.Fatalf("ニュースレター一覧取得エラー: %v", err)
+		t.Fatalf("Failed to get newsletter list: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify the response
 	if len(resp.Newsletters) != 2 {
-		t.Errorf("ニュースレター数 = %d; want 2", len(resp.Newsletters))
+		t.Errorf("Number of newsletters = %d; want 2", len(resp.Newsletters))
 	}
 
-	// 1つ目のニュースレターを検証
+	// Verify the first newsletter
 	firstNewsletter := resp.Newsletters[0]
-	if firstNewsletter.Name != "メインニュースレター" {
-		t.Errorf("ニュースレター名 = %q; want %q", firstNewsletter.Name, "メインニュースレター")
+	if firstNewsletter.Name != "Main Newsletter" {
+		t.Errorf("Newsletter name = %q; want %q", firstNewsletter.Name, "Main Newsletter")
 	}
 	if firstNewsletter.Slug != "main-newsletter" {
-		t.Errorf("スラッグ = %q; want %q", firstNewsletter.Slug, "main-newsletter")
+		t.Errorf("Slug = %q; want %q", firstNewsletter.Slug, "main-newsletter")
 	}
 	if firstNewsletter.Status != "active" {
-		t.Errorf("ステータス = %q; want %q", firstNewsletter.Status, "active")
+		t.Errorf("Status = %q; want %q", firstNewsletter.Status, "active")
 	}
 }
 
-// TestListNewsletters_filterパラメータ
-func TestListNewsletters_filterパラメータ(t *testing.T) {
+// TestListNewsletters_FilterParameter tests filter parameter usage
+func TestListNewsletters_FilterParameter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// クエリパラメータの検証
+		// Verify query parameters
 		if !r.URL.Query().Has("filter") {
-			t.Error("filterパラメータが設定されていない")
+			t.Error("filter parameter is not set")
 		}
 		if r.URL.Query().Get("filter") != "status:active" {
-			t.Errorf("filterパラメータ = %q; want %q", r.URL.Query().Get("filter"), "status:active")
+			t.Errorf("filter parameter = %q; want %q", r.URL.Query().Get("filter"), "status:active")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"newsletters": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":                "メインニュースレター",
+					"name":                "Main Newsletter",
 					"slug":                "main-newsletter",
 					"status":              "active",
 					"visibility":          "members",
@@ -150,51 +150,51 @@ func TestListNewsletters_filterパラメータ(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ニュースレター一覧を取得（status:activeでフィルター）
+	// Get newsletter list (filtered by status:active)
 	resp, err := client.ListNewsletters(NewsletterListOptions{
 		Filter: "status:active",
 	})
 	if err != nil {
-		t.Fatalf("ニュースレター一覧取得エラー: %v", err)
+		t.Fatalf("Failed to get newsletter list: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify the response
 	if len(resp.Newsletters) != 1 {
-		t.Errorf("ニュースレター数 = %d; want 1", len(resp.Newsletters))
+		t.Errorf("Number of newsletters = %d; want 1", len(resp.Newsletters))
 	}
 }
 
-// TestGetNewsletter_IDでニュースレターを取得
-func TestGetNewsletter_IDでニュースレターを取得(t *testing.T) {
+// TestGetNewsletter_GetNewsletterByID retrieves a newsletter by ID
+func TestGetNewsletter_GetNewsletterByID(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		expectedPath := "/ghost/api/admin/newsletters/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"newsletters": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":                "メインニュースレター",
-					"description":         "週刊ニュースレター",
+					"name":                "Main Newsletter",
+					"description":         "Weekly Newsletter",
 					"slug":                "main-newsletter",
 					"status":              "active",
 					"visibility":          "members",
 					"subscribe_on_signup": true,
-					"sender_name":         "Ghost編集部",
+					"sender_name":         "Ghost Editorial Team",
 					"sender_email":        "newsletter@example.com",
 					"sender_reply_to":     "newsletter",
 					"sort_order":          0,
@@ -209,52 +209,52 @@ func TestGetNewsletter_IDでニュースレターを取得(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ニュースレターを取得
+	// Get newsletter
 	newsletter, err := client.GetNewsletter("64fac5417c4c6b0001234567")
 	if err != nil {
-		t.Fatalf("ニュースレター取得エラー: %v", err)
+		t.Fatalf("Failed to get newsletter: %v", err)
 	}
 
-	// レスポンスの検証
-	if newsletter.Name != "メインニュースレター" {
-		t.Errorf("ニュースレター名 = %q; want %q", newsletter.Name, "メインニュースレター")
+	// Verify the response
+	if newsletter.Name != "Main Newsletter" {
+		t.Errorf("Newsletter name = %q; want %q", newsletter.Name, "Main Newsletter")
 	}
 	if newsletter.ID != "64fac5417c4c6b0001234567" {
-		t.Errorf("ニュースレターID = %q; want %q", newsletter.ID, "64fac5417c4c6b0001234567")
+		t.Errorf("Newsletter ID = %q; want %q", newsletter.ID, "64fac5417c4c6b0001234567")
 	}
 }
 
-// TestGetNewsletter_スラッグでニュースレターを取得
-func TestGetNewsletter_スラッグでニュースレターを取得(t *testing.T) {
+// TestGetNewsletter_GetNewsletterBySlug retrieves a newsletter by slug
+func TestGetNewsletter_GetNewsletterBySlug(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		expectedPath := "/ghost/api/admin/newsletters/slug/main-newsletter/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "GET" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "GET")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "GET")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"newsletters": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":                "メインニュースレター",
-					"description":         "週刊ニュースレター",
+					"name":                "Main Newsletter",
+					"description":         "Weekly Newsletter",
 					"slug":                "main-newsletter",
 					"status":              "active",
 					"visibility":          "members",
 					"subscribe_on_signup": true,
-					"sender_name":         "Ghost編集部",
+					"sender_name":         "Ghost Editorial Team",
 					"sender_email":        "newsletter@example.com",
 					"sender_reply_to":     "newsletter",
 					"sort_order":          0,
@@ -269,59 +269,59 @@ func TestGetNewsletter_スラッグでニュースレターを取得(t *testing.
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ニュースレターを取得
+	// Get newsletter
 	newsletter, err := client.GetNewsletter("slug:main-newsletter")
 	if err != nil {
-		t.Fatalf("ニュースレター取得エラー: %v", err)
+		t.Fatalf("Failed to get newsletter: %v", err)
 	}
 
-	// レスポンスの検証
+	// Verify the response
 	if newsletter.Slug != "main-newsletter" {
-		t.Errorf("スラッグ = %q; want %q", newsletter.Slug, "main-newsletter")
+		t.Errorf("Slug = %q; want %q", newsletter.Slug, "main-newsletter")
 	}
 }
 
-// TestCreateNewsletter_ニュースレターの作成
-func TestCreateNewsletter_ニュースレターの作成(t *testing.T) {
+// TestCreateNewsletter_CreateNewsletter creates a new newsletter
+func TestCreateNewsletter_CreateNewsletter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		if r.URL.Path != "/ghost/api/admin/newsletters/" {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/newsletters/")
+			t.Errorf("Request path = %q; want %q", r.URL.Path, "/ghost/api/admin/newsletters/")
 		}
 		if r.Method != "POST" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "POST")
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+			t.Fatalf("Failed to parse request body: %v", err)
 		}
 
 		newsletters, ok := reqBody["newsletters"].([]interface{})
 		if !ok || len(newsletters) == 0 {
-			t.Error("newslettersフィールドが正しくない")
+			t.Error("newsletters field is invalid")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"newsletters": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234569",
-					"name":                "新規ニュースレター",
-					"description":         "テスト用ニュースレター",
+					"name":                "New Newsletter",
+					"description":         "Test Newsletter",
 					"slug":                "new-newsletter",
 					"status":              "active",
 					"visibility":          "members",
 					"subscribe_on_signup": true,
-					"sender_name":         "テスト編集部",
+					"sender_name":         "Test Editorial Team",
 					"sender_email":        "test@example.com",
 					"sender_reply_to":     "newsletter",
 					"sort_order":          0,
@@ -336,72 +336,72 @@ func TestCreateNewsletter_ニュースレターの作成(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ニュースレターを作成
+	// Create newsletter
 	newNewsletter := &Newsletter{
-		Name:              "新規ニュースレター",
-		Description:       "テスト用ニュースレター",
+		Name:              "New Newsletter",
+		Description:       "Test Newsletter",
 		Visibility:        "members",
 		SubscribeOnSignup: true,
-		SenderName:        "テスト編集部",
+		SenderName:        "Test Editorial Team",
 		SenderEmail:       "test@example.com",
 	}
 
 	createdNewsletter, err := client.CreateNewsletter(newNewsletter)
 	if err != nil {
-		t.Fatalf("ニュースレター作成エラー: %v", err)
+		t.Fatalf("Failed to create newsletter: %v", err)
 	}
 
-	// レスポンスの検証
-	if createdNewsletter.Name != "新規ニュースレター" {
-		t.Errorf("ニュースレター名 = %q; want %q", createdNewsletter.Name, "新規ニュースレター")
+	// Verify the response
+	if createdNewsletter.Name != "New Newsletter" {
+		t.Errorf("Newsletter name = %q; want %q", createdNewsletter.Name, "New Newsletter")
 	}
 	if createdNewsletter.ID == "" {
-		t.Error("ニュースレターIDが設定されていない")
+		t.Error("Newsletter ID is not set")
 	}
 }
 
-// TestUpdateNewsletter_ニュースレターの更新
-func TestUpdateNewsletter_ニュースレターの更新(t *testing.T) {
+// TestUpdateNewsletter_UpdateNewsletter updates an existing newsletter
+func TestUpdateNewsletter_UpdateNewsletter(t *testing.T) {
 	// Create test HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
+		// Verify the request
 		expectedPath := "/ghost/api/admin/newsletters/64fac5417c4c6b0001234567/"
 		if r.URL.Path != expectedPath {
-			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+			t.Errorf("Request path = %q; want %q", r.URL.Path, expectedPath)
 		}
 		if r.Method != "PUT" {
-			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+			t.Errorf("HTTP method = %q; want %q", r.Method, "PUT")
 		}
 
-		// リクエストボディを検証
+		// Verify request body
 		var reqBody map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Fatalf("リクエストボディのパースに失敗: %v", err)
+			t.Fatalf("Failed to parse request body: %v", err)
 		}
 
 		newsletters, ok := reqBody["newsletters"].([]interface{})
 		if !ok || len(newsletters) == 0 {
-			t.Error("newslettersフィールドが正しくない")
+			t.Error("newsletters field is invalid")
 		}
 
-		// レスポンスを返す
+		// Return response
 		response := map[string]interface{}{
 			"newsletters": []map[string]interface{}{
 				{
 					"id":                  "64fac5417c4c6b0001234567",
-					"name":                "更新されたニュースレター",
-					"description":         "更新後の説明",
+					"name":                "Updated Newsletter",
+					"description":         "Updated Description",
 					"slug":                "main-newsletter",
 					"status":              "active",
 					"visibility":          "members",
 					"subscribe_on_signup": true,
-					"sender_name":         "更新後編集部",
+					"sender_name":         "Updated Editorial Team",
 					"sender_email":        "updated@example.com",
 					"sender_reply_to":     "newsletter",
 					"sort_order":          0,
@@ -416,30 +416,30 @@ func TestUpdateNewsletter_ニュースレターの更新(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	// Create client
 	client, err := NewClient(server.URL, "test-key", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	if err != nil {
-		t.Fatalf("クライアント作成エラー: %v", err)
+		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	// ニュースレターを更新
+	// Update newsletter
 	updateNewsletter := &Newsletter{
-		Name:        "更新されたニュースレター",
-		Description: "更新後の説明",
-		SenderName:  "更新後編集部",
+		Name:        "Updated Newsletter",
+		Description: "Updated Description",
+		SenderName:  "Updated Editorial Team",
 		SenderEmail: "updated@example.com",
 	}
 
 	updatedNewsletter, err := client.UpdateNewsletter("64fac5417c4c6b0001234567", updateNewsletter)
 	if err != nil {
-		t.Fatalf("ニュースレター更新エラー: %v", err)
+		t.Fatalf("Failed to update newsletter: %v", err)
 	}
 
-	// レスポンスの検証
-	if updatedNewsletter.Name != "更新されたニュースレター" {
-		t.Errorf("ニュースレター名 = %q; want %q", updatedNewsletter.Name, "更新されたニュースレター")
+	// Verify the response
+	if updatedNewsletter.Name != "Updated Newsletter" {
+		t.Errorf("Newsletter name = %q; want %q", updatedNewsletter.Name, "Updated Newsletter")
 	}
-	if updatedNewsletter.Description != "更新後の説明" {
-		t.Errorf("説明 = %q; want %q", updatedNewsletter.Description, "更新後の説明")
+	if updatedNewsletter.Description != "Updated Description" {
+		t.Errorf("Description = %q; want %q", updatedNewsletter.Description, "Updated Description")
 	}
 }

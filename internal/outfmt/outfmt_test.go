@@ -1,6 +1,6 @@
 /**
  * outfmt_test.go
- * 出力フォーマット機能のテストコード
+ * Test code for output formatting functionality
  */
 
 package outfmt
@@ -14,8 +14,8 @@ import (
 	"github.com/mattn/go-runewidth"
 )
 
-// TestPrintJSON_JSON形式で出力
-func TestPrintJSON_JSON形式で出力(t *testing.T) {
+// TestPrintJSON_OutputsInJSONFormat tests JSON format output
+func TestPrintJSON_OutputsInJSONFormat(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "json")
 
@@ -25,22 +25,22 @@ func TestPrintJSON_JSON形式で出力(t *testing.T) {
 	}
 
 	if err := formatter.Print(data); err != nil {
-		t.Fatalf("出力に失敗: %v", err)
+		t.Fatalf("Failed to print: %v", err)
 	}
 
 	output := buf.String()
 
-	// JSONとしてパースできることを確認
+	// Verify it can be parsed as JSON
 	if !strings.Contains(output, `"title"`) {
-		t.Error("JSONに'title'フィールドが含まれていない")
+		t.Error("JSON does not contain 'title' field")
 	}
 	if !strings.Contains(output, `"Test Blog"`) {
-		t.Error("JSONに'Test Blog'値が含まれていない")
+		t.Error("JSON does not contain 'Test Blog' value")
 	}
 }
 
-// TestPrintTable_テーブル形式で出力
-func TestPrintTable_テーブル形式で出力(t *testing.T) {
+// TestPrintTable_OutputsInTableFormat tests table format output
+func TestPrintTable_OutputsInTableFormat(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "table")
 
@@ -51,25 +51,25 @@ func TestPrintTable_テーブル形式で出力(t *testing.T) {
 	}
 
 	if err := formatter.PrintTable(headers, rows); err != nil {
-		t.Fatalf("テーブル出力に失敗: %v", err)
+		t.Fatalf("Failed to print table: %v", err)
 	}
 
 	output := buf.String()
 
-	// ヘッダーと各行が含まれていることを確認
+	// Verify headers and rows are included
 	if !strings.Contains(output, "Name") {
-		t.Error("出力にヘッダー'Name'が含まれていない")
+		t.Error("Output does not contain header 'Name'")
 	}
 	if !strings.Contains(output, "Site1") {
-		t.Error("出力に'Site1'が含まれていない")
+		t.Error("Output does not contain 'Site1'")
 	}
 	if !strings.Contains(output, "Site2") {
-		t.Error("出力に'Site2'が含まれていない")
+		t.Error("Output does not contain 'Site2'")
 	}
 }
 
-// TestPrintPlain_プレーン形式（TSV）で出力
-func TestPrintPlain_プレーン形式で出力(t *testing.T) {
+// TestPrintPlain_OutputsInPlainFormat tests plain format (TSV) output
+func TestPrintPlain_OutputsInPlainFormat(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "plain")
 
@@ -80,28 +80,28 @@ func TestPrintPlain_プレーン形式で出力(t *testing.T) {
 	}
 
 	if err := formatter.PrintTable(headers, rows); err != nil {
-		t.Fatalf("プレーン出力に失敗: %v", err)
+		t.Fatalf("Failed to print plain: %v", err)
 	}
 
 	output := buf.String()
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 
-	// ヘッダー行とデータ行があることを確認
+	// Verify header and data rows exist
 	if len(lines) != 3 {
-		t.Errorf("行数 = %d; want 3", len(lines))
+		t.Errorf("Line count = %d; want 3", len(lines))
 	}
 
-	// TSV形式（タブ区切り）であることを確認
+	// Verify TSV format (tab-separated)
 	if !strings.Contains(lines[0], "\t") {
-		t.Error("ヘッダー行がタブ区切りではない")
+		t.Error("Header row is not tab-separated")
 	}
 	if !strings.Contains(lines[1], "\t") {
-		t.Error("データ行1がタブ区切りではない")
+		t.Error("Data row 1 is not tab-separated")
 	}
 }
 
-// TestPrintMessage_メッセージ出力
-func TestPrintMessage_メッセージ出力(t *testing.T) {
+// TestPrintMessage_PrintsMessage tests message output
+func TestPrintMessage_PrintsMessage(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "table")
 
@@ -110,12 +110,12 @@ func TestPrintMessage_メッセージ出力(t *testing.T) {
 
 	output := buf.String()
 	if !strings.Contains(output, message) {
-		t.Errorf("出力にメッセージが含まれていない: %s", output)
+		t.Errorf("Output does not contain message: %s", output)
 	}
 }
 
-// TestPrintError_エラー出力
-func TestPrintError_エラー出力(t *testing.T) {
+// TestPrintError_PrintsError tests error output
+func TestPrintError_PrintsError(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "table")
 
@@ -124,171 +124,171 @@ func TestPrintError_エラー出力(t *testing.T) {
 
 	output := buf.String()
 	if !strings.Contains(output, errMsg) {
-		t.Errorf("出力にエラーメッセージが含まれていない: %s", output)
+		t.Errorf("Output does not contain error message: %s", output)
 	}
 }
 
-// TestPrintTable_日本語文字列を含むテーブル表示
-func TestPrintTable_日本語文字列を含むテーブル表示(t *testing.T) {
+// TestPrintTable_TableWithJapaneseStrings tests table display with Japanese strings
+func TestPrintTable_TableWithJapaneseStrings(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "table")
 
 	headers := []string{"Title", "Status"}
 	rows := [][]string{
-		{"非エンジニアおじさんの開発環境2026", "published"},
-		{"1x4材と麻紐でキャットタワーを作る", "published"},
+		{"Non-engineer uncle's dev environment 2026", "published"},
+		{"Making a cat tower with 1x4 boards and hemp rope", "published"},
 		{"Test", "draft"},
 	}
 
 	if err := formatter.PrintTable(headers, rows); err != nil {
-		t.Fatalf("テーブル出力に失敗: %v", err)
+		t.Fatalf("Failed to print table: %v", err)
 	}
 
 	output := buf.String()
 	lines := strings.Split(output, "\n")
 
-	// ヘッダー行、データ3行、最後の空行 = 5行
+	// Header row, 3 data rows, last empty line = 5 lines
 	if len(lines) != 5 {
-		t.Errorf("行数 = %d; want 5", len(lines))
+		t.Errorf("Line count = %d; want 5", len(lines))
 	}
 
-	// すべての行の表示幅が揃っていることを確認
+	// Verify all rows have the same display width
 	headerLine := lines[0]
 	headerWidth := runewidth.StringWidth(headerLine)
 	for i := range rows {
-		dataLine := lines[i+1] // ヘッダーの後
-		// データ行の表示幅が、ヘッダー行と同じであることを確認
+		dataLine := lines[i+1] // After header
+		// Verify data row display width matches header row
 		dataWidth := runewidth.StringWidth(dataLine)
 		if headerWidth != dataWidth {
-			t.Errorf("行 %d の表示幅がヘッダーと異なる (header=%d, data=%d)\n  Header: %q\n  Data:   %q",
+			t.Errorf("Row %d display width differs from header (header=%d, data=%d)\n  Header: %q\n  Data:   %q",
 				i, headerWidth, dataWidth, headerLine, dataLine)
 		}
 	}
 }
 
-// TestPrintKeyValue_プレーン形式で出力
-func TestPrintKeyValue_プレーン形式で出力(t *testing.T) {
+// TestPrintKeyValue_OutputsInPlainFormat tests key-value output in plain format
+func TestPrintKeyValue_OutputsInPlainFormat(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "plain")
 
-	// キー/値のペア（ヘッダーなし）
+	// Key-value pairs (no headers)
 	rows := [][]string{
-		{"Title", "はなしのタネ"},
+		{"Title", "Story Seeds"},
 		{"URL", "https://hanashinotane.com"},
 		{"Version", "5.102"},
 	}
 
 	if err := formatter.PrintKeyValue(rows); err != nil {
-		t.Fatalf("キー/値出力に失敗: %v", err)
+		t.Fatalf("Failed to print key-value: %v", err)
 	}
 
 	output := buf.String()
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 
-	// データ3行（ヘッダーなし）
+	// 3 data rows (no headers)
 	if len(lines) != 3 {
-		t.Errorf("行数 = %d; want 3", len(lines))
+		t.Errorf("Line count = %d; want 3", len(lines))
 	}
 
-	// TSV形式（タブ区切り）であることを確認
+	// Verify TSV format (tab-separated)
 	if !strings.Contains(lines[0], "\t") {
-		t.Error("データ行1がタブ区切りではない")
+		t.Error("Data row 1 is not tab-separated")
 	}
 
-	// 最初の行が "Title\tはなしのタネ" であることを確認
-	expected := "Title\tはなしのタネ"
+	// Verify first row is "Title\tStory Seeds"
+	expected := "Title\tStory Seeds"
 	if lines[0] != expected {
-		t.Errorf("最初の行 = %q; want %q", lines[0], expected)
+		t.Errorf("First row = %q; want %q", lines[0], expected)
 	}
 
-	// "Field" または "Value" というヘッダーがないことを確認
+	// Verify no "Field" or "Value" headers exist
 	if strings.Contains(output, "Field") || strings.Contains(output, "Value") {
-		t.Error("出力にヘッダー（Field/Value）が含まれている")
+		t.Error("Output contains headers (Field/Value)")
 	}
 }
 
-// TestPrintKeyValue_JSON形式で出力
-func TestPrintKeyValue_JSON形式で出力(t *testing.T) {
+// TestPrintKeyValue_OutputsInJSONFormat tests key-value output in JSON format
+func TestPrintKeyValue_OutputsInJSONFormat(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "json")
 
-	// キー/値のペア
+	// Key-value pairs
 	rows := [][]string{
-		{"Title", "はなしのタネ"},
+		{"Title", "Story Seeds"},
 		{"URL", "https://hanashinotane.com"},
 		{"Version", "5.102"},
 	}
 
 	if err := formatter.PrintKeyValue(rows); err != nil {
-		t.Fatalf("キー/値出力に失敗: %v", err)
+		t.Fatalf("Failed to print key-value: %v", err)
 	}
 
 	output := buf.String()
 
-	// JSONオブジェクトとして出力されることを確認（配列ではない）
+	// Verify output as JSON object (not array)
 	if strings.HasPrefix(strings.TrimSpace(output), "[") {
-		t.Error("JSON出力が配列形式になっている（オブジェクト形式であるべき）")
+		t.Error("JSON output is in array format (should be object format)")
 	}
 
-	// 各キーが含まれていることを確認
+	// Verify each key is included
 	if !strings.Contains(output, `"Title"`) {
-		t.Error("JSONに'Title'フィールドが含まれていない")
+		t.Error("JSON does not contain 'Title' field")
 	}
-	if !strings.Contains(output, `"はなしのタネ"`) {
-		t.Error("JSONに'はなしのタネ'値が含まれていない")
+	if !strings.Contains(output, `"Story Seeds"`) {
+		t.Error("JSON does not contain 'Story Seeds' value")
 	}
 	if !strings.Contains(output, `"URL"`) {
-		t.Error("JSONに'URL'フィールドが含まれていない")
+		t.Error("JSON does not contain 'URL' field")
 	}
 }
 
-// TestPrintKeyValue_テーブル形式で出力
-func TestPrintKeyValue_テーブル形式で出力(t *testing.T) {
+// TestPrintKeyValue_OutputsInTableFormat tests key-value output in table format
+func TestPrintKeyValue_OutputsInTableFormat(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewFormatter(&buf, "table")
 
-	// キー/値のペア
+	// Key-value pairs
 	rows := [][]string{
-		{"Title", "はなしのタネ"},
+		{"Title", "Story Seeds"},
 		{"URL", "https://hanashinotane.com"},
 		{"Version", "5.102"},
 	}
 
 	if err := formatter.PrintKeyValue(rows); err != nil {
-		t.Fatalf("キー/値出力に失敗: %v", err)
+		t.Fatalf("Failed to print key-value: %v", err)
 	}
 
-	// tabwriterをFlushする
+	// Flush tabwriter
 	if err := formatter.Flush(); err != nil {
-		t.Fatalf("Flush失敗: %v", err)
+		t.Fatalf("Flush failed: %v", err)
 	}
 
 	output := buf.String()
 	lines := strings.Split(output, "\n")
 
-	// データ3行、最後の空行 = 4行（ヘッダー行とセパレーター行はなし）
+	// 3 data rows, last empty line = 4 lines (no header or separator rows)
 	if len(lines) != 4 {
-		t.Errorf("行数 = %d; want 4 (got: %v)", len(lines), lines)
+		t.Errorf("Line count = %d; want 4 (got: %v)", len(lines), lines)
 	}
 
-	// 最初の行に "Title" が含まれることを確認
+	// Verify first row contains "Title"
 	if !strings.Contains(lines[0], "Title") {
-		t.Error("最初の行に'Title'が含まれていない")
+		t.Error("First row does not contain 'Title'")
 	}
 
-	// 最初の行に "はなしのタネ" が含まれることを確認
-	if !strings.Contains(lines[0], "はなしのタネ") {
-		t.Error("最初の行に'はなしのタネ'が含まれていない")
+	// Verify first row contains "Story Seeds"
+	if !strings.Contains(lines[0], "Story Seeds") {
+		t.Error("First row does not contain 'Story Seeds'")
 	}
 
-	// タブ文字は含まれていないこと（tabwriterでスペースに変換される）
+	// Verify no tab characters (converted to spaces by tabwriter)
 	if strings.Contains(lines[0], "\t") {
-		t.Error("タブ文字が含まれている（tabwriterで整列されるべき）")
+		t.Error("Contains tab character (should be aligned by tabwriter)")
 	}
 }
 
-// TestWithMode_contextにModeを埋め込む
-func TestWithMode_contextにModeを埋め込む(t *testing.T) {
+// TestWithMode_EmbedsModeInContext tests embedding Mode in context
+func TestWithMode_EmbedsModeInContext(t *testing.T) {
 	tests := []struct {
 		name      string
 		mode      Mode
@@ -296,19 +296,19 @@ func TestWithMode_contextにModeを埋め込む(t *testing.T) {
 		wantPlain bool
 	}{
 		{
-			name:      "JSON モード",
+			name:      "JSON mode",
 			mode:      Mode{JSON: true, Plain: false},
 			wantJSON:  true,
 			wantPlain: false,
 		},
 		{
-			name:      "Plain モード",
+			name:      "Plain mode",
 			mode:      Mode{JSON: false, Plain: true},
 			wantJSON:  false,
 			wantPlain: true,
 		},
 		{
-			name:      "Table モード（デフォルト）",
+			name:      "Table mode (default)",
 			mode:      Mode{JSON: false, Plain: false},
 			wantJSON:  false,
 			wantPlain: false,
@@ -330,69 +330,69 @@ func TestWithMode_contextにModeを埋め込む(t *testing.T) {
 	}
 }
 
-// TestIsJSON_Modeが設定されていない場合
-func TestIsJSON_Modeが設定されていない場合(t *testing.T) {
+// TestIsJSON_WhenModeNotSet tests IsJSON when Mode is not set
+func TestIsJSON_WhenModeNotSet(t *testing.T) {
 	ctx := context.Background()
 	if IsJSON(ctx) {
-		t.Error("IsJSON() = true, want false (Modeが設定されていない)")
+		t.Error("IsJSON() = true, want false (Mode not set)")
 	}
 }
 
-// TestIsPlain_Modeが設定されていない場合
-func TestIsPlain_Modeが設定されていない場合(t *testing.T) {
+// TestIsPlain_WhenModeNotSet tests IsPlain when Mode is not set
+func TestIsPlain_WhenModeNotSet(t *testing.T) {
 	ctx := context.Background()
 	if IsPlain(ctx) {
-		t.Error("IsPlain() = true, want false (Modeが設定されていない)")
+		t.Error("IsPlain() = true, want false (Mode not set)")
 	}
 }
 
-// TestTableWriter_テーブルモードでtabwriterを返す
-func TestTableWriter_テーブルモードでtabwriterを返す(t *testing.T) {
+// TestTableWriter_ReturnsTabwriterInTableMode tests tabwriter return in table mode
+func TestTableWriter_ReturnsTabwriterInTableMode(t *testing.T) {
 	var buf bytes.Buffer
 	ctx := context.Background()
-	// Tableモード（JSON=false, Plain=false）
+	// Table mode (JSON=false, Plain=false)
 	ctx = WithMode(ctx, Mode{JSON: false, Plain: false})
 
 	w := tableWriter(ctx, &buf)
 
-	// tabwriterが返されることを確認
-	// テーブルモードの場合、writerはbufと異なるはず（tabwriterでラップされる）
+	// Verify tabwriter is returned
+	// In table mode, writer should differ from buf (wrapped by tabwriter)
 	if w == &buf {
 		t.Error("tableWriter() returned original writer, want tabwriter wrapper")
 	}
 
-	// 書き込みとFlushのテスト
+	// Test write and flush
 	_, err := w.Write([]byte("test\tdata\n"))
 	if err != nil {
 		t.Errorf("Write() error = %v", err)
 	}
 }
 
-// TestTableWriter_JSONモードで元のwriterを返す
-func TestTableWriter_JSONモードで元のwriterを返す(t *testing.T) {
+// TestTableWriter_ReturnsOriginalWriterInJSONMode tests original writer return in JSON mode
+func TestTableWriter_ReturnsOriginalWriterInJSONMode(t *testing.T) {
 	var buf bytes.Buffer
 	ctx := context.Background()
-	// JSONモード
+	// JSON mode
 	ctx = WithMode(ctx, Mode{JSON: true, Plain: false})
 
 	w := tableWriter(ctx, &buf)
 
-	// 元のwriterが返されることを確認
+	// Verify original writer is returned
 	if w != &buf {
 		t.Error("tableWriter() in JSON mode should return original writer")
 	}
 }
 
-// TestTableWriter_Plainモードで元のwriterを返す
-func TestTableWriter_Plainモードで元のwriterを返す(t *testing.T) {
+// TestTableWriter_ReturnsOriginalWriterInPlainMode tests original writer return in plain mode
+func TestTableWriter_ReturnsOriginalWriterInPlainMode(t *testing.T) {
 	var buf bytes.Buffer
 	ctx := context.Background()
-	// Plainモード
+	// Plain mode
 	ctx = WithMode(ctx, Mode{JSON: false, Plain: true})
 
 	w := tableWriter(ctx, &buf)
 
-	// 元のwriterが返されることを確認
+	// Verify original writer is returned
 	if w != &buf {
 		t.Error("tableWriter() in Plain mode should return original writer")
 	}

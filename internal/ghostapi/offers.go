@@ -2,8 +2,8 @@
  * offers.go
  * Offers API
  *
- * Ghost Admin APIのOffers機能を提供します。
- * Create/Update操作には確認機構が適用されます。
+ * Provides Offers functionality for the Ghost Admin API.
+ * Confirmation mechanism is applied to Create/Update operations.
  */
 
 package ghostapi
@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// Offer はGhostのオファーを表します
+// Offer represents a Ghost offer
 type Offer struct {
 	ID                 string    `json:"id,omitempty"`
 	Name               string    `json:"name,omitempty"`
@@ -36,20 +36,20 @@ type Offer struct {
 	UpdatedAt          time.Time `json:"updated_at,omitempty"`
 }
 
-// OfferTier はオファーに関連するティア情報を表します
+// OfferTier represents tier information related to an offer
 type OfferTier struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 }
 
-// OfferListOptions はオファー一覧取得のオプションです
+// OfferListOptions represents options for retrieving offer list
 type OfferListOptions struct {
-	Limit  int    // 取得件数（デフォルト: 15）
-	Page   int    // ページ番号（デフォルト: 1）
-	Filter string // フィルター条件
+	Limit  int    // Number of items to retrieve (default: 15)
+	Page   int    // Page number (default: 1)
+	Filter string // Filter condition
 }
 
-// OfferListResponse はオファー一覧のレスポンスです
+// OfferListResponse represents an offer list response
 type OfferListResponse struct {
 	Offers []Offer `json:"offers"`
 	Meta   struct {
@@ -62,16 +62,16 @@ type OfferListResponse struct {
 	} `json:"meta"`
 }
 
-// OfferResponse はオファー単体のレスポンスです
+// OfferResponse represents a single offer response
 type OfferResponse struct {
 	Offers []Offer `json:"offers"`
 }
 
-// ListOffers はオファー一覧を取得します
+// ListOffers retrieves a list of offers
 func (c *Client) ListOffers(opts OfferListOptions) (*OfferListResponse, error) {
 	path := "/ghost/api/admin/offers/"
 
-	// クエリパラメータを構築
+	// Build query parameters
 	params := []string{}
 	if opts.Limit > 0 {
 		params = append(params, fmt.Sprintf("limit=%d", opts.Limit))
@@ -87,106 +87,106 @@ func (c *Client) ListOffers(opts OfferListOptions) (*OfferListResponse, error) {
 		path += "?" + strings.Join(params, "&")
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp OfferListResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &resp, nil
 }
 
-// GetOffer は指定されたIDのオファーを取得します
-// 注意: Offers APIはスラッグによる取得をサポートしていません（IDのみ）
+// GetOffer retrieves an offer by ID
+// Note: Offers API does not support retrieval by slug (ID only)
 func (c *Client) GetOffer(id string) (*Offer, error) {
 	path := fmt.Sprintf("/ghost/api/admin/offers/%s/", id)
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp OfferResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Offers) == 0 {
-		return nil, fmt.Errorf("オファーが見つかりません: %s", id)
+		return nil, fmt.Errorf("offer not found: %s", id)
 	}
 
 	return &resp.Offers[0], nil
 }
 
-// CreateOffer は新しいオファーを作成します
+// CreateOffer creates a new offer
 func (c *Client) CreateOffer(offer *Offer) (*Offer, error) {
 	path := "/ghost/api/admin/offers/"
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"offers": []interface{}{offer},
 	}
 
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("POST", path, bytes.NewReader(reqBodyJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp OfferResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Offers) == 0 {
-		return nil, fmt.Errorf("オファーの作成に失敗しました")
+		return nil, fmt.Errorf("failed to create offer")
 	}
 
 	return &resp.Offers[0], nil
 }
 
-// UpdateOffer は既存のオファーを更新します
+// UpdateOffer updates an existing offer
 func (c *Client) UpdateOffer(id string, offer *Offer) (*Offer, error) {
 	path := fmt.Sprintf("/ghost/api/admin/offers/%s/", id)
 
-	// リクエストボディを構築
+	// Build request body
 	reqBody := map[string]interface{}{
 		"offers": []interface{}{offer},
 	}
 
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストボディのJSON化に失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	// リクエストを実行
+	// Execute request
 	respBody, err := c.doRequest("PUT", path, bytes.NewReader(reqBodyJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	// レスポンスをパース
+	// Parse response
 	var resp OfferResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("レスポンスのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if len(resp.Offers) == 0 {
-		return nil, fmt.Errorf("オファーの更新に失敗しました")
+		return nil, fmt.Errorf("failed to update offer")
 	}
 
 	return &resp.Offers[0], nil

@@ -1,8 +1,8 @@
 /**
  * members.go
- * メンバー管理コマンド
+ * Member management commands
  *
- * Ghostメンバー（購読者）の作成、更新、削除機能を提供します。
+ * Provides functionality for creating, updating, and deleting Ghost members (subscribers).
  */
 
 package cmd
@@ -17,7 +17,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// MembersCmd はメンバー管理コマンドです
+// MembersCmd is the member management command
 type MembersCmd struct {
 	List   MembersListCmd   `cmd:"" help:"List members"`
 	Get    MembersInfoCmd   `cmd:"" help:"Show member information"`
@@ -25,17 +25,17 @@ type MembersCmd struct {
 	Update MembersUpdateCmd `cmd:"" help:"Update a member"`
 	Delete MembersDeleteCmd `cmd:"" help:"Delete a member"`
 
-	// Phase 1: ステータス別一覧ショートカット
+	// Phase 1: Status-based list shortcuts
 	Paid MembersPaidCmd `cmd:"" help:"List paid members"`
 	Free MembersFreeCmd `cmd:"" help:"List free members"`
 
-	// Phase 3: ラベル操作
+	// Phase 3: Label operations
 	Label   MembersLabelCmd   `cmd:"" help:"Add label to member"`
 	Unlabel MembersUnlabelCmd `cmd:"" help:"Remove label from member"`
 	Recent  MembersRecentCmd  `cmd:"" help:"List recently created members"`
 }
 
-// MembersListCmd is the command to retrieve メンバー list
+// MembersListCmd is the command to retrieve member list
 type MembersListCmd struct {
 	Limit  int    `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page   int    `help:"Page number" short:"p" default:"1"`
@@ -112,7 +112,7 @@ func (c *MembersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// MembersInfoCmd is the command to show メンバー information
+// MembersInfoCmd is the command to show member information
 type MembersInfoCmd struct {
 	ID string `arg:"" help:"Member ID"`
 }
@@ -180,7 +180,7 @@ func (c *MembersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.Flush()
 }
 
-// MembersCreateCmd is the command to create メンバー
+// MembersCreateCmd is the command to create member
 type MembersCreateCmd struct {
 	Email  string   `help:"Member email (required)" short:"e" required:""`
 	Name   string   `help:"Member name" short:"n"`
@@ -233,7 +233,7 @@ func (c *MembersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersUpdateCmd is the command to update メンバー
+// MembersUpdateCmd is the command to update member
 type MembersUpdateCmd struct {
 	ID     string   `arg:"" help:"Member ID"`
 	Name   string   `help:"Member name" short:"n"`
@@ -299,7 +299,7 @@ func (c *MembersUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersDeleteCmd is the command to delete メンバー
+// MembersDeleteCmd is the command to delete member
 type MembersDeleteCmd struct {
 	ID string `arg:"" help:"Member ID"`
 }
@@ -339,7 +339,7 @@ func (c *MembersDeleteCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 1: ステータス別一覧ショートカット
+// Phase 1: Status-based list shortcuts
 // ========================================
 
 // MembersPaidCmd is the command to retrieve paid member list
@@ -439,10 +439,10 @@ func (c *MembersFreeCmd) Run(ctx context.Context, root *RootFlags) error {
 }
 
 // ========================================
-// Phase 3: ラベル操作
+// Phase 3: Label operations
 // ========================================
 
-// MembersLabelCmd is the command to add label to メンバー
+// MembersLabelCmd is the command to add label to member
 type MembersLabelCmd struct {
 	ID    string `arg:"" help:"Member ID"`
 	Label string `arg:"" help:"Label name"`
@@ -467,7 +467,7 @@ func (c *MembersLabelCmd) Run(ctx context.Context, root *RootFlags) error {
 		if label.Name == c.Label {
 			// Create output formatter
 			formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-			formatter.PrintMessage(fmt.Sprintf("member already has label '%s' holds label (ID: %s)", c.Label, c.ID))
+			formatter.PrintMessage(fmt.Sprintf("member already has label '%s' (ID: %s)", c.Label, c.ID))
 			return nil
 		}
 	}
@@ -504,7 +504,7 @@ func (c *MembersLabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersUnlabelCmd is the command to remove label from メンバー
+// MembersUnlabelCmd is the command to remove label from member
 type MembersUnlabelCmd struct {
 	ID    string `arg:"" help:"Member ID"`
 	Label string `arg:"" help:"Label name"`
@@ -539,7 +539,7 @@ func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	if !found {
 		// Create output formatter
 		formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
-		formatter.PrintMessage(fmt.Sprintf("member does not have label '%s' does not have label (ID: %s)", c.Label, c.ID))
+		formatter.PrintMessage(fmt.Sprintf("member does not have label '%s' (ID: %s)", c.Label, c.ID))
 		return nil
 	}
 
@@ -572,7 +572,7 @@ func (c *MembersUnlabelCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// MembersRecentCmd is the command to retrieve recently registered メンバー list
+// MembersRecentCmd is the command to retrieve recently registered member list
 type MembersRecentCmd struct {
 	Limit int `help:"Number of members to retrieve" short:"l" aliases:"max,n" default:"15"`
 }

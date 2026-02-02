@@ -1,9 +1,9 @@
 /**
  * tiers.go
- * ティア管理コマンド
+ * Tier management commands
  *
- * Ghostティアの管理機能を提供します。
- * Create/Update操作には確認機構が適用されます。
+ * Provides tier management functionality for Ghost.
+ * Confirmation mechanism is applied to Create/Update operations.
  */
 
 package cmd
@@ -18,7 +18,7 @@ import (
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
-// TiersCmd はティア管理コマンドです
+// TiersCmd is the tier management command
 type TiersCmd struct {
 	List   TiersListCmd   `cmd:"" help:"List tiers"`
 	Get    TiersInfoCmd   `cmd:"" help:"Show tier information"`
@@ -26,7 +26,7 @@ type TiersCmd struct {
 	Update TiersUpdateCmd `cmd:"" help:"Update a tier"`
 }
 
-// TiersListCmd is the command to retrieve ティア list
+// TiersListCmd is the command to retrieve tier list
 type TiersListCmd struct {
 	Limit   int    `help:"Number of tiers to retrieve" short:"l" aliases:"max,n" default:"15"`
 	Page    int    `help:"Page number" short:"p" default:"1"`
@@ -83,7 +83,7 @@ func (c *TiersListCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TiersInfoCmd is the command to show ティア information
+// TiersInfoCmd is the command to show tier information
 type TiersInfoCmd struct {
 	IDOrSlug string `arg:"" help:"Tier ID or slug (use 'slug:tier-name' format for slug)"`
 	Include  string `help:"Include additional data (monthly_price,yearly_price,benefits)" short:"i"`
@@ -133,7 +133,7 @@ func (c *TiersInfoCmd) Run(ctx context.Context, root *RootFlags) error {
 	return formatter.PrintTable(headers, rows)
 }
 
-// TiersCreateCmd is the command to create ティア
+// TiersCreateCmd is the command to create tier
 type TiersCreateCmd struct {
 	Name           string   `help:"Tier name" short:"n" required:""`
 	Description    string   `help:"Tier description" short:"d"`
@@ -198,7 +198,7 @@ func (c *TiersCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 	return nil
 }
 
-// TiersUpdateCmd is the command to update ティア
+// TiersUpdateCmd is the command to update tier
 type TiersUpdateCmd struct {
 	ID             string   `arg:"" help:"Tier ID"`
 	Name           string   `help:"Tier name" short:"n"`

@@ -1,6 +1,6 @@
 /**
  * confirm_test.go
- * 破壊的操作の確認機構のテストコード
+ * Test code for destructive operation confirmation mechanism
  */
 
 package cmd
@@ -14,102 +14,102 @@ import (
 	"github.com/mtane0412/ghocli/internal/ui"
 )
 
-// TestConfirmDestructive_Forceフラグが有効な場合は確認をスキップ
-func TestConfirmDestructive_Forceフラグが有効な場合は確認をスキップ(t *testing.T) {
-	// 前提条件: Forceフラグが有効なRootFlagsを用意
+// TestConfirmDestructive_SkipConfirmationWhenForceEnabled verifies that confirmation is skipped when Force flag is enabled
+func TestConfirmDestructive_SkipConfirmationWhenForceEnabled(t *testing.T) {
+	// Precondition: Prepare RootFlags with Force flag enabled
 	root := &RootFlags{
 		Force:   true,
 		NoInput: false,
 	}
 
-	// contextにUIを埋め込む
+	// Embed UI in context
 	var stdout, stderr bytes.Buffer
 	output := ui.NewOutput(&stdout, &stderr)
 	ctx := ui.WithUI(context.Background(), output)
 
-	// 実行: ConfirmDestructiveを呼び出す
-	err := ConfirmDestructive(ctx, root, "delete post 'テスト記事'")
+	// Execute: Call ConfirmDestructive
+	err := ConfirmDestructive(ctx, root, "delete post 'Test Article'")
 
-	// 検証: エラーが発生しないこと
+	// Verify: No error should occur
 	if err != nil {
-		t.Errorf("Force=true の場合はエラーが発生しない想定だが、エラーが返された: %v", err)
+		t.Errorf("When Force=true, no error is expected, but error was returned: %v", err)
 	}
 }
 
-// TestConfirmDestructive_Forceフラグが無効でも関数は存在する
-func TestConfirmDestructive_Forceフラグが無効でも関数は存在する(t *testing.T) {
-	// 前提条件: Forceフラグが無効なRootFlagsを用意
+// TestConfirmDestructive_FunctionExistsEvenWhenForceDisabled verifies that function exists even when Force flag is disabled
+func TestConfirmDestructive_FunctionExistsEvenWhenForceDisabled(t *testing.T) {
+	// Precondition: Prepare RootFlags with Force flag disabled
 	root := &RootFlags{
 		Force:   false,
 		NoInput: false,
 	}
 
-	// contextにUIを埋め込む
+	// Embed UI in context
 	var stdout, stderr bytes.Buffer
 	output := ui.NewOutput(&stdout, &stderr)
 	ctx := ui.WithUI(context.Background(), output)
 
-	// 実行: この時点では実装が不完全なため、関数が呼び出せることのみ確認
-	// actualの対話的入力テストは別途実装が必要
-	_ = ConfirmDestructive(ctx, root, "delete post 'テスト記事'")
+	// Execute: At this point, implementation is incomplete, so only verify function can be called
+	// Actual interactive input test requires separate implementation
+	_ = ConfirmDestructive(ctx, root, "delete post 'Test Article'")
 }
 
-// TestConfirmDestructive_NoInputフラグが有効な場合はForceなしでエラー
-func TestConfirmDestructive_NoInputフラグが有効な場合はForceなしでエラー(t *testing.T) {
-	// 前提条件: NoInputフラグが有効、Forceフラグが無効なRootFlagsを用意
+// TestConfirmDestructive_ErrorWhenNoInputEnabledWithoutForce verifies that error occurs when NoInput flag is enabled without Force
+func TestConfirmDestructive_ErrorWhenNoInputEnabledWithoutForce(t *testing.T) {
+	// Precondition: Prepare RootFlags with NoInput flag enabled and Force flag disabled
 	root := &RootFlags{
 		Force:   false,
 		NoInput: true,
 	}
 
-	// contextにUIを埋め込む
+	// Embed UI in context
 	var stdout, stderr bytes.Buffer
 	output := ui.NewOutput(&stdout, &stderr)
 	ctx := ui.WithUI(context.Background(), output)
 
-	// 実行: ConfirmDestructiveを呼び出す
-	err := ConfirmDestructive(ctx, root, "delete post 'テスト記事'")
+	// Execute: Call ConfirmDestructive
+	err := ConfirmDestructive(ctx, root, "delete post 'Test Article'")
 
-	// 検証: エラーが発生すること
+	// Verify: Error should occur
 	if err == nil {
-		t.Error("NoInput=true かつ Force=false の場合はエラーが発生する想定だが、エラーが返されなかった")
+		t.Error("When NoInput=true and Force=false, an error is expected, but no error was returned")
 	}
 
-	// 検証: ExitErrorが返されること
+	// Verify: ExitError should be returned
 	var exitErr *ExitError
 	if !errors.As(err, &exitErr) {
-		t.Errorf("ExitErrorが返される想定だが、異なるエラーが返された: %T %v", err, err)
+		t.Errorf("ExitError is expected, but a different error was returned: %T %v", err, err)
 	}
 
-	// 検証: エラーメッセージに "non-interactive" が含まれること
+	// Verify: Error message should contain "non-interactive"
 	if err != nil && !contains(err.Error(), "non-interactive") {
-		t.Errorf("エラーメッセージに 'non-interactive' が含まれていない: %v", err)
+		t.Errorf("Error message does not contain 'non-interactive': %v", err)
 	}
 }
 
-// TestConfirmDestructive_NoInputとForceの両方が有効な場合は確認をスキップ
-func TestConfirmDestructive_NoInputとForceの両方が有効な場合は確認をスキップ(t *testing.T) {
-	// 前提条件: NoInputフラグとForceフラグの両方が有効なRootFlagsを用意
+// TestConfirmDestructive_SkipConfirmationWhenBothNoInputAndForceEnabled verifies that confirmation is skipped when both NoInput and Force are enabled
+func TestConfirmDestructive_SkipConfirmationWhenBothNoInputAndForceEnabled(t *testing.T) {
+	// Precondition: Prepare RootFlags with both NoInput and Force flags enabled
 	root := &RootFlags{
 		Force:   true,
 		NoInput: true,
 	}
 
-	// contextにUIを埋め込む
+	// Embed UI in context
 	var stdout, stderr bytes.Buffer
 	output := ui.NewOutput(&stdout, &stderr)
 	ctx := ui.WithUI(context.Background(), output)
 
-	// 実行: ConfirmDestructiveを呼び出す
-	err := ConfirmDestructive(ctx, root, "delete post 'テスト記事'")
+	// Execute: Call ConfirmDestructive
+	err := ConfirmDestructive(ctx, root, "delete post 'Test Article'")
 
-	// 検証: エラーが発生しないこと
+	// Verify: No error should occur
 	if err != nil {
-		t.Errorf("Force=true の場合はエラーが発生しない想定だが、エラーが返された: %v", err)
+		t.Errorf("When Force=true, no error is expected, but error was returned: %v", err)
 	}
 }
 
-// contains は文字列に部分文字列が含まれているかチェックする補助関数
+// contains is a helper function to check if a substring is contained in a string
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && hasSubstring(s, substr))
 }

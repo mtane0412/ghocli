@@ -1,8 +1,8 @@
 /**
  * confirm.go
- * 破壊的操作の確認機構
+ * Destructive operation confirmation mechanism
  *
- * gogcliの安全機構を参考に、破壊的操作の実行前にユーザー確認を行う
+ * Based on gogcli's safety mechanism, performs user confirmation before executing destructive operations
  */
 
 package cmd
@@ -21,24 +21,24 @@ import (
 	"github.com/mtane0412/ghocli/internal/ui"
 )
 
-// ConfirmDestructive は破壊的操作の実行前にユーザー確認を行います
+// ConfirmDestructive performs user confirmation before executing destructive operations
 //
-// ctx: コンテキスト（UIの取得に使用）
-// root: RootFlagsからForceとNoInputフラグを取得
-// message: 実行する操作の説明（例: "delete post 'テスト記事'"）
+// ctx: Context (used to retrieve UI)
+// root: RootFlags to retrieve Force and NoInput flags
+// message: Description of the operation to execute (e.g., "delete post 'Test Article'")
 //
-// 戻り値:
-//   - Force=true の場合は常にnilを返す
-//   - NoInput=true かつ Force=false の場合はExitError{Code: 1}を返す
-//   - 非対話的環境（TTYでない）の場合は、ForceなしではExitError{Code: 1}を返す
-//   - 対話的環境では、ユーザーに確認プロンプトを表示し、y/yes以外の入力でExitError{Code: 1}を返す
+// Return value:
+//   - Always returns nil if Force=true
+//   - Returns ExitError{Code: 1} if NoInput=true and Force=false
+//   - In non-interactive environments (not a TTY), returns ExitError{Code: 1} without Force
+//   - In interactive environments, displays a confirmation prompt and returns ExitError{Code: 1} for inputs other than y/yes
 func ConfirmDestructive(ctx context.Context, root *RootFlags, message string) error {
-	// Forceフラグが有効な場合は確認をスキップ
+	// Skip confirmation if Force flag is enabled
 	if root.Force {
 		return nil
 	}
 
-	// NoInputフラグが有効な場合、または非対話的環境の場合は、対話的入力を禁止
+	// If NoInput flag is enabled or in non-interactive environment, prohibit interactive input
 	if root.NoInput || !term.IsTerminal(int(os.Stdin.Fd())) {
 		return &ExitError{
 			Code: 1,
@@ -46,39 +46,39 @@ func ConfirmDestructive(ctx context.Context, root *RootFlags, message string) er
 		}
 	}
 
-	// contextからUIを取得
+	// Retrieve UI from context
 	output := ui.FromContext(ctx)
 	if output == nil {
-		// UIが設定されていない場合はエラー（通常は発生しない）
+		// Error if UI is not configured (normally does not occur)
 		return &ExitError{
 			Code: 1,
-			Err:  errors.New("UI not configured in context"),
+			Err:  errors.New("ui not configured in context"),
 		}
 	}
 
-	// 確認プロンプトを表示し、ユーザー入力を読み取る
+	// Display confirmation prompt and read user input
 	prompt := fmt.Sprintf("Proceed to %s? [y/N]: ", message)
 	line, readErr := input.PromptLineFrom(ctx, prompt, os.Stdin)
 	if readErr != nil && !errors.Is(readErr, os.ErrClosed) {
-		// EOFの場合はキャンセルとして扱う
+		// Treat EOF as cancellation
 		if errors.Is(readErr, io.EOF) {
 			return &ExitError{Code: 1, Err: errors.New("cancelled")}
 		}
-		// その他のエラー
+		// Other errors
 		return &ExitError{
 			Code: 1,
 			Err:  fmt.Errorf("failed to read user input: %w", readErr),
 		}
 	}
 
-	// 入力を正規化（前後の空白を削除、小文字化）
+	// Normalize input (remove leading/trailing whitespace, convert to lowercase)
 	ans := strings.ToLower(strings.TrimSpace(line))
 
-	// "y" または "yes" の場合のみ続行
+	// Continue only if "y" or "yes"
 	if ans == "y" || ans == "yes" {
 		return nil
 	}
 
-	// それ以外はキャンセル
+	// Cancel otherwise
 	return &ExitError{Code: 1, Err: errors.New("cancelled")}
 }

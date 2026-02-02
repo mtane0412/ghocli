@@ -1,6 +1,6 @@
 /**
  * config_test.go
- * 設定システムのテストコード
+ * Test code for configuration system
  */
 
 package config
@@ -11,19 +11,19 @@ import (
 	"testing"
 )
 
-// TestLoadConfig_新規作成時のデフォルト値
-func TestLoadConfig_新規作成時のデフォルト値(t *testing.T) {
-	// テスト用の一時ディレクトリを作成
+// TestLoadConfig_DefaultValuesOnNewCreation tests default values when creating a new config file
+func TestLoadConfig_DefaultValuesOnNewCreation(t *testing.T) {
+	// Create a temporary directory for testing
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.json")
 
-	// 設定ファイルが存在しない状態でLoadを呼び出す
+	// Call Load when the config file does not exist
 	cfg, err := Load(configPath)
 	if err != nil {
-		t.Fatalf("設定ファイルのロードに失敗: %v", err)
+		t.Fatalf("Failed to load config file: %v", err)
 	}
 
-	// デフォルト値の検証
+	// Verify default values
 	if cfg.KeyringBackend != "auto" {
 		t.Errorf("KeyringBackend = %q; want %q", cfg.KeyringBackend, "auto")
 	}
@@ -35,13 +35,13 @@ func TestLoadConfig_新規作成時のデフォルト値(t *testing.T) {
 	}
 }
 
-// TestLoadConfig_既存ファイルの読み込み
-func TestLoadConfig_既存ファイルの読み込み(t *testing.T) {
-	// テスト用の一時ディレクトリを作成
+// TestLoadConfig_LoadExistingFile tests loading an existing config file
+func TestLoadConfig_LoadExistingFile(t *testing.T) {
+	// Create a temporary directory for testing
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.json")
 
-	// テスト用の設定ファイルを作成
+	// Create a test config file
 	configContent := `{
   "keyring_backend": "file",
   "default_site": "myblog",
@@ -51,16 +51,16 @@ func TestLoadConfig_既存ファイルの読み込み(t *testing.T) {
   }
 }`
 	if err := os.WriteFile(configPath, []byte(configContent), 0600); err != nil {
-		t.Fatalf("テスト用設定ファイルの作成に失敗: %v", err)
+		t.Fatalf("Failed to create test config file: %v", err)
 	}
 
-	// 設定ファイルを読み込む
+	// Load the config file
 	cfg, err := Load(configPath)
 	if err != nil {
-		t.Fatalf("設定ファイルのロードに失敗: %v", err)
+		t.Fatalf("Failed to load config file: %v", err)
 	}
 
-	// 読み込んだ値を検証
+	// Verify loaded values
 	if cfg.KeyringBackend != "file" {
 		t.Errorf("KeyringBackend = %q; want %q", cfg.KeyringBackend, "file")
 	}
@@ -78,13 +78,13 @@ func TestLoadConfig_既存ファイルの読み込み(t *testing.T) {
 	}
 }
 
-// TestSave_設定ファイルの保存
-func TestSave_設定ファイルの保存(t *testing.T) {
-	// テスト用の一時ディレクトリを作成
+// TestSave_SaveConfigFile tests saving a config file
+func TestSave_SaveConfigFile(t *testing.T) {
+	// Create a temporary directory for testing
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.json")
 
-	// 設定を作成
+	// Create a config
 	cfg := &Config{
 		KeyringBackend: "auto",
 		DefaultSite:    "testsite",
@@ -93,20 +93,20 @@ func TestSave_設定ファイルの保存(t *testing.T) {
 		},
 	}
 
-	// 設定を保存
+	// Save the config
 	if err := cfg.Save(configPath); err != nil {
-		t.Fatalf("設定ファイルの保存に失敗: %v", err)
+		t.Fatalf("Failed to save config file: %v", err)
 	}
 
-	// ファイルが作成されたことを確認
+	// Verify the file was created
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		t.Fatal("設定ファイルが作成されていない")
+		t.Fatal("Config file was not created")
 	}
 
-	// 保存された設定を再度読み込んで検証
+	// Reload the saved config and verify
 	reloaded, err := Load(configPath)
 	if err != nil {
-		t.Fatalf("保存した設定ファイルの再読み込みに失敗: %v", err)
+		t.Fatalf("Failed to reload saved config file: %v", err)
 	}
 
 	if reloaded.KeyringBackend != cfg.KeyringBackend {
@@ -120,31 +120,31 @@ func TestSave_設定ファイルの保存(t *testing.T) {
 	}
 }
 
-// TestAddSite_サイトの追加
-func TestAddSite_サイトの追加(t *testing.T) {
+// TestAddSite_AddSite tests adding a site
+func TestAddSite_AddSite(t *testing.T) {
 	cfg := &Config{
 		KeyringBackend: "auto",
 		Sites:          make(map[string]string),
 	}
 
-	// サイトを追加
+	// Add a site
 	cfg.AddSite("myblog", "https://myblog.ghost.io")
 
-	// 追加されたサイトを検証
+	// Verify the site was added
 	if cfg.Sites["myblog"] != "https://myblog.ghost.io" {
 		t.Errorf("Sites[myblog] = %q; want %q", cfg.Sites["myblog"], "https://myblog.ghost.io")
 	}
 }
 
-// TestGetSiteURL_エイリアスからURLを取得
-func TestGetSiteURL_エイリアスからURLを取得(t *testing.T) {
+// TestGetSiteURL_GetURLFromAlias tests getting URL from an alias
+func TestGetSiteURL_GetURLFromAlias(t *testing.T) {
 	cfg := &Config{
 		Sites: map[string]string{
 			"myblog": "https://myblog.ghost.io",
 		},
 	}
 
-	// エイリアスからURLを取得
+	// Get URL from alias
 	url, ok := cfg.GetSiteURL("myblog")
 	if !ok {
 		t.Fatal("GetSiteURL returned false; want true")
@@ -153,20 +153,20 @@ func TestGetSiteURL_エイリアスからURLを取得(t *testing.T) {
 		t.Errorf("url = %q; want %q", url, "https://myblog.ghost.io")
 	}
 
-	// 存在しないエイリアス
+	// Non-existent alias
 	_, ok = cfg.GetSiteURL("nonexistent")
 	if ok {
 		t.Error("GetSiteURL returned true for nonexistent alias; want false")
 	}
 }
 
-// TestGetSiteURL_URL直接指定
-func TestGetSiteURL_URL直接指定(t *testing.T) {
+// TestGetSiteURL_DirectURLSpecification tests direct URL specification
+func TestGetSiteURL_DirectURLSpecification(t *testing.T) {
 	cfg := &Config{
 		Sites: make(map[string]string),
 	}
 
-	// URL直接指定（エイリアスとして登録されていない場合はそのまま返す）
+	// Direct URL specification (returns as-is if not registered as an alias)
 	url, ok := cfg.GetSiteURL("https://direct.ghost.io")
 	if !ok {
 		t.Fatal("GetSiteURL returned false for direct URL; want true")

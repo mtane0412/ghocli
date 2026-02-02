@@ -1,5 +1,5 @@
 /**
- * Markdown→HTML変換機能のテストコード
+ * Test code for Markdown→HTML conversion functionality
  */
 package markdown
 
@@ -8,23 +8,23 @@ import (
 	"testing"
 )
 
-// TestConvertToHTML_Paragraph は段落の変換をテストする
+// TestConvertToHTML_Paragraph tests paragraph conversion
 func TestConvertToHTML_Paragraph(t *testing.T) {
-	markdown := "これは段落です。"
+	markdown := "This is a paragraph."
 	html, err := ConvertToHTML(markdown)
 
 	if err != nil {
-		t.Fatalf("変換エラーが発生しました: %v", err)
+		t.Fatalf("Conversion error occurred: %v", err)
 	}
 
-	// goldmarkは<p>タグで囲み、末尾に改行を追加する
-	expected := "<p>これは段落です。</p>\n"
+	// goldmark wraps with <p> tags and adds newline at the end
+	expected := "<p>This is a paragraph.</p>\n"
 	if html != expected {
-		t.Errorf("期待値と異なります。\n期待値: %q\n実際値: %q", expected, html)
+		t.Errorf("Does not match expected value.\nExpected: %q\nActual: %q", expected, html)
 	}
 }
 
-// TestConvertToHTML_Headings は見出し（h1-h6）の変換をテストする
+// TestConvertToHTML_Headings tests heading (h1-h6) conversion
 func TestConvertToHTML_Headings(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -32,24 +32,24 @@ func TestConvertToHTML_Headings(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "h1見出し",
-			markdown: "# 見出し1",
-			expected: "<h1>見出し1</h1>\n",
+			name:     "h1 heading",
+			markdown: "# Heading 1",
+			expected: "<h1>Heading 1</h1>\n",
 		},
 		{
-			name:     "h2見出し",
-			markdown: "## 見出し2",
-			expected: "<h2>見出し2</h2>\n",
+			name:     "h2 heading",
+			markdown: "## Heading 2",
+			expected: "<h2>Heading 2</h2>\n",
 		},
 		{
-			name:     "h3見出し",
-			markdown: "### 見出し3",
-			expected: "<h3>見出し3</h3>\n",
+			name:     "h3 heading",
+			markdown: "### Heading 3",
+			expected: "<h3>Heading 3</h3>\n",
 		},
 		{
-			name:     "h6見出し",
-			markdown: "###### 見出し6",
-			expected: "<h6>見出し6</h6>\n",
+			name:     "h6 heading",
+			markdown: "###### Heading 6",
+			expected: "<h6>Heading 6</h6>\n",
 		},
 	}
 
@@ -57,31 +57,31 @@ func TestConvertToHTML_Headings(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			html, err := ConvertToHTML(tt.markdown)
 			if err != nil {
-				t.Fatalf("変換エラーが発生しました: %v", err)
+				t.Fatalf("Conversion error occurred: %v", err)
 			}
 			if html != tt.expected {
-				t.Errorf("期待値と異なります。\n期待値: %q\n実際値: %q", tt.expected, html)
+				t.Errorf("Does not match expected value.\nExpected: %q\nActual: %q", tt.expected, html)
 			}
 		})
 	}
 }
 
-// TestConvertToHTML_Lists はリスト（箇条書き、番号付き）の変換をテストする
+// TestConvertToHTML_Lists tests list (bullet points, numbered) conversion
 func TestConvertToHTML_Lists(t *testing.T) {
 	tests := []struct {
 		name     string
 		markdown string
-		contains []string // 完全一致ではなく、含まれるべき要素をチェック
+		contains []string // Check elements that should be included rather than exact match
 	}{
 		{
-			name:     "箇条書きリスト",
-			markdown: "- アイテム1\n- アイテム2\n- アイテム3",
-			contains: []string{"<ul>", "<li>アイテム1</li>", "<li>アイテム2</li>", "<li>アイテム3</li>", "</ul>"},
+			name:     "bullet list",
+			markdown: "- Item 1\n- Item 2\n- Item 3",
+			contains: []string{"<ul>", "<li>Item 1</li>", "<li>Item 2</li>", "<li>Item 3</li>", "</ul>"},
 		},
 		{
-			name:     "番号付きリスト",
-			markdown: "1. 最初\n2. 次\n3. 最後",
-			contains: []string{"<ol>", "<li>最初</li>", "<li>次</li>", "<li>最後</li>", "</ol>"},
+			name:     "numbered list",
+			markdown: "1. First\n2. Second\n3. Last",
+			contains: []string{"<ol>", "<li>First</li>", "<li>Second</li>", "<li>Last</li>", "</ol>"},
 		},
 	}
 
@@ -89,41 +89,41 @@ func TestConvertToHTML_Lists(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			html, err := ConvertToHTML(tt.markdown)
 			if err != nil {
-				t.Fatalf("変換エラーが発生しました: %v", err)
+				t.Fatalf("Conversion error occurred: %v", err)
 			}
 
-			// 各要素が含まれているか確認
+			// Verify each element is included
 			for _, elem := range tt.contains {
 				if !strings.Contains(html, elem) {
-					t.Errorf("期待される要素が含まれていません: %q\nHTML: %q", elem, html)
+					t.Errorf("Expected element not included: %q\nHTML: %q", elem, html)
 				}
 			}
 		})
 	}
 }
 
-// TestConvertToHTML_CodeBlock はコードブロックの変換をテストする
+// TestConvertToHTML_CodeBlock tests code block conversion
 func TestConvertToHTML_CodeBlock(t *testing.T) {
 	markdown := "```go\nfunc main() {\n    fmt.Println(\"Hello\")\n}\n```"
 	html, err := ConvertToHTML(markdown)
 
 	if err != nil {
-		t.Fatalf("変換エラーが発生しました: %v", err)
+		t.Fatalf("Conversion error occurred: %v", err)
 	}
 
-	// コードブロックは<pre><code>で囲まれる
+	// Code blocks are wrapped with <pre><code>
 	if !strings.Contains(html, "<pre>") {
-		t.Errorf("<pre>タグが含まれていません: %q", html)
+		t.Errorf("<pre> tag not included: %q", html)
 	}
 	if !strings.Contains(html, "<code") {
-		t.Errorf("<code>タグが含まれていません: %q", html)
+		t.Errorf("<code> tag not included: %q", html)
 	}
 	if !strings.Contains(html, "func main()") {
-		t.Errorf("コード内容が含まれていません: %q", html)
+		t.Errorf("Code content not included: %q", html)
 	}
 }
 
-// TestConvertToHTML_LinksAndImages はリンクと画像の変換をテストする
+// TestConvertToHTML_LinksAndImages tests link and image conversion
 func TestConvertToHTML_LinksAndImages(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -131,14 +131,14 @@ func TestConvertToHTML_LinksAndImages(t *testing.T) {
 		contains []string
 	}{
 		{
-			name:     "リンク",
-			markdown: "[Googleへのリンク](https://google.com)",
-			contains: []string{"<a href=\"https://google.com\"", "Googleへのリンク</a>"},
+			name:     "link",
+			markdown: "[Link to Google](https://google.com)",
+			contains: []string{"<a href=\"https://google.com\"", "Link to Google</a>"},
 		},
 		{
-			name:     "画像",
-			markdown: "![代替テキスト](/path/to/image.png)",
-			contains: []string{"<img src=\"/path/to/image.png\"", "alt=\"代替テキスト\""},
+			name:     "image",
+			markdown: "![Alternative text](/path/to/image.png)",
+			contains: []string{"<img src=\"/path/to/image.png\"", "alt=\"Alternative text\""},
 		},
 	}
 
@@ -146,63 +146,63 @@ func TestConvertToHTML_LinksAndImages(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			html, err := ConvertToHTML(tt.markdown)
 			if err != nil {
-				t.Fatalf("変換エラーが発生しました: %v", err)
+				t.Fatalf("Conversion error occurred: %v", err)
 			}
 
 			for _, elem := range tt.contains {
 				if !strings.Contains(html, elem) {
-					t.Errorf("期待される要素が含まれていません: %q\nHTML: %q", elem, html)
+					t.Errorf("Expected element not included: %q\nHTML: %q", elem, html)
 				}
 			}
 		})
 	}
 }
 
-// TestConvertToHTML_EmptyString は空文字列入力時の動作をテストする
+// TestConvertToHTML_EmptyString tests behavior with empty string input
 func TestConvertToHTML_EmptyString(t *testing.T) {
 	markdown := ""
 	html, err := ConvertToHTML(markdown)
 
 	if err != nil {
-		t.Fatalf("空文字列でエラーが発生しました: %v", err)
+		t.Fatalf("Error occurred with empty string: %v", err)
 	}
 
-	// 空文字列の場合も空文字列を返すべき
+	// Empty string should return empty string
 	if html != "" {
-		t.Errorf("空文字列を期待しましたが、実際は: %q", html)
+		t.Errorf("Expected empty string, but got: %q", html)
 	}
 }
 
-// TestConvertToHTML_ComplexMarkdown は複雑なMarkdownの変換をテストする
+// TestConvertToHTML_ComplexMarkdown tests complex Markdown conversion
 func TestConvertToHTML_ComplexMarkdown(t *testing.T) {
-	markdown := `# 見出し
+	markdown := `# Heading
 
-これは**太字**と*斜体*を含む段落です。
+This is a paragraph with **bold** and *italic* text.
 
-- リスト項目1
-- リスト項目2
+- List item 1
+- List item 2
 
-[リンク](https://example.com)も含みます。`
+It also includes a [link](https://example.com).`
 
 	html, err := ConvertToHTML(markdown)
 
 	if err != nil {
-		t.Fatalf("変換エラーが発生しました: %v", err)
+		t.Fatalf("Conversion error occurred: %v", err)
 	}
 
-	// 各要素が含まれているか確認
+	// Verify each element is included
 	expectedElements := []string{
-		"<h1>見出し</h1>",
-		"<strong>太字</strong>",
-		"<em>斜体</em>",
+		"<h1>Heading</h1>",
+		"<strong>bold</strong>",
+		"<em>italic</em>",
 		"<ul>",
-		"<li>リスト項目1</li>",
+		"<li>List item 1</li>",
 		"<a href=\"https://example.com\"",
 	}
 
 	for _, elem := range expectedElements {
 		if !strings.Contains(html, elem) {
-			t.Errorf("期待される要素が含まれていません: %q\nHTML: %q", elem, html)
+			t.Errorf("Expected element not included: %q\nHTML: %q", elem, html)
 		}
 	}
 }

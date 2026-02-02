@@ -92,8 +92,8 @@ func (c *Client) doRequestWithOptions(method, path string, body io.Reader, opts 
 	requestURL := c.baseURL + path
 
 	// Add query parameters if provided
-	// url.Valuesを使用してクエリパラメータを適切にエンコードする
-	// （特殊文字、日本語、スペースなどを正しくエスケープ）
+	// Use url.Values to properly encode query parameters
+	// (correctly escape special characters, Japanese text, spaces, etc.)
 	if opts != nil && len(opts.QueryParams) > 0 {
 		values := neturl.Values{}
 		for key, val := range opts.QueryParams {
@@ -102,7 +102,7 @@ func (c *Client) doRequestWithOptions(method, path string, body io.Reader, opts 
 			}
 		}
 		if len(values) > 0 {
-			// URLにクエリパラメータが既に含まれているかチェック
+			// Check if the URL already contains query parameters
 			if strings.Contains(requestURL, "?") {
 				requestURL += "&" + values.Encode()
 			} else {
