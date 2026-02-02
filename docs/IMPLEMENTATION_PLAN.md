@@ -1,32 +1,32 @@
-# gho 実装計画
+# gho Implementation Plan
 
-## 概要
+## Overview
 
-gog-cliの使用感を備えたGhost Admin APIのCLIツールを作成します。
+Create a Ghost Admin API CLI tool with the user experience of gog-cli.
 
-## 技術スタック
+## Technology Stack
 
-- **言語**: Go 1.22+
-- **CLIフレームワーク**: Kong (`github.com/alecthomas/kong`)
-- **認証情報管理**: 99designs/keyring（OSキーリング統合）
+- **Language**: Go 1.22+
+- **CLI Framework**: Kong (`github.com/alecthomas/kong`)
+- **Credential Management**: 99designs/keyring (OS keyring integration)
 - **JWT**: golang-jwt/jwt/v5
 
-## 実装フェーズ
+## Implementation Phases
 
-### Phase 1: 基盤構築 ✅
+### Phase 1: Foundation ✅
 
-**目標**: プロジェクトの基盤を構築し、認証とサイト情報取得を実装する
+**Goal**: Build project foundation and implement authentication and site information retrieval
 
-**実装内容**:
+**Implementation**:
 
-1. **プロジェクト初期化**
+1. **Project Initialization**
    - `go mod init github.com/mtane0412/gho`
-   - 依存関係追加
+   - Add dependencies
 
-2. **設定システム** (`internal/config/`)
-   - 設定ファイル: `~/.config/gho/config.json`
-   - マルチサイト対応（エイリアス機能）
-   - 構造:
+2. **Configuration System** (`internal/config/`)
+   - Configuration file: `~/.config/gho/config.json`
+   - Multi-site support (alias functionality)
+   - Structure:
      ```json
      {
        "keyring_backend": "auto",
@@ -38,31 +38,31 @@ gog-cliの使用感を備えたGhost Admin APIのCLIツールを作成します�
      }
      ```
 
-3. **キーリング統合** (`internal/secrets/`)
-   - Admin APIキーの安全な保存
-   - バックエンド: auto/file/keychain/secretservice/wincred
+3. **Keyring Integration** (`internal/secrets/`)
+   - Secure storage of Admin API keys
+   - Backends: auto/file/keychain/secretservice/wincred
 
-4. **Ghost APIクライアント** (`internal/ghostapi/`)
-   - JWT生成（HS256、有効期限5分）
-   - HTTPクライアント
-   - サイト情報取得API
+4. **Ghost API Client** (`internal/ghostapi/`)
+   - JWT generation (HS256, 5-minute expiration)
+   - HTTP client
+   - Site information retrieval API
 
-5. **出力フォーマット** (`internal/outfmt/`)
-   - JSON形式
-   - テーブル形式
-   - TSV形式（プレーン）
+5. **Output Format** (`internal/outfmt/`)
+   - JSON format
+   - Table format
+   - TSV format (plain)
 
-6. **認証コマンド** (`internal/cmd/auth.go`)
-   - `gho auth add <site-url>` - APIキー登録
-   - `gho auth list` - 登録済みサイト一覧
-   - `gho auth remove <alias>` - APIキー削除
-   - `gho auth status` - 認証状態確認
+6. **Authentication Commands** (`internal/cmd/auth.go`)
+   - `gho auth add <site-url>` - Register API key
+   - `gho auth list` - List registered sites
+   - `gho auth remove <alias>` - Delete API key
+   - `gho auth status` - Check authentication status
 
-7. **基本コマンド**
-   - `gho site` - サイト情報取得
-   - `gho version` - バージョン表示
+7. **Basic Commands**
+   - `gho site` - Get site information
+   - `gho version` - Display version
 
-**検証方法**:
+**Verification**:
 ```bash
 make build
 ./gho auth add https://your-ghost-site.ghost.io
@@ -70,17 +70,17 @@ make build
 ./gho site
 ```
 
-**完了**: ✅ 2026-01-29
+**Completed**: ✅ 2026-01-29
 
 ---
 
-### Phase 2: コンテンツ管理（Posts/Pages）✅
+### Phase 2: Content Management (Posts/Pages) ✅
 
-**目標**: Posts/Pagesの作成、更新、削除、公開機能を実装する
+**Goal**: Implement Posts/Pages create, update, delete, and publish functionality
 
-**完了日**: 2026-01-29
+**Completed**: 2026-01-29
 
-**実装内容**:
+**Implementation**:
 
 1. **Posts API** (`internal/ghostapi/posts.go`)
    - `ListPosts(options ListOptions) ([]Post, error)`
@@ -89,7 +89,7 @@ make build
    - `UpdatePost(id string, post *Post) (*Post, error)`
    - `DeletePost(id string) error`
 
-2. **Posts型定義**
+2. **Posts Type Definition**
    ```go
    type Post struct {
        ID          string     `json:"id"`
@@ -105,7 +105,7 @@ make build
    }
    ```
 
-3. **Postsコマンド** (`internal/cmd/posts.go`)
+3. **Posts Commands** (`internal/cmd/posts.go`)
    - `gho posts list [--status draft|published|scheduled] [--limit N]`
    - `gho posts get <id-or-slug>`
    - `gho posts create --title "..." [--html "..."]`
@@ -120,20 +120,20 @@ make build
    - `UpdatePage(id string, page *Page) (*Page, error)`
    - `DeletePage(id string) error`
 
-5. **Pagesコマンド** (`internal/cmd/pages.go`)
+5. **Pages Commands** (`internal/cmd/pages.go`)
    - `gho pages list`
    - `gho pages get <id-or-slug>`
    - `gho pages create --title "..."`
    - `gho pages update <id> ...`
    - `gho pages delete <id>`
 
-**テスト**:
-- Posts APIのテスト（`internal/ghostapi/posts_test.go`）
-- Postsコマンドのテスト（`internal/cmd/posts_test.go`）
-- Pages APIのテスト（`internal/ghostapi/pages_test.go`）
-- Pagesコマンドのテスト（`internal/cmd/pages_test.go`）
+**Tests**:
+- Posts API tests (`internal/ghostapi/posts_test.go`)
+- Posts command tests (`internal/cmd/posts_test.go`)
+- Pages API tests (`internal/ghostapi/pages_test.go`)
+- Pages command tests (`internal/cmd/pages_test.go`)
 
-**検証方法**:
+**Verification**:
 ```bash
 ./gho posts list
 ./gho posts get <slug>
@@ -147,13 +147,13 @@ make build
 
 ---
 
-### Phase 3: タクソノミー + メディア ✅
+### Phase 3: Taxonomy + Media ✅
 
-**目標**: Tags管理とImages アップロード機能を実装する
+**Goal**: Implement Tags management and Images upload functionality
 
-**完了日**: 2026-01-30
+**Completed**: 2026-01-30
 
-**実装内容**:
+**Implementation**:
 
 1. **Tags API** (`internal/ghostapi/tags.go`)
    - `ListTags() ([]Tag, error)`
@@ -162,7 +162,7 @@ make build
    - `UpdateTag(id string, tag *Tag) (*Tag, error)`
    - `DeleteTag(id string) error`
 
-2. **Tags型定義**
+2. **Tags Type Definition**
    ```go
    type Tag struct {
        ID          string `json:"id"`
@@ -172,7 +172,7 @@ make build
    }
    ```
 
-3. **Tagsコマンド** (`internal/cmd/tags.go`)
+3. **Tags Commands** (`internal/cmd/tags.go`)
    - `gho tags list`
    - `gho tags get <id-or-slug>`
    - `gho tags create --name "..."`
@@ -182,16 +182,16 @@ make build
 4. **Images API** (`internal/ghostapi/images.go`)
    - `UploadImage(filePath string) (*ImageUploadResponse, error)`
 
-5. **Imagesコマンド** (`internal/cmd/images.go`)
+5. **Images Commands** (`internal/cmd/images.go`)
    - `gho images upload <file-path>`
 
-**テスト**:
-- Tags APIのテスト
-- Tagsコマンドのテスト
-- Images APIのテスト
-- Imagesコマンドのテスト
+**Tests**:
+- Tags API tests
+- Tags command tests
+- Images API tests
+- Images command tests
 
-**検証方法**:
+**Verification**:
 ```bash
 ./gho tags list
 ./gho tags create --name "Technology"
@@ -200,11 +200,11 @@ make build
 
 ---
 
-### Phase 4: Members管理
+### Phase 4: Members Management
 
-**目標**: Members（購読者）の管理機能を実装する
+**Goal**: Implement Members (subscribers) management functionality
 
-**実装内容**:
+**Implementation**:
 
 1. **Members API** (`internal/ghostapi/members.go`)
    - `ListMembers(options ListOptions) ([]Member, error)`
@@ -213,7 +213,7 @@ make build
    - `UpdateMember(id string, member *Member) (*Member, error)`
    - `DeleteMember(id string) error`
 
-2. **Membersコマンド** (`internal/cmd/members.go`)
+2. **Members Commands** (`internal/cmd/members.go`)
    - `gho members list`
    - `gho members get <id>`
    - `gho members create --email "..."`
@@ -222,18 +222,18 @@ make build
 
 ---
 
-### Phase 5: Users管理
+### Phase 5: Users Management
 
-**目標**: Users（管理者・編集者）の管理機能を実装する
+**Goal**: Implement Users (administrators/editors) management functionality
 
-**実装内容**:
+**Implementation**:
 
 1. **Users API** (`internal/ghostapi/users.go`)
    - `ListUsers() ([]User, error)`
    - `GetUser(id string) (*User, error)`
    - `UpdateUser(id string, user *User) (*User, error)`
 
-2. **Usersコマンド** (`internal/cmd/users.go`)
+2. **Users Commands** (`internal/cmd/users.go`)
    - `gho users list`
    - `gho users get <id>`
    - `gho users update <id> ...`
@@ -242,9 +242,9 @@ make build
 
 ### Phase 6: Newsletters/Tiers/Offers
 
-**目標**: Newsletter、Tiers（購読プラン）、Offers（特典）の管理機能を実装する
+**Goal**: Implement Newsletter, Tiers (subscription plans), and Offers (benefits) management functionality
 
-**実装内容**:
+**Implementation**:
 
 1. **Newsletters API**
    - `ListNewsletters() ([]Newsletter, error)`
@@ -262,9 +262,9 @@ make build
 
 ### Phase 7: Themes/Webhooks
 
-**目標**: Themes管理とWebhooks管理機能を実装する
+**Goal**: Implement Themes management and Webhooks management functionality
 
-**実装内容**:
+**Implementation**:
 
 1. **Themes API**
    - `ListThemes() ([]Theme, error)`
@@ -279,62 +279,62 @@ make build
 
 ---
 
-## 開発ワークフロー
+## Development Workflow
 
-### TDD原則
+### TDD Principles
 
-すべての実装において、以下のTDDサイクルに従います：
+Follow the TDD cycle for all implementations:
 
-1. **RED** - 失敗するテストを先に書く
-2. **GREEN** - テストを通す最小限のコードを書く
-3. **REFACTOR** - コードを整理する
+1. **RED** - Write a failing test first
+2. **GREEN** - Write minimal code to make the test pass
+3. **REFACTOR** - Clean up the code
 
-### 品質チェック
+### Quality Checks
 
-各フェーズ完了時に以下を実行：
+Execute the following after completing each phase:
 
 ```bash
-# テスト実行
+# Run tests
 make test
 
-# 型チェック
+# Type check
 make type-check
 
-# Lint実行
+# Lint
 make lint
 
-# ビルド確認
+# Build verification
 make build
 ```
 
-### Git ワークフロー
+### Git Workflow
 
 ```bash
-# フェーズごとに feature ブランチを作成
+# Create feature branch for each phase
 git checkout -b feature/phase2-content-management
 
-# コミット前チェック
+# Pre-commit check
 make test
 make type-check
 make lint
 
-# コミット作成
+# Create commit
 git add .
-git commit -m "Phase 2: コンテンツ管理機能を実装
+git commit -m "Phase 2: Implement content management features
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ```
 
 ---
 
-## 参照リソース
+## Reference Resources
 
-### Ghost Admin API ドキュメント
+### Ghost Admin API Documentation
 - https://ghost.org/docs/admin-api/
 
-### 参照プロジェクト（gog-cli）
-- `../gogcli/internal/cmd/root.go` - CLI構造体パターン
-- `../gogcli/internal/cmd/auth.go` - 認証コマンド実装
-- `../gogcli/internal/secrets/store.go` - キーリング統合
-- `../gogcli/internal/config/config.go` - 設定ファイル管理
-- `../gogcli/internal/outfmt/outfmt.go` - 出力フォーマット
+### Reference Project (gog-cli)
+- `../gogcli/internal/cmd/root.go` - CLI structure pattern
+- `../gogcli/internal/cmd/auth.go` - Authentication command implementation
+- `../gogcli/internal/secrets/store.go` - Keyring integration
+- `../gogcli/internal/config/config.go` - Configuration file management
+- `../gogcli/internal/outfmt/outfmt.go` - Output formatting

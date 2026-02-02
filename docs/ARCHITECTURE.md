@@ -1,48 +1,48 @@
-# gho アーキテクチャ設計
+# gho Architecture Design
 
-## 概要
+## Overview
 
-ghoはGhost Admin APIのCLIツールです。gog-cliの設計パターンを参考にし、シンプルで保守性の高いアーキテクチャを採用しています。
+gho is a CLI tool for the Ghost Admin API. It adopts a simple and maintainable architecture based on the design patterns of gog-cli.
 
-## プロジェクト構造
+## Project Structure
 
 ```
 gho/
 ├── cmd/gho/
-│   └── main.go              # エントリーポイント
+│   └── main.go              # Entry point
 ├── internal/
-│   ├── cmd/                  # CLIコマンド定義
-│   │   ├── root.go          # CLI構造体、RootFlags
-│   │   ├── auth.go          # 認証コマンド
-│   │   ├── site.go          # サイト情報コマンド
-│   │   ├── posts.go         # Postsコマンド（Phase 2）
-│   │   ├── pages.go         # Pagesコマンド（Phase 2）
-│   │   ├── tags.go          # Tagsコマンド（Phase 3）
-│   │   └── images.go        # Imagesコマンド（Phase 3）
-│   ├── config/              # 設定ファイル管理
+│   ├── cmd/                  # CLI command definitions
+│   │   ├── root.go          # CLI structure, RootFlags
+│   │   ├── auth.go          # Authentication commands
+│   │   ├── site.go          # Site information commands
+│   │   ├── posts.go         # Posts commands (Phase 2)
+│   │   ├── pages.go         # Pages commands (Phase 2)
+│   │   ├── tags.go          # Tags commands (Phase 3)
+│   │   └── images.go        # Images commands (Phase 3)
+│   ├── config/              # Configuration file management
 │   │   ├── config.go
 │   │   └── config_test.go
-│   ├── secrets/             # キーリング統合
+│   ├── secrets/             # Keyring integration
 │   │   ├── store.go
 │   │   └── store_test.go
-│   ├── ghostapi/            # Ghost APIクライアント
-│   │   ├── client.go        # HTTPクライアント + JWT生成
+│   ├── ghostapi/            # Ghost API client
+│   │   ├── client.go        # HTTP client + JWT generation
 │   │   ├── client_test.go
-│   │   ├── jwt.go           # JWT生成
+│   │   ├── jwt.go           # JWT generation
 │   │   ├── jwt_test.go
-│   │   ├── posts.go         # Posts API（Phase 2）
+│   │   ├── posts.go         # Posts API (Phase 2)
 │   │   ├── posts_test.go
-│   │   ├── pages.go         # Pages API（Phase 2）
+│   │   ├── pages.go         # Pages API (Phase 2)
 │   │   ├── pages_test.go
-│   │   ├── tags.go          # Tags API（Phase 3）
+│   │   ├── tags.go          # Tags API (Phase 3)
 │   │   ├── tags_test.go
-│   │   ├── images.go        # Images API（Phase 3）
+│   │   ├── images.go        # Images API (Phase 3)
 │   │   └── images_test.go
-│   ├── outfmt/              # 出力フォーマット
+│   ├── outfmt/              # Output formatting
 │   │   ├── outfmt.go
 │   │   └── outfmt_test.go
-│   └── errfmt/              # エラーフォーマット（今後実装）
-├── docs/                    # ドキュメント
+│   └── errfmt/              # Error formatting (to be implemented)
+├── docs/                    # Documentation
 ├── go.mod
 ├── go.sum
 ├── Makefile
@@ -51,52 +51,52 @@ gho/
 └── README.md
 ```
 
-## レイヤー構成
+## Layer Architecture
 
 ```
 ┌─────────────────────────────────────┐
-│          CLI Layer (cmd/)           │  ← ユーザーインターフェース
-│  - コマンド定義                      │
-│  - フラグパース                      │
-│  - 入力検証                          │
+│          CLI Layer (cmd/)           │  ← User Interface
+│  - Command definitions              │
+│  - Flag parsing                     │
+│  - Input validation                 │
 └─────────────────────────────────────┘
               ↓
 ┌─────────────────────────────────────┐
 │      Business Logic Layer           │
-│  - config/  : 設定管理               │  ← ビジネスロジック
-│  - secrets/ : 認証情報管理           │
-│  - ghostapi/: API操作                │
+│  - config/  : Configuration mgmt    │  ← Business Logic
+│  - secrets/ : Credential mgmt       │
+│  - ghostapi/: API operations        │
 └─────────────────────────────────────┘
               ↓
 ┌─────────────────────────────────────┐
 │      Infrastructure Layer           │
-│  - outfmt/  : 出力フォーマット       │  ← インフラストラクチャ
-│  - errfmt/  : エラーフォーマット     │
-│  - HTTP Client                       │
-│  - OS Keyring                        │
+│  - outfmt/  : Output formatting     │  ← Infrastructure
+│  - errfmt/  : Error formatting      │
+│  - HTTP Client                      │
+│  - OS Keyring                       │
 └─────────────────────────────────────┘
 ```
 
-## コンポーネント設計
+## Component Design
 
 ### 1. CLI Layer (`internal/cmd/`)
 
-**責務**: ユーザーからの入力を受け取り、適切なビジネスロジックを呼び出す
+**Responsibility**: Receive user input and invoke appropriate business logic
 
-**主要コンポーネント**:
+**Main Components**:
 
-- **RootFlags**: すべてのコマンドで共通のフラグ
+- **RootFlags**: Common flags for all commands
   ```go
   type RootFlags struct {
-      Site    string // サイトエイリアスまたはURL
-      JSON    bool   // JSON形式で出力
-      Plain   bool   // TSV形式で出力
-      Force   bool   // 確認をスキップ
-      Verbose bool   // 詳細ログを有効化
+      Site    string // Site alias or URL
+      JSON    bool   // Output in JSON format
+      Plain   bool   // Output in TSV format
+      Force   bool   // Skip confirmation
+      Verbose bool   // Enable verbose logging
   }
   ```
 
-- **CLI**: Kongで定義されるCLI構造体
+- **CLI**: CLI structure defined by Kong
   ```go
   type CLI struct {
       RootFlags `embed:""`
@@ -111,19 +111,19 @@ gho/
   }
   ```
 
-**設計パターン**: Command Pattern（Kongが内部的に使用）
+**Design Pattern**: Command Pattern (used internally by Kong)
 
 ### 2. Config Layer (`internal/config/`)
 
-**責務**: 設定ファイルの読み書き、サイト管理
+**Responsibility**: Read/write configuration files, site management
 
-**主要機能**:
+**Main Features**:
 
-- 設定ファイルパス: `~/.config/gho/config.json`
-- マルチサイト対応（エイリアス機能）
-- デフォルトサイト管理
+- Configuration file path: `~/.config/gho/config.json`
+- Multi-site support (alias functionality)
+- Default site management
 
-**設定ファイル形式**:
+**Configuration File Format**:
 ```json
 {
   "keyring_backend": "auto",
@@ -135,42 +135,43 @@ gho/
 }
 ```
 
-**主要メソッド**:
-- `Load(path string) (*Config, error)` - 設定をロード
-- `Save(path string) error` - 設定を保存
-- `AddSite(alias, url string)` - サイトを追加
-- `GetSiteURL(aliasOrURL string) (string, bool)` - URLを取得
+**Main Methods**:
+- `Load(path string) (*Config, error)` - Load configuration
+- `Save(path string) error` - Save configuration
+- `AddSite(alias, url string)` - Add site
+- `GetSiteURL(aliasOrURL string) (string, bool)` - Get URL
 
 ### 3. Secrets Layer (`internal/secrets/`)
 
-**責務**: Admin APIキーの安全な保存・取得
+**Responsibility**: Secure storage and retrieval of Admin API keys
 
-**キーリングバックエンド**:
+**Keyring Backends**:
 - macOS: Keychain
 - Linux: Secret Service (GNOME Keyring, KWallet)
 - Windows: Credential Manager
-- Fallback: 暗号化ファイル
+- Fallback: Encrypted file
 
-**主要メソッド**:
-- `NewStore(backend, fileDir string) (*Store, error)` - ストア作成
-- `Set(alias, apiKey string) error` - APIキー保存
-- `Get(alias string) (string, error)` - APIキー取得
-- `Delete(alias string) error` - APIキー削除
-- `List() ([]string, error)` - 保存済みエイリアス一覧
-- `ParseAdminAPIKey(apiKey string) (id, secret string, err error)` - APIキーパース
+**Main Methods**:
+- `NewStore(backend, fileDir string) (*Store, error)` - Create store
+- `Set(alias, apiKey string) error` - Save API key
+- `Get(alias string) (string, error)` - Retrieve API key
+- `Delete(alias string) error` - Delete API key
+- `List() ([]string, error)` - List saved aliases
+- `ParseAdminAPIKey(apiKey string) (id, secret string, err error)` - Parse API key
 
-**セキュリティ**:
-- APIキーはOSキーリングに保存（プレーンテキストでファイルに保存しない）
-- Fallback（fileバックエンド）の場合もパスワード保護
+**Security**:
+- API keys are stored in OS keyring (not in plain text files)
+- Fallback (file backend) is password-protected
+- Configuration file stores only URLs (no API keys)
 
 ### 4. Ghost API Layer (`internal/ghostapi/`)
 
-**責務**: Ghost Admin APIとの通信
+**Responsibility**: Communication with Ghost Admin API
 
-**主要コンポーネント**:
+**Main Components**:
 
 #### Client
-HTTPクライアントとJWT生成を統合
+Integrates HTTP client and JWT generation
 
 ```go
 type Client struct {
@@ -181,39 +182,39 @@ type Client struct {
 }
 ```
 
-**主要メソッド**:
+**Main Methods**:
 - `NewClient(baseURL, keyID, secret string) (*Client, error)`
 - `doRequest(method, path string, body io.Reader) ([]byte, error)`
 - `GetSite() (*Site, error)`
 
-#### JWT生成
-Ghost Admin APIはHS256で署名されたJWTを要求
+#### JWT Generation
+Ghost Admin API requires JWT signed with HS256
 
 ```go
 func GenerateJWT(keyID, secret string) (string, error)
 ```
 
-**JWTクレーム**:
+**JWT Claims**:
 ```json
 {
-  "iat": 1234567890,      // 発行時刻（Unix時間）
-  "exp": 1234568190,      // 有効期限（iat + 5分）
-  "aud": "/admin/"        // Ghost Admin APIのパス
+  "iat": 1234567890,      // Issued at (Unix time)
+  "exp": 1234568190,      // Expiration (iat + 5 minutes)
+  "aud": "/admin/"        // Ghost Admin API path
 }
 ```
 
-**JWTヘッダー**:
+**JWT Header**:
 ```json
 {
-  "alg": "HS256",         // 署名アルゴリズム
+  "alg": "HS256",         // Signature algorithm
   "typ": "JWT",
-  "kid": "64fac5417..."   // APIキーID
+  "kid": "64fac5417..."   // API key ID
 }
 ```
 
-#### API型定義
+#### API Type Definitions
 
-各APIリソースに対応する型を定義
+Define types corresponding to each API resource
 
 ```go
 type Site struct {
@@ -238,26 +239,26 @@ type Post struct {
 
 ### 5. Output Format Layer (`internal/outfmt/`)
 
-**責務**: 出力フォーマットの統一管理
+**Responsibility**: Unified output format management
 
-**サポート形式**:
+**Supported Formats**:
 
-| モード | フラグ | 用途 | 形式 |
-|--------|--------|------|------|
-| Table | (default) | 人間向け | カラム揃え、ヘッダー付き |
-| JSON | `--json` | プログラム連携 | JSON形式 |
-| Plain | `--plain` | パイプ処理 | TSV形式 |
+| Mode | Flag | Use Case | Format |
+|------|------|---------|--------|
+| Table | (default) | Human-readable | Column-aligned, with headers |
+| JSON | `--json` | Programmatic | JSON format |
+| Plain | `--plain` | Pipe processing | TSV format |
 
-**主要メソッド**:
+**Main Methods**:
 - `NewFormatter(writer io.Writer, mode string) *Formatter`
-- `Print(data interface{}) error` - 任意のデータを出力
-- `PrintTable(headers []string, rows [][]string) error` - テーブル出力
-- `PrintMessage(message string)` - メッセージ出力
-- `PrintError(message string)` - エラー出力
+- `Print(data interface{}) error` - Output arbitrary data
+- `PrintTable(headers []string, rows [][]string) error` - Table output
+- `PrintMessage(message string)` - Message output
+- `PrintError(message string)` - Error output
 
-**出力例**:
+**Output Examples**:
 
-**Table形式**:
+**Table Format**:
 ```
 Alias   URL                           Default
 ------  ----------------------------  -------
@@ -265,7 +266,7 @@ myblog  https://myblog.ghost.io       *
 work    https://blog.company.com
 ```
 
-**JSON形式**:
+**JSON Format**:
 ```json
 [
   {
@@ -281,173 +282,173 @@ work    https://blog.company.com
 ]
 ```
 
-**Plain形式（TSV）**:
+**Plain Format (TSV)**:
 ```
 Alias	URL	Default
 myblog	https://myblog.ghost.io	*
 work	https://blog.company.com
 ```
 
-## 認証フロー
+## Authentication Flow
 
 ```
-1. ユーザーがGhost Adminで Custom Integration を作成
+1. User creates Custom Integration in Ghost Admin
    ↓
-2. `gho auth add https://myblog.ghost.io` を実行
+2. Execute `gho auth add https://myblog.ghost.io`
    ↓
-3. APIキー（id:secret形式）を入力
+3. Enter API key (id:secret format)
    ↓
-4. APIキーをパース（secrets.ParseAdminAPIKey）
+4. Parse API key (secrets.ParseAdminAPIKey)
    ↓
-5. `/ghost/api/admin/site/` で検証
-   - JWTを生成（jwt.GenerateJWT）
-   - HTTPリクエストを実行（client.GetSite）
+5. Verify with `/ghost/api/admin/site/`
+   - Generate JWT (jwt.GenerateJWT)
+   - Execute HTTP request (client.GetSite)
    ↓
-6. キーリングに保存（secrets.Store.Set）
+6. Save to keyring (secrets.Store.Set)
    ↓
-7. 設定ファイルにサイトを追加（config.Config.AddSite）
+7. Add site to config (config.Config.AddSite)
    ↓
-8. 設定ファイルを保存（config.Config.Save）
+8. Save configuration file (config.Config.Save)
 ```
 
-## APIリクエストフロー
+## API Request Flow
 
 ```
-1. ユーザーがコマンドを実行（例: gho site）
+1. User executes command (e.g., gho site)
    ↓
-2. RootFlagsからサイトを決定
-   - -s フラグで指定されたサイト
-   - または設定のdefault_site
+2. Determine site from RootFlags
+   - Site specified by -s flag
+   - Or default_site from config
    ↓
-3. 設定ファイルからURLを取得（config.Config.GetSiteURL）
+3. Get URL from config (config.Config.GetSiteURL)
    ↓
-4. キーリングからAPIキーを取得（secrets.Store.Get）
+4. Get API key from keyring (secrets.Store.Get)
    ↓
-5. APIキーをパース（secrets.ParseAdminAPIKey）
+5. Parse API key (secrets.ParseAdminAPIKey)
    ↓
-6. APIクライアントを作成（ghostapi.NewClient）
+6. Create API client (ghostapi.NewClient)
    ↓
-7. JWTを生成（ghostapi.GenerateJWT）
+7. Generate JWT (ghostapi.GenerateJWT)
    ↓
-8. HTTPリクエストを実行（ghostapi.Client.doRequest）
+8. Execute HTTP request (ghostapi.Client.doRequest)
    - Authorization: Ghost <JWT>
    - Accept: application/json
    ↓
-9. レスポンスをパース
+9. Parse response
    ↓
-10. 出力フォーマットで表示（outfmt.Formatter）
+10. Display with output format (outfmt.Formatter)
 ```
 
-## エラーハンドリング
+## Error Handling
 
-### エラーの種類
+### Error Types
 
-1. **設定エラー**
-   - 設定ファイルが見つからない
-   - サイトが登録されていない
-   - デフォルトサイトが設定されていない
+1. **Configuration Errors**
+   - Configuration file not found
+   - Site not registered
+   - Default site not set
 
-2. **認証エラー**
-   - APIキーが無効
-   - APIキーの形式が不正
-   - キーリングへのアクセスエラー
+2. **Authentication Errors**
+   - Invalid API key
+   - Invalid API key format
+   - Keyring access error
 
-3. **APIエラー**
-   - HTTP エラー（401, 404, 500など）
-   - レスポンスのパースエラー
-   - ネットワークエラー
+3. **API Errors**
+   - HTTP errors (401, 404, 500, etc.)
+   - Response parsing errors
+   - Network errors
 
-4. **入力エラー**
-   - 必須パラメータが不足
-   - パラメータの形式が不正
+4. **Input Errors**
+   - Missing required parameters
+   - Invalid parameter format
 
-### エラーメッセージの設計
+### Error Message Design
 
-すべてのエラーメッセージは以下の形式：
+All error messages follow this format:
 
 ```
-Error: <エラーの説明>
+Error: <error description>
 ```
 
-例:
+Examples:
 ```
-Error: サイト 'myblog' が見つかりません
-Error: APIキーの検証に失敗: Unauthorized
-Error: 設定の読み込みに失敗: open /Users/user/.config/gho/config.json: no such file or directory
+Error: Site 'myblog' not found
+Error: API key verification failed: Unauthorized
+Error: Failed to load configuration: open /Users/user/.config/gho/config.json: no such file or directory
 ```
 
-## テスト戦略
+## Testing Strategy
 
-### ユニットテスト
+### Unit Testing
 
-各コンポーネントは独立してテスト可能：
+Each component is independently testable:
 
-- **config**: 設定ファイルの読み書き
-- **secrets**: キーリング操作（fileバックエンドでテスト）
-- **ghostapi**: HTTPクライアント（httptestでモック）
-- **outfmt**: 出力フォーマット（bytes.Bufferで検証）
+- **config**: Configuration file read/write
+- **secrets**: Keyring operations (tested with file backend)
+- **ghostapi**: HTTP client (mocked with httptest)
+- **outfmt**: Output formatting (verified with bytes.Buffer)
 
-### テストカバレッジ目標
+### Test Coverage Goals
 
-- コアロジック: 80%以上
-- API層: 70%以上
-- CLI層: 60%以上（手動テストでカバー）
+- Core logic: 80%+
+- API layer: 70%+
+- CLI layer: 60%+ (covered by manual testing)
 
-## パフォーマンス考慮事項
+## Performance Considerations
 
-### JWT生成
+### JWT Generation
 
-- 各APIリクエストごとにJWTを生成
-- 有効期限は5分（Ghost Admin APIの要件）
-- キャッシュは不要（生成コストは低い）
+- Generate JWT for each API request
+- Validity period: 5 minutes (Ghost Admin API requirement)
+- No caching needed (low generation cost)
 
-### HTTP接続
+### HTTP Connections
 
-- タイムアウト: 30秒
-- Keep-Alive: デフォルト有効
-- 複数リクエストでは接続を再利用
+- Timeout: 30 seconds
+- Keep-Alive: Enabled by default
+- Connection reuse for multiple requests
 
-### キーリングアクセス
+### Keyring Access
 
-- 初回アクセス時にキーリングをオープン
-- 複数の操作で再利用可能
-- パスワード入力はバックエンドに依存
+- Open keyring on first access
+- Reusable across multiple operations
+- Password input depends on backend
 
-## セキュリティ考慮事項
+## Security Considerations
 
-### APIキーの保存
+### API Key Storage
 
-- OSキーリングに保存（プレーンテキストでファイルに保存しない）
-- 設定ファイルにはURLのみ保存（APIキーは含まない）
-- ファイルバックエンドはパスワード保護
+- Stored in OS keyring (not in plain text files)
+- Configuration file stores only URLs (no API keys)
+- File backend is password-protected
 
 ### JWT
 
-- 有効期限5分（短命）
-- HS256署名（Ghost Admin APIの要件）
-- ヘッダーにkid（キーID）を含む
+- Short-lived (5 minutes)
+- HS256 signature (Ghost Admin API requirement)
+- Includes kid (key ID) in header
 
-### ファイルパーミッション
+### File Permissions
 
-- 設定ファイル: 0600（所有者のみ読み書き）
-- キーリングファイル: 0600
+- Configuration file: 0600 (owner read/write only)
+- Keyring file: 0600
 
-## 拡張性
+## Extensibility
 
-### 新しいAPIリソースの追加
+### Adding New API Resources
 
-1. `internal/ghostapi/` に型定義を追加
-2. `internal/ghostapi/` にAPI関数を追加
-3. `internal/cmd/` にコマンドを追加
-4. テストを追加
-5. ドキュメントを更新
+1. Add type definitions to `internal/ghostapi/`
+2. Add API functions to `internal/ghostapi/`
+3. Add commands to `internal/cmd/`
+4. Add tests
+5. Update documentation
 
-### 新しい出力形式の追加
+### Adding New Output Formats
 
-1. `internal/outfmt/` に新しいフォーマッターを追加
-2. `RootFlags` に新しいフラグを追加
-3. `GetOutputMode()` でモードを返すように修正
+1. Add new formatter to `internal/outfmt/`
+2. Add new flag to `RootFlags`
+3. Modify `GetOutputMode()` to return new mode
 
-### 新しいキーリングバックエンドの追加
+### Adding New Keyring Backends
 
-99designs/keyringがサポートするバックエンドは自動的に利用可能
+Backends supported by 99designs/keyring are automatically available

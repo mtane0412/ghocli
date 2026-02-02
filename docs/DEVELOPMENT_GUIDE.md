@@ -1,138 +1,138 @@
-# gho 開発ガイド
+# gho Development Guide
 
-## 開発環境のセットアップ
+## Development Environment Setup
 
-### 必要なツール
+### Required Tools
 
-- **Go**: 1.22以上
-- **Make**: ビルド自動化
-- **golangci-lint**: Lint実行（オプション）
-- **Git**: バージョン管理
+- **Go**: 1.22 or later
+- **Make**: Build automation
+- **golangci-lint**: Lint execution (optional)
+- **Git**: Version control
 
-### 環境構築手順
+### Setup Steps
 
 ```bash
-# リポジトリをクローン
+# Clone repository
 git clone https://github.com/mtane0412/gho.git
 cd gho
 
-# 依存関係をインストール
+# Install dependencies
 go mod download
 
-# ビルド
+# Build
 make build
 
-# テスト実行
+# Run tests
 make test
 ```
 
-## 開発ワークフロー
+## Development Workflow
 
-### TDD原則
+### TDD Principles
 
-すべての実装において、以下のTDDサイクルに従います：
+Follow the TDD cycle for all implementations:
 
-1. **RED** - 失敗するテストを先に書く
-2. **GREEN** - テストを通す最小限のコードを書く
-3. **REFACTOR** - コードを整理する
+1. **RED** - Write a failing test first
+2. **GREEN** - Write minimal code to make the test pass
+3. **REFACTOR** - Clean up the code
 
-### 実装例
+### Implementation Example
 
 ```go
-// 1. RED: 失敗するテストを先に書く
-func TestGenerateJWT_正しいフォーマットのトークン生成(t *testing.T) {
+// 1. RED: Write a failing test first
+func TestGenerateJWT_GeneratesCorrectFormatToken(t *testing.T) {
     token, err := GenerateJWT("keyid", "secret")
     if err != nil {
-        t.Fatalf("JWTの生成に失敗: %v", err)
+        t.Fatalf("Failed to generate JWT: %v", err)
     }
     if token == "" {
-        t.Error("生成されたトークンが空です")
+        t.Error("Generated token is empty")
     }
 }
 
-// 2. GREEN: テストを通す最小限のコードを書く
+// 2. GREEN: Write minimal code to pass the test
 func GenerateJWT(keyID, secret string) (string, error) {
-    // 最小限の実装
+    // Minimal implementation
 }
 
-// 3. REFACTOR: コードを整理する
+// 3. REFACTOR: Clean up the code
 func GenerateJWT(keyID, secret string) (string, error) {
-    // リファクタリング後の実装
+    // Refactored implementation
 }
 ```
 
-## コーディング規約
+## Coding Conventions
 
-### ファイル冒頭コメント
+### File Header Comments
 
-各ファイルの冒頭に仕様をコメントで記述する：
+Add specifications at the beginning of each file:
 
 ```go
 /**
  * jwt.go
- * Ghost Admin API用のJWT生成
+ * JWT generation for Ghost Admin API
  *
- * Ghost Admin APIはHS256アルゴリズムで署名されたJWTを要求します。
- * トークンの有効期限は5分です。
+ * Ghost Admin API requires JWT signed with HS256 algorithm.
+ * Token expiration is 5 minutes.
  */
 
 package ghostapi
 ```
 
-### 関数コメント
+### Function Comments
 
-目的、内容、注意事項を詳細に日本語で記述する：
+Describe purpose, content, and notes in detail:
 
 ```go
-// GenerateJWT はGhost Admin API用のJWTトークンを生成します。
-// keyID: Admin APIキーのID部分
-// secret: Admin APIキーのシークレット部分
+// GenerateJWT generates a JWT token for the Ghost Admin API.
+// keyID: ID part of the Admin API key
+// secret: Secret part of the Admin API key
 func GenerateJWT(keyID, secret string) (string, error) {
     // ...
 }
 ```
 
-### テスト関数の命名
+### Test Function Naming
 
-テスト関数名は日本語で具体的な内容を記述：
+Test function names should describe the specific content:
 
 ```go
-// ✅ 良い例
-func TestGenerateJWT_正しいフォーマットのトークン生成(t *testing.T) { }
-func TestGenerateJWT_空のキーIDでエラー(t *testing.T) { }
+// ✅ Good examples
+func TestGenerateJWT_GeneratesCorrectFormatToken(t *testing.T) { }
+func TestGenerateJWT_ErrorOnEmptyKeyID(t *testing.T) { }
 
-// ❌ 悪い例
+// ❌ Bad examples
 func TestGenerateJWT(t *testing.T) { }
 func TestJWT1(t *testing.T) { }
 ```
 
-### エラーハンドリング
+### Error Handling
 
-エラーメッセージは日本語で具体的に：
+Error messages should be specific and descriptive:
 
 ```go
-// ✅ 良い例
+// ✅ Good example
 if keyID == "" {
-    return "", errors.New("キーIDが空です")
+    return "", errors.New("key ID is empty")
 }
 
-// ❌ 悪い例
+// ❌ Bad example
 if keyID == "" {
     return "", errors.New("invalid key")
 }
 ```
 
-エラーのラップには `fmt.Errorf` と `%w` を使用：
+Use `fmt.Errorf` with `%w` for error wrapping:
 
 ```go
 if err := store.Set(alias, apiKey); err != nil {
-    return fmt.Errorf("APIキーの保存に失敗: %w", err)
+    return fmt.Errorf("failed to save API key: %w", err)
 }
 ```
 
-### 構造体タグ
+### Struct Tags
 
-JSON構造体には適切なタグを付与：
+Add appropriate tags to JSON structs:
 
 ```go
 type Site struct {
@@ -143,65 +143,65 @@ type Site struct {
 }
 ```
 
-## テスト
+## Testing
 
-### テスト実行
+### Running Tests
 
 ```bash
-# すべてのテストを実行
+# Run all tests
 go test ./...
 
-# 詳細表示
+# Verbose output
 go test ./... -v
 
-# 特定のパッケージのみ
+# Specific package only
 go test ./internal/config/... -v
 
-# カバレッジ付き
+# With coverage
 go test -v -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out -o coverage.html
 ```
 
-### テストの書き方
+### Writing Tests
 
-#### ユニットテスト
+#### Unit Tests
 
 ```go
-func TestStore_SetとGetの基本動作(t *testing.T) {
-    // テスト用のストアを作成（fileバックエンドを使用）
+func TestStore_SetAndGetBasicOperation(t *testing.T) {
+    // Create test store (using file backend)
     store, err := NewStore("file", t.TempDir())
     if err != nil {
-        t.Fatalf("ストアの作成に失敗: %v", err)
+        t.Fatalf("Failed to create store: %v", err)
     }
 
-    // APIキーを保存
+    // Save API key
     testKey := "64fac5417c4c6b0001234567:89abcdef..."
     if err := store.Set("testsite", testKey); err != nil {
-        t.Fatalf("APIキーの保存に失敗: %v", err)
+        t.Fatalf("Failed to save API key: %v", err)
     }
 
-    // APIキーを取得
+    // Retrieve API key
     retrieved, err := store.Get("testsite")
     if err != nil {
-        t.Fatalf("APIキーの取得に失敗: %v", err)
+        t.Fatalf("Failed to retrieve API key: %v", err)
     }
 
-    // 保存したキーと取得したキーが一致することを確認
+    // Verify saved and retrieved keys match
     if retrieved != testKey {
-        t.Errorf("取得したキー = %q; want %q", retrieved, testKey)
+        t.Errorf("Retrieved key = %q; want %q", retrieved, testKey)
     }
 }
 ```
 
-#### HTTPクライアントのテスト
+#### HTTP Client Testing
 
-`httptest` パッケージを使用してモックサーバーを作成：
+Use `httptest` package to create mock server:
 
 ```go
-func TestGetSite_サイト情報の取得(t *testing.T) {
-    // テスト用のHTTPサーバーを作成
+func TestGetSite_RetrievesSiteInfo(t *testing.T) {
+    // Create test HTTP server
     server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        // レスポンスを返す
+        // Return response
         response := map[string]interface{}{
             "site": map[string]interface{}{
                 "title": "Test Blog",
@@ -213,28 +213,28 @@ func TestGetSite_サイト情報の取得(t *testing.T) {
     }))
     defer server.Close()
 
-    // クライアントを作成
+    // Create client
     client, err := NewClient(server.URL, "keyid", "secret")
     if err != nil {
-        t.Fatalf("クライアントの作成に失敗: %v", err)
+        t.Fatalf("Failed to create client: %v", err)
     }
 
-    // サイト情報を取得
+    // Get site info
     site, err := client.GetSite()
     if err != nil {
-        t.Fatalf("サイト情報の取得に失敗: %v", err)
+        t.Fatalf("Failed to get site info: %v", err)
     }
 
-    // レスポンスの検証
+    // Verify response
     if site.Title != "Test Blog" {
         t.Errorf("Title = %q; want %q", site.Title, "Test Blog")
     }
 }
 ```
 
-#### テーブル駆動テスト
+#### Table-Driven Tests
 
-複数のテストケースを効率的にテスト：
+Efficiently test multiple test cases:
 
 ```go
 func TestParseAdminAPIKey(t *testing.T) {
@@ -246,14 +246,14 @@ func TestParseAdminAPIKey(t *testing.T) {
         wantErr    bool
     }{
         {
-            name:       "正しいフォーマット",
+            name:       "correct format",
             input:      "64fac5417c4c6b0001234567:89abcdef...",
             wantID:     "64fac5417c4c6b0001234567",
             wantSecret: "89abcdef...",
             wantErr:    false,
         },
         {
-            name:    "コロンなし",
+            name:    "no colon",
             input:   "64fac5417c4c6b000123456789abcdef",
             wantErr: true,
         },
@@ -265,13 +265,13 @@ func TestParseAdminAPIKey(t *testing.T) {
 
             if tc.wantErr {
                 if err == nil {
-                    t.Error("エラーが返されるべきだが、nilが返された")
+                    t.Error("Expected error but got nil")
                 }
                 return
             }
 
             if err != nil {
-                t.Fatalf("予期しないエラー: %v", err)
+                t.Fatalf("Unexpected error: %v", err)
             }
 
             if id != tc.wantID {
@@ -285,39 +285,39 @@ func TestParseAdminAPIKey(t *testing.T) {
 }
 ```
 
-## 品質チェック
+## Quality Checks
 
-### コミット前チェック
+### Pre-Commit Checks
 
-コミット前に以下を必ず実行：
+Always execute the following before committing:
 
 ```bash
-# テスト実行
+# Run tests
 make test
 
-# 型チェック
+# Type check
 make type-check
 
-# Lint実行（golangci-lintが必要）
+# Lint (requires golangci-lint)
 make lint
 
-# ビルド確認
+# Build verification
 make build
 ```
 
-### 型チェック
+### Type Checking
 
 ```bash
-# go vet で型チェック
+# Type check with go vet
 go vet ./...
 
-# または
+# Or
 make type-check
 ```
 
 ### Lint
 
-golangci-lintをインストール：
+Install golangci-lint:
 
 ```bash
 # macOS
@@ -327,54 +327,54 @@ brew install golangci-lint
 # https://golangci-lint.run/usage/install/
 ```
 
-Lint実行：
+Run lint:
 
 ```bash
 golangci-lint run
 
-# または
+# Or
 make lint
 ```
 
-## Git ワークフロー
+## Git Workflow
 
-### ブランチ戦略
+### Branching Strategy
 
 ```bash
-# mainブランチへの直接コミット禁止
-# 必ずfeatureブランチで作業する
+# Never commit directly to main branch
+# Always work on feature branches
 
-# 作業開始前にブランチを確認
+# Check current branch before starting work
 git branch --show-current
 
-# featureブランチを作成
+# Create feature branch
 git checkout -b feature/phase2-content-management
 ```
 
-### コミットメッセージ
+### Commit Messages
 
 ```bash
 git commit -m "$(cat <<'EOF'
-Phase 2: コンテンツ管理機能を実装
+Phase 2: Implement content management features
 
-Posts/Pagesの作成、更新、削除、公開機能を実装しました。
+Implemented Posts/Pages create, update, delete, and publish functionality.
 
-主な実装内容：
-- Posts API（list/get/create/update/delete/publish）
-- Pages API（list/get/create/update/delete）
-- Posts/Pagesコマンド
-- テストの追加
+Main implementation:
+- Posts API (list/get/create/update/delete/publish)
+- Pages API (list/get/create/update/delete)
+- Posts/Pages commands
+- Added tests
 
-すべてのテストがパスしています。
+All tests passing.
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 EOF
 )"
 ```
 
-## 新しいAPIリソースの追加方法
+## Adding New API Resources
 
-### 1. API型定義を追加
+### 1. Add API Type Definitions
 
 `internal/ghostapi/posts.go`:
 
@@ -383,7 +383,7 @@ package ghostapi
 
 import "time"
 
-// Post はGhostの投稿を表します
+// Post represents a Ghost post
 type Post struct {
     ID          string     `json:"id"`
     Title       string     `json:"title"`
@@ -395,34 +395,34 @@ type Post struct {
 }
 ```
 
-### 2. テストを先に書く（RED）
+### 2. Write Tests First (RED)
 
 `internal/ghostapi/posts_test.go`:
 
 ```go
-func TestListPosts_投稿一覧の取得(t *testing.T) {
-    // テスト用のHTTPサーバーを作成
+func TestListPosts_RetrievesPostList(t *testing.T) {
+    // Create test HTTP server
     server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        // モックレスポンスを返す
+        // Return mock response
     }))
     defer server.Close()
 
-    // テストを書く
+    // Write test
 }
 ```
 
-### 3. 実装を追加（GREEN）
+### 3. Add Implementation (GREEN)
 
 `internal/ghostapi/posts.go`:
 
 ```go
-// ListPosts は投稿一覧を取得します
+// ListPosts retrieves a list of posts
 func (c *Client) ListPosts(options ListOptions) ([]Post, error) {
-    // 実装
+    // Implementation
 }
 ```
 
-### 4. コマンドを追加
+### 4. Add Commands
 
 `internal/cmd/posts.go`:
 
@@ -434,7 +434,7 @@ type PostsCmd struct {
 }
 ```
 
-### 5. root.goに登録
+### 5. Register in root.go
 
 `internal/cmd/root.go`:
 
@@ -444,95 +444,95 @@ type CLI struct {
     Version   kong.VersionFlag
     Auth      AuthCmd
     Site      SiteCmd
-    Posts     PostsCmd  // 追加
+    Posts     PostsCmd  // Add
 }
 ```
 
-## デバッグ
+## Debugging
 
-### ログ出力
+### Logging
 
-`--verbose` フラグでログを有効化：
+Enable logging with `--verbose` flag:
 
 ```go
 if root.Verbose {
-    log.Printf("APIリクエスト: %s %s", method, url)
+    log.Printf("API request: %s %s", method, url)
 }
 ```
 
-### JWTのデバッグ
+### JWT Debugging
 
-jwt.ioでトークンをデコード：
+Decode token at jwt.io:
 
 ```bash
-# トークンを取得
+# Get token
 ./gho site --verbose
 
-# jwt.io にアクセスして貼り付け
+# Visit jwt.io and paste the token
 ```
 
-### HTTPリクエストのデバッグ
+### HTTP Request Debugging
 
-環境変数で詳細ログを有効化：
+Enable detailed logging with environment variable:
 
 ```bash
-# HTTPデバッグ
+# HTTP debug
 export GODEBUG=http2debug=1
 ./gho site
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### テストが失敗する
+### Tests Failing
 
 ```bash
-# キャッシュをクリア
+# Clear cache
 go clean -testcache
 
-# 再実行
+# Re-run
 go test ./...
 ```
 
-### ビルドエラー
+### Build Errors
 
 ```bash
-# 依存関係を更新
+# Update dependencies
 go mod tidy
 
-# 再ビルド
+# Rebuild
 make build
 ```
 
-### キーリングエラー
+### Keyring Errors
 
 ```bash
-# fileバックエンドで動作確認
+# Test with file backend
 export GHO_KEYRING_BACKEND=file
 ./gho auth add https://test.ghost.io
 ```
 
-## リリース
+## Release
 
-### バージョンタグ
+### Version Tags
 
 ```bash
-# タグを作成
+# Create tag
 git tag -a v0.1.0 -m "Release v0.1.0"
 
-# タグをプッシュ
+# Push tag
 git push origin v0.1.0
 ```
 
-### ビルド
+### Build
 
 ```bash
-# バージョン指定ビルド
+# Build with version
 make build VERSION=0.1.0
 ```
 
-## 参考リソース
+## Reference Resources
 
-### Go言語
+### Go Language
 
 - [Effective Go](https://go.dev/doc/effective_go)
 - [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
@@ -542,7 +542,7 @@ make build VERSION=0.1.0
 - [Ghost Admin API Documentation](https://ghost.org/docs/admin-api/)
 - [Ghost API Client Examples](https://github.com/TryGhost/Ghost/tree/main/ghost/admin-api)
 
-### テスト
+### Testing
 
 - [Go Testing Package](https://pkg.go.dev/testing)
 - [Table Driven Tests](https://github.com/golang/go/wiki/TableDrivenTests)

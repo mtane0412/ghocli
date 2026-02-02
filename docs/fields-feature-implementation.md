@@ -1,200 +1,200 @@
-# フィールド選択機能の実装
+# Fields Selection Feature Implementation
 
-## 概要
+## Overview
 
-Ghost Admin APIの全フィールドに対応し、gh CLI風の`--fields`オプションによるフィールド選択機能を実装。
+Implement support for all Ghost Admin API fields and gh CLI-style `--fields` option for field selection.
 
-## 実装完了状況（2026-02-01）
+## Implementation Status (2026-02-01)
 
-### Phase 1: 基盤整備 ✅
+### Phase 1: Foundation ✅
 
-#### 1.1 フィールド定義パッケージの作成
+#### 1.1 Fields Definition Package Creation
 
-**新規ファイル**:
-- `internal/fields/fields.go` - フィールド定義基盤
-  - `FieldSet`: フィールドセット構造体（Default, Detail, All）
-  - `Parse(input, fieldSet)`: カンマ区切りフィールド指定のパース
-  - `Validate(fields, available)`: フィールドのバリデーション
-  - `ListAvailable(fieldSet)`: 利用可能なフィールド一覧表示
+**New Files**:
+- `internal/fields/fields.go` - Fields definition foundation
+  - `FieldSet`: Field set structure (Default, Detail, All)
+  - `Parse(input, fieldSet)`: Parse comma-separated field specification
+  - `Validate(fields, available)`: Field validation
+  - `ListAvailable(fieldSet)`: Display list of available fields
 
-- `internal/fields/posts.go` - Post用フィールド定義（40フィールド）
-  - Default: list用デフォルトフィールド（id, title, status, created_at, published_at）
-  - Detail: get用デフォルトフィールド（13フィールド）
-  - All: 全フィールド（40フィールド）
-    - 基本情報: id, uuid, title, slug, status, url
-    - コンテンツ: html, lexical, excerpt, custom_excerpt
-    - 画像: feature_image, feature_image_alt, feature_image_caption, og_image, twitter_image
+- `internal/fields/posts.go` - Post field definitions (40 fields)
+  - Default: Default fields for list (id, title, status, created_at, published_at)
+  - Detail: Default fields for get (13 fields)
+  - All: All fields (40 fields)
+    - Basic info: id, uuid, title, slug, status, url
+    - Content: html, lexical, excerpt, custom_excerpt
+    - Images: feature_image, feature_image_alt, feature_image_caption, og_image, twitter_image
     - SEO: meta_title, meta_description, og_*, twitter_*, canonical_url
-    - 日時: created_at, updated_at, published_at
-    - 制御: visibility, featured, email_only
-    - カスタム: codeinjection_head, codeinjection_foot, custom_template
-    - 関連: tags, authors, primary_author, primary_tag
-    - その他: comment_id, reading_time
-    - メール・ニュースレター: email_segment, newsletter_id, send_email_when_published
+    - Dates: created_at, updated_at, published_at
+    - Control: visibility, featured, email_only
+    - Custom: codeinjection_head, codeinjection_foot, custom_template
+    - Related: tags, authors, primary_author, primary_tag
+    - Other: comment_id, reading_time
+    - Email/Newsletter: email_segment, newsletter_id, send_email_when_published
 
-**テスト**:
-- `internal/fields/fields_test.go` - 基盤機能のテスト
-- `internal/fields/posts_test.go` - Postフィールド定義のテスト
+**Tests**:
+- `internal/fields/fields_test.go` - Foundation functionality tests
+- `internal/fields/posts_test.go` - Post field definition tests
 
-### Phase 2: 構造体の拡張 ✅
+### Phase 2: Structure Extension ✅
 
-#### 2.1 共通型定義
+#### 2.1 Common Type Definitions
 
-**新規ファイル**:
-- `internal/ghostapi/types.go` - 共通型定義
-  - `Author`: 著者情報（ID, Name, Slug, Email, Bio, Location, Website）
-  - Tag構造体は既存のtags.goで定義済み
+**New Files**:
+- `internal/ghostapi/types.go` - Common type definitions
+  - `Author`: Author information (ID, Name, Slug, Email, Bio, Location, Website)
+  - Tag structure already defined in existing tags.go
 
-**テスト**:
-- `internal/ghostapi/types_test.go` - Author/TagのJSON変換テスト
+**Tests**:
+- `internal/ghostapi/types_test.go` - Author/Tag JSON conversion tests
 
-#### 2.2 Post構造体の全フィールド対応
+#### 2.2 Post Structure All-Field Support
 
-**変更ファイル**:
-- `internal/ghostapi/posts.go` - Post構造体を40フィールド以上に拡張
-  - 基本情報、コンテンツ、画像、SEO、日時、制御、カスタム、関連、その他、メール・ニュースレター
+**Modified Files**:
+- `internal/ghostapi/posts.go` - Extend Post structure to 40+ fields
+  - Basic info, content, images, SEO, dates, control, custom, related, other, email/newsletter
 
-**テスト**:
-- `internal/ghostapi/posts_extended_test.go` - Post拡張フィールドのテスト
+**Tests**:
+- `internal/ghostapi/posts_extended_test.go` - Post extended fields tests
 
-### Phase 3: コマンド層の準備 ✅
+### Phase 3: Command Layer Preparation ✅
 
-#### 3.1 RootFlagsへの--fields追加
+#### 3.1 Add --fields to RootFlags
 
-**変更ファイル**:
-- `internal/cmd/root.go` - RootFlagsにFieldsフィールドを追加
-  - `Fields string`: フィールド指定オプション
-  - `-F` ショートオプション
-  - `GHO_FIELDS` 環境変数サポート
+**Modified Files**:
+- `internal/cmd/root.go` - Add Fields field to RootFlags
+  - `Fields string`: Field specification option
+  - `-F` short option
+  - `GHO_FIELDS` environment variable support
 
-**テスト**:
-- `internal/cmd/root_test.go` - Fieldsフィールドのテスト（環境変数、フラグ優先度等）
+**Tests**:
+- `internal/cmd/root_test.go` - Fields field tests (environment variables, flag priority, etc.)
 
-### Phase 4: 出力層の拡張 ✅
+### Phase 4: Output Layer Extension ✅
 
-#### 4.1 Formatterへのフィールドフィルタリング機能追加
+#### 4.1 Add Field Filtering to Formatter
 
-**新規ファイル**:
-- `internal/outfmt/filter.go` - フィールドフィルタリング機能
-  - `FilterFields(formatter, data, fields)`: 指定フィールドのみを抽出して出力
-  - `filterMap()`: マップから指定フィールドを抽出
-  - `filterStruct()`: 構造体から指定フィールドを抽出
-  - `StructToMap()`: 構造体をmap[string]interface{}に変換
+**New Files**:
+- `internal/outfmt/filter.go` - Field filtering functionality
+  - `FilterFields(formatter, data, fields)`: Extract and output specified fields only
+  - `filterMap()`: Extract specified fields from map
+  - `filterStruct()`: Extract specified fields from struct
+  - `StructToMap()`: Convert struct to map[string]interface{}
 
-**テスト**:
-- `internal/outfmt/filter_test.go` - フィールドフィルタリング機能のテスト
+**Tests**:
+- `internal/outfmt/filter_test.go` - Field filtering functionality tests
 
-### Phase 5-6: posts listコマンド実装 ✅
+### Phase 5-6: posts list Command Implementation ✅
 
-#### 5-6.1 posts listでの--fields対応
+#### 5-6.1 --fields Support in posts list
 
-**変更ファイル**:
-- `internal/cmd/posts.go` - PostsListCmd.Runを拡張
-  - JSON単独（--fieldsなし）時：利用可能なフィールド一覧を表示
-  - フィールド指定時：指定フィールドのみを出力
-  - JSON/Plain/Table形式すべてで動作
+**Modified Files**:
+- `internal/cmd/posts.go` - Extend PostsListCmd.Run
+  - JSON alone (without --fields): Display list of available fields
+  - With field specification: Output only specified fields
+  - Works with all JSON/Plain/Table formats
 
-**テスト**:
-- `internal/cmd/posts_test.go` - posts listのfields対応テスト
+**Tests**:
+- `internal/cmd/posts_test.go` - posts list fields support tests
 
-## 使用例
+## Usage Examples
 
 ```bash
-# フィールド一覧を表示
+# Display field list
 gho posts list --json
 
-# 指定フィールドのみ取得（JSON）
+# Get only specified fields (JSON)
 gho posts list --json --fields id,title,status,excerpt
 
-# Plain形式（TSV）でフィールド指定
+# Specify fields in Plain format (TSV)
 gho posts list --plain --fields id,title,url
 
-# テーブル形式でもフィールド指定可能
+# Field specification also possible in table format
 gho posts list --fields id,title,status,feature_image
 
-# 環境変数で指定
+# Specify with environment variable
 export GHO_FIELDS="id,title,status"
 gho posts list --json
 
-# ショートオプション
+# Short option
 gho posts list --json -F id,title,url
 ```
 
-## 品質チェック結果
+## Quality Check Results
 
-- ✅ 全テスト: PASS
-- ✅ 型チェック: PASS
-- ✅ ビルド: 成功
-- ✅ --fieldsオプション表示: 確認済み
+- ✅ All tests: PASS
+- ✅ Type check: PASS
+- ✅ Build: SUCCESS
+- ✅ --fields option display: Verified
 
-## 残りのタスク
+## Remaining Tasks
 
-### Phase 7: posts getコマンドへの対応
+### Phase 7: Support for posts get Command
 
-**実装内容**:
-- `posts get` コマンドで`--fields`オプションをサポート
-- JSON単独時にフィールド一覧表示
-- フィールド指定時にフィルタリング出力
+**Implementation**:
+- Support `--fields` option in `posts get` command
+- Display field list when JSON alone
+- Filtering output when fields specified
 
-**変更ファイル**:
-- `internal/cmd/posts.go` - PostsInfoCmd.Runを拡張
+**Modified Files**:
+- `internal/cmd/posts.go` - Extend PostsInfoCmd.Run
 
-### Phase 8: 他リソースへの横展開
+### Phase 8: Horizontal Expansion to Other Resources
 
-#### 8.1 フィールド定義の追加
+#### 8.1 Add Field Definitions
 
-**新規ファイル**:
-- `internal/fields/pages.go` - Page用フィールド定義（Postと同一）
-- `internal/fields/tags.go` - Tag用フィールド定義
-- `internal/fields/members.go` - Member用フィールド定義
-- `internal/fields/users.go` - User用フィールド定義
-- `internal/fields/newsletters.go` - Newsletter用フィールド定義
-- `internal/fields/tiers.go` - Tier用フィールド定義
-- `internal/fields/offers.go` - Offer用フィールド定義
-- `internal/fields/webhooks.go` - Webhook用フィールド定義
+**New Files**:
+- `internal/fields/pages.go` - Page field definitions (same as Post)
+- `internal/fields/tags.go` - Tag field definitions
+- `internal/fields/members.go` - Member field definitions
+- `internal/fields/users.go` - User field definitions
+- `internal/fields/newsletters.go` - Newsletter field definitions
+- `internal/fields/tiers.go` - Tier field definitions
+- `internal/fields/offers.go` - Offer field definitions
+- `internal/fields/webhooks.go` - Webhook field definitions
 
-#### 8.2 各リソース構造体の拡張
+#### 8.2 Extend Resource Structures
 
-**変更ファイル**:
-- `internal/ghostapi/pages.go` - Page構造体の拡張
-- `internal/ghostapi/tags.go` - Tag構造体の拡張
-- `internal/ghostapi/members.go` - Member構造体の拡張
-- `internal/ghostapi/users.go` - User構造体の拡張
-- 他のリソースも同様
+**Modified Files**:
+- `internal/ghostapi/pages.go` - Page structure extension
+- `internal/ghostapi/tags.go` - Tag structure extension
+- `internal/ghostapi/members.go` - Member structure extension
+- `internal/ghostapi/users.go` - User structure extension
+- Similar for other resources
 
-#### 8.3 各リソースコマンドへの適用
+#### 8.3 Apply to Resource Commands
 
-**変更ファイル**:
-- `internal/cmd/pages.go` - pages list/getへの対応
-- `internal/cmd/tags.go` - tags list/getへの対応
-- `internal/cmd/members.go` - members list/getへの対応
-- `internal/cmd/users.go` - users list/getへの対応
-- 他のリソースも同様
+**Modified Files**:
+- `internal/cmd/pages.go` - Support for pages list/get
+- `internal/cmd/tags.go` - Support for tags list/get
+- `internal/cmd/members.go` - Support for members list/get
+- `internal/cmd/users.go` - Support for users list/get
+- Similar for other resources
 
-### Phase 9: API層の拡張（オプション）
+### Phase 9: API Layer Extension (Optional)
 
-Ghost Admin APIの`fields`パラメータを使用してサーバーサイドでフィルタリング。
+Use Ghost Admin API's `fields` parameter for server-side filtering.
 
-**変更内容**:
-- `ListOptions`に`Fields []string`を追加
-- APIリクエスト時に`fields`パラメータを付与
+**Changes**:
+- Add `Fields []string` to `ListOptions`
+- Add `fields` parameter to API requests
 
-**変更ファイル**:
-- `internal/ghostapi/posts.go` - ListOptions拡張
-- `internal/ghostapi/pages.go` - 同様
-- 他のリソースも同様
+**Modified Files**:
+- `internal/ghostapi/posts.go` - ListOptions extension
+- `internal/ghostapi/pages.go` - Similar
+- Similar for other resources
 
-**メリット**:
-- ネットワーク転送量の削減
-- サーバー側でのフィルタリング
+**Benefits**:
+- Reduced network transfer
+- Server-side filtering
 
-**注意点**:
-- Ghost Admin APIのバージョンによってサポート状況が異なる可能性
-- 既存のクライアント側フィルタリングで十分に機能するため、優先度は低い
+**Notes**:
+- Support may vary by Ghost Admin API version
+- Low priority as existing client-side filtering works well
 
-## 実装パターン（他リソース展開時の参考）
+## Implementation Pattern (Reference for Expanding to Other Resources)
 
-### 1. フィールド定義の作成
+### 1. Create Field Definitions
 
 ```go
 // internal/fields/tags.go
@@ -207,19 +207,19 @@ var TagFields = FieldSet{
 }
 ```
 
-### 2. コマンドの拡張
+### 2. Extend Commands
 
 ```go
 // internal/cmd/tags.go
 func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
-    // JSON単独時はフィールド一覧表示
+    // Display field list when JSON alone
     if root.JSON && root.Fields == "" {
         formatter := outfmt.NewFormatter(os.Stdout, root.GetOutputMode())
         formatter.PrintMessage(fields.ListAvailable(fields.TagFields))
         return nil
     }
 
-    // フィールド指定をパース
+    // Parse field specification
     var selectedFields []string
     if root.Fields != "" {
         parsed, err := fields.Parse(root.Fields, fields.TagFields)
@@ -229,13 +229,13 @@ func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
         selectedFields = parsed
     }
 
-    // データ取得
+    // Get data
     response, err := client.ListTags(...)
     if err != nil {
         return err
     }
 
-    // フィールドフィルタリング
+    // Field filtering
     if len(selectedFields) > 0 {
         var tagsData []map[string]interface{}
         for _, tag := range response.Tags {
@@ -245,49 +245,49 @@ func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
         return outfmt.FilterFields(formatter, tagsData, selectedFields)
     }
 
-    // デフォルト出力
+    // Default output
     return formatter.Print(response.Tags)
 }
 ```
 
-## 設計判断
+## Design Decisions
 
-### フィールド定義の分離
+### Separating Field Definitions
 
-**判断**: フィールド定義を専用パッケージ（`internal/fields/`）に分離
+**Decision**: Separate field definitions into dedicated package (`internal/fields/`)
 
-**理由**:
-- フィールド定義とビジネスロジックを分離
-- テストが容易
-- 他のパッケージからも参照可能
+**Reasons**:
+- Separate field definitions from business logic
+- Easier to test
+- Referenceable from other packages
 
-### クライアント側フィルタリング
+### Client-Side Filtering
 
-**判断**: クライアント側でフィールドをフィルタリング
+**Decision**: Filter fields on client side
 
-**理由**:
-- サーバー側のAPIバージョンに依存しない
-- すでに取得したデータを加工するだけなので実装が容易
-- ネットワーク転送量は大きな問題ではない（JSON圧縮が効く）
+**Reasons**:
+- Independent of server-side API version
+- Easy to implement as it only processes already-fetched data
+- Network transfer not a major issue (JSON compression works well)
 
-**将来の拡張**:
-- 必要に応じてサーバー側フィルタリング（`fields`パラメータ）も追加可能
+**Future Extension**:
+- Can add server-side filtering (`fields` parameter) as needed
 
-### StructToMap変換
+### StructToMap Conversion
 
-**判断**: reflectionベースの汎用的な変換関数を実装
+**Decision**: Implement generic conversion function based on reflection
 
-**理由**:
-- すべてのリソースで再利用可能
-- JSONタグを使用して正確なフィールド名を取得
-- `omitempty`対応
+**Reasons**:
+- Reusable across all resources
+- Gets accurate field names using JSON tags
+- Supports `omitempty`
 
-## 次回作業時のチェックリスト
+## Next Work Session Checklist
 
-1. [ ] 前回の実装内容を確認（このドキュメント）
-2. [ ] Phase 7: posts getコマンドへの対応
-3. [ ] Phase 8: 他リソースへの横展開
-   - [ ] pages（Postと同じフィールド）
+1. [ ] Review previous implementation (this document)
+2. [ ] Phase 7: Support for posts get command
+3. [ ] Phase 8: Horizontal expansion to other resources
+   - [ ] pages (same fields as Post)
    - [ ] tags
    - [ ] members
    - [ ] users
@@ -295,6 +295,6 @@ func (c *TagsListCmd) Run(ctx context.Context, root *RootFlags) error {
    - [ ] tiers
    - [ ] offers
    - [ ] webhooks
-4. [ ] 各フェーズでTDDサイクルを厳守（RED → GREEN → REFACTOR）
-5. [ ] 各フェーズで型チェックとテストを実行
-6. [ ] 実装完了後、このドキュメントを更新
+4. [ ] Strictly follow TDD cycle for each phase (RED → GREEN → REFACTOR)
+5. [ ] Execute type check and tests for each phase
+6. [ ] Update this document after completing implementation

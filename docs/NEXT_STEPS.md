@@ -1,106 +1,106 @@
-# 次のステップ
+# Next Steps
 
-## 現在の状態
+## Current Status
 
-✅ **Phase 1: 基盤構築** - 完了（2026-01-29）
+✅ **Phase 1: Foundation** - Completed (2026-01-29)
 
-- 設定システム
-- キーリング統合
-- Ghost APIクライアント（JWT生成、HTTPクライアント）
-- 出力フォーマット
-- 認証コマンド（auth add/list/remove/status）
-- サイト情報取得コマンド（site）
+- Configuration system
+- Keyring integration
+- Ghost API client (JWT generation, HTTP client)
+- Output formatting
+- Authentication commands (auth add/list/remove/status)
+- Site information command (site)
 
-✅ **Phase 2: コンテンツ管理（Posts/Pages）** - 完了（2026-01-29）
+✅ **Phase 2: Content Management (Posts/Pages)** - Completed (2026-01-29)
 
-- Posts API（ListPosts、GetPost、CreatePost、UpdatePost、DeletePost）
-- Pages API（ListPages、GetPage、CreatePage、UpdatePage、DeletePage）
-- Postsコマンド（list、get、create、update、delete、publish）
-- Pagesコマンド（list、get、create、update、delete）
+- Posts API (ListPosts, GetPost, CreatePost, UpdatePost, DeletePost)
+- Pages API (ListPages, GetPage, CreatePage, UpdatePage, DeletePage)
+- Posts commands (list, get, create, update, delete, publish)
+- Pages commands (list, get, create, update, delete)
 
-✅ **Phase 3: タクソノミー + メディア** - 完了（2026-01-30）
+✅ **Phase 3: Taxonomy + Media** - Completed (2026-01-30)
 
-- Tags API（ListTags、GetTag、CreateTag、UpdateTag、DeleteTag）
-- Images API（UploadImage）
-- Tagsコマンド（list、get、create、update、delete）
-- Imagesコマンド（upload）
+- Tags API (ListTags, GetTag, CreateTag, UpdateTag, DeleteTag)
+- Images API (UploadImage)
+- Tags commands (list, get, create, update, delete)
+- Images commands (upload)
 
-✅ **Phase 4: Members管理** - 完了（2026-01-30）
+✅ **Phase 4: Members Management** - Completed (2026-01-30)
 
-- Members API（ListMembers、GetMember、CreateMember、UpdateMember、DeleteMember）
-- Membersコマンド（list、get、create、update、delete）
+- Members API (ListMembers, GetMember, CreateMember, UpdateMember, DeleteMember)
+- Members commands (list, get, create, update, delete)
 
-✅ **Phase 5: Users管理** - 完了（2026-01-30）
+✅ **Phase 5: Users Management** - Completed (2026-01-30)
 
-- Users API（ListUsers、GetUser、UpdateUser）※ Create/Delete非サポート
-- Usersコマンド（list、get、update）
+- Users API (ListUsers, GetUser, UpdateUser) ※ Create/Delete not supported
+- Users commands (list, get, update)
 
-✅ **Phase 6: Newsletters/Tiers/Offers** - 完了（2026-01-30）
+✅ **Phase 6: Newsletters/Tiers/Offers** - Completed (2026-01-30)
 
-- Newsletters API（ListNewsletters、GetNewsletter、CreateNewsletter、UpdateNewsletter）
-- Tiers API（ListTiers、GetTier、CreateTier、UpdateTier）
-- Offers API（ListOffers、GetOffer、CreateOffer、UpdateOffer）
-- Newslettersコマンド（list、get、create、update）
-- Tiersコマンド（list、get、create、update）
-- Offersコマンド（list、get、create、update）
-- 破壊的操作の確認機構（`--force`フラグでスキップ可能）
+- Newsletters API (ListNewsletters, GetNewsletter, CreateNewsletter, UpdateNewsletter)
+- Tiers API (ListTiers, GetTier, CreateTier, UpdateTier)
+- Offers API (ListOffers, GetOffer, CreateOffer, UpdateOffer)
+- Newsletters commands (list, get, create, update)
+- Tiers commands (list, get, create, update)
+- Offers commands (list, get, create, update)
+- Destructive operation confirmation mechanism (skippable with `--force` flag)
 
-✅ **Phase 7: Themes/Webhooks** - 完了（2026-01-30）
+✅ **Phase 7: Themes/Webhooks** - Completed (2026-01-30)
 
-- Themes API（ListThemes、UploadTheme、ActivateTheme）
-- Webhooks API（CreateWebhook、UpdateWebhook、DeleteWebhook）※ List/Get非サポート
-- Themesコマンド（list、upload、activate）
-- Webhooksコマンド（create、update、delete）
+- Themes API (ListThemes, UploadTheme, ActivateTheme)
+- Webhooks API (CreateWebhook, UpdateWebhook, DeleteWebhook) ※ List/Get not supported
+- Themes commands (list, upload, activate)
+- Webhooks commands (create, update, delete)
 
-## Phase 8以降の予定
+## Phase 8 and Beyond
 
-現時点で主要なGhost Admin API機能の実装が完了しました。今後、以下の拡張機能を検討できます：
+At this point, the implementation of major Ghost Admin API features is complete. The following enhancement features can be considered:
 
-### 考えられる拡張機能
+### Potential Enhancement Features
 
-1. **データエクスポート/インポート機能**
-   - コンテンツのバックアップ/リストア機能
-   - 他のブログプラットフォームからの移行支援
+1. **Data Export/Import Features**
+   - Content backup/restore functionality
+   - Migration support from other blog platforms
 
-2. **バッチ操作機能**
-   - 複数の投稿/ページの一括更新
-   - タグの一括割り当て
-   - メンバーの一括インポート
+2. **Batch Operation Features**
+   - Bulk update of multiple posts/pages
+   - Bulk tag assignment
+   - Bulk member import
 
-3. **検索・フィルタリングの拡張**
-   - 高度な検索クエリビルダー
-   - カスタムフィルタのプリセット保存
+3. **Enhanced Search/Filtering**
+   - Advanced search query builder
+   - Save custom filter presets
 
-4. **レポート機能**
-   - サイト統計の表示
-   - メンバーレポート
-   - コンテンツレポート
+4. **Reporting Features**
+   - Display site statistics
+   - Member reports
+   - Content reports
 
-5. **対話的UIモード**
-   - インタラクティブな投稿エディタ
-   - TUIベースのブラウザ
+5. **Interactive UI Mode**
+   - Interactive post editor
+   - TUI-based browser
 
-6. **CI/CD統合**
-   - GitHub Actionsワークフロー例
-   - 自動デプロイスクリプト
+6. **CI/CD Integration**
+   - GitHub Actions workflow examples
+   - Auto-deployment scripts
 
-### 次のアクション
+### Next Actions
 
-実装優先度や必要性に応じて、上記の拡張機能から選択するか、ユーザーフィードバックに基づいて新機能を検討します。
+Select from the above enhancement features based on implementation priority and necessity, or consider new features based on user feedback.
 
-## 質問・相談
+## Questions & Consultation
 
-実装中に疑問が生じた場合：
+If questions arise during implementation:
 
-1. `docs/ARCHITECTURE.md` でアーキテクチャを確認
-2. `docs/DEVELOPMENT_GUIDE.md` で開発ガイドを確認
-3. Phase 1の実装を参考にする
-4. Ghost Admin APIドキュメントを参照
+1. Check architecture in `docs/ARCHITECTURE.md`
+2. Check development guide in `docs/DEVELOPMENT_GUIDE.md`
+3. Reference Phase 1 implementation
+4. Consult Ghost Admin API documentation
 
-## フィードバック
+## Feedback
 
-実装完了後：
+After completing implementation:
 
-1. `docs/PROJECT_STATUS.md` を更新
-2. `docs/NEXT_STEPS.md` を更新（Phase 7に移行）
-3. 学んだことや改善点を記録
+1. Update `docs/PROJECT_STATUS.md`
+2. Update `docs/NEXT_STEPS.md` (transition to Phase 7)
+3. Record learnings and improvements

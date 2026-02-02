@@ -1,197 +1,197 @@
-# gho ドキュメント
+# gho Documentation
 
-## 概要
+## Overview
 
-このディレクトリにはgho（Ghost Admin API CLI）プロジェクトのドキュメントが含まれています。
+This directory contains documentation for the gho (Ghost Admin API CLI) project.
 
-## ドキュメント一覧
+## Documentation Index
 
 ### 📊 [PROJECT_STATUS.md](./PROJECT_STATUS.md)
 
-**目的**: プロジェクトの現在の状態を把握する
+**Purpose**: Understand the current state of the project
 
-**内容**:
-- 実装フェーズの進捗状況
-- 完了した機能
-- 現在のプロジェクト構造
-- テストカバレッジ
-- 依存関係
+**Contents**:
+- Implementation phase progress
+- Completed features
+- Current project structure
+- Test coverage
+- Dependencies
 
-**いつ読むか**:
-- プロジェクトの状態を確認したいとき
-- どこまで実装が完了しているか知りたいとき
+**When to read**:
+- When you want to check the project status
+- When you want to know how much has been implemented
 
 ---
 
 ### 📋 [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)
 
-**目的**: 実装計画の全体像を理解する
+**Purpose**: Understand the overall implementation plan
 
-**内容**:
-- 技術スタック
-- 全フェーズの実装計画
-- 各フェーズの目標と実装内容
-- 検証方法
-- 開発ワークフロー
+**Contents**:
+- Technology stack
+- Implementation plan for all phases
+- Goals and implementation details for each phase
+- Verification methods
+- Development workflow
 
-**いつ読むか**:
-- 次に何を実装すべきか知りたいとき
-- 実装の全体像を把握したいとき
-- 新しいフェーズを開始する前
+**When to read**:
+- When you want to know what to implement next
+- When you want to understand the overall picture of implementation
+- Before starting a new phase
 
 ---
 
 ### 🏗️ [ARCHITECTURE.md](./ARCHITECTURE.md)
 
-**目的**: システムのアーキテクチャを理解する
+**Purpose**: Understand the system architecture
 
-**内容**:
-- プロジェクト構造
-- レイヤー構成
-- コンポーネント設計
-- 認証フロー
-- APIリクエストフロー
-- エラーハンドリング
-- テスト戦略
-- セキュリティ考慮事項
+**Contents**:
+- Project structure
+- Layer composition
+- Component design
+- Authentication flow
+- API request flow
+- Error handling
+- Test strategy
+- Security considerations
 
-**いつ読むか**:
-- コードの設計を理解したいとき
-- 新しい機能の実装場所を決めるとき
-- コードレビュー時
+**When to read**:
+- When you want to understand code design
+- When deciding where to implement new features
+- During code review
 
 ---
 
 ### 👨‍💻 [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)
 
-**目的**: 開発方法を学ぶ
+**Purpose**: Learn development methods
 
-**内容**:
-- 開発環境のセットアップ
-- 開発ワークフロー（TDD）
-- コーディング規約
-- テストの書き方
-- 品質チェック方法
-- 新しいAPIリソースの追加方法
-- デバッグ方法
-- トラブルシューティング
+**Contents**:
+- Development environment setup
+- Development workflow (TDD)
+- Coding conventions
+- How to write tests
+- Quality check methods
+- How to add new API resources
+- Debugging methods
+- Troubleshooting
 
-**いつ読むか**:
-- プロジェクトに初めて参加するとき
-- コードを書く前
-- テストの書き方を確認したいとき
-- 品質チェックを実行する前
+**When to read**:
+- When joining the project for the first time
+- Before writing code
+- When you want to check how to write tests
+- Before running quality checks
 
 ---
 
 ### 🚀 [NEXT_STEPS.md](./NEXT_STEPS.md)
 
-**目的**: 次に何をすべきか確認する
+**Purpose**: Check what to do next
 
-**内容**:
-- 現在の状態
-- 次のフェーズのタスクリスト
-- 実装の開始方法
-- 参考情報
-- 実装時の注意点
+**Contents**:
+- Current status
+- Task list for the next phase
+- How to start implementation
+- Reference information
+- Implementation notes
 
-**いつ読むか**:
-- 次のタスクを確認したいとき
-- 新しいフェーズを開始するとき
-- 何から始めればいいか分からないとき
+**When to read**:
+- When you want to check the next task
+- When starting a new phase
+- When you don't know where to start
 
 ---
 
-## ドキュメントの読み方
+## How to Read Documentation
 
-### 初めてプロジェクトに参加する場合
+### For First-Time Project Contributors
 
-1. **PROJECT_STATUS.md** を読んでプロジェクトの状態を把握
-2. **ARCHITECTURE.md** を読んでシステム設計を理解
-3. **DEVELOPMENT_GUIDE.md** を読んで開発方法を学ぶ
-4. **NEXT_STEPS.md** を読んで次のタスクを確認
+1. Read **PROJECT_STATUS.md** to understand the project status
+2. Read **ARCHITECTURE.md** to understand system design
+3. Read **DEVELOPMENT_GUIDE.md** to learn development methods
+4. Read **NEXT_STEPS.md** to check next tasks
 
-### 新しいフェーズを開始する場合
+### When Starting a New Phase
 
-1. **NEXT_STEPS.md** でタスクリストを確認
-2. **IMPLEMENTATION_PLAN.md** で詳細な計画を確認
-3. **DEVELOPMENT_GUIDE.md** で実装方法を確認
-4. 実装開始
+1. Check task list in **NEXT_STEPS.md**
+2. Check detailed plan in **IMPLEMENTATION_PLAN.md**
+3. Check implementation methods in **DEVELOPMENT_GUIDE.md**
+4. Start implementation
 
-### コードレビュー時
+### During Code Review
 
-1. **ARCHITECTURE.md** で設計方針を確認
-2. **DEVELOPMENT_GUIDE.md** でコーディング規約を確認
+1. Check design principles in **ARCHITECTURE.md**
+2. Check coding conventions in **DEVELOPMENT_GUIDE.md**
 
-### トラブルシューティング時
+### During Troubleshooting
 
-1. **DEVELOPMENT_GUIDE.md** のトラブルシューティングセクションを確認
-2. **ARCHITECTURE.md** でシステム構造を確認
+1. Check troubleshooting section in **DEVELOPMENT_GUIDE.md**
+2. Check system structure in **ARCHITECTURE.md**
 
-## ドキュメントの更新
+## Documentation Updates
 
-ドキュメントは常に最新の状態に保つ必要があります。
+Documentation must be kept up to date at all times.
 
-### 更新が必要なタイミング
+### When to Update
 
-| ドキュメント | 更新タイミング |
-|-------------|---------------|
-| PROJECT_STATUS.md | フェーズ完了時 |
-| IMPLEMENTATION_PLAN.md | 計画変更時 |
-| ARCHITECTURE.md | アーキテクチャ変更時 |
-| DEVELOPMENT_GUIDE.md | 開発方法変更時 |
-| NEXT_STEPS.md | フェーズ完了時、タスク完了時 |
+| Document | Update Timing |
+|----------|--------------|
+| PROJECT_STATUS.md | When a phase is completed |
+| IMPLEMENTATION_PLAN.md | When plans change |
+| ARCHITECTURE.md | When architecture changes |
+| DEVELOPMENT_GUIDE.md | When development methods change |
+| NEXT_STEPS.md | When phases or tasks are completed |
 
-### 更新手順
+### Update Procedure
 
-1. ドキュメントを編集
-2. コミットメッセージに「docs:」プレフィックスを付ける
+1. Edit the document
+2. Add "docs:" prefix to the commit message
 
 ```bash
-git commit -m "docs: PROJECT_STATUS.mdを更新（Phase 2完了）"
+git commit -m "docs: update PROJECT_STATUS.md (Phase 2 complete)"
 ```
 
-## フィードバック
+## Feedback
 
-ドキュメントの改善提案があれば、以下の方法で共有してください：
+If you have suggestions for improving documentation, please share them via:
 
-1. GitHubのIssueを作成
-2. Pull Requestを送信
-3. コミットメッセージに記載
+1. Create a GitHub Issue
+2. Submit a Pull Request
+3. Include in commit message
 
-## クイックリファレンス
+## Quick Reference
 
-### プロジェクト情報
+### Project Information
 
-- **プロジェクト名**: gho
-- **説明**: Ghost Admin API CLI
-- **言語**: Go 1.22+
-- **CLI フレームワーク**: Kong
+- **Project Name**: gho
+- **Description**: Ghost Admin API CLI
+- **Language**: Go 1.22+
+- **CLI Framework**: Kong
 
-### ディレクトリ構造
+### Directory Structure
 
 ```
 gho/
-├── cmd/gho/          # エントリーポイント
-├── internal/         # 内部パッケージ
-│   ├── cmd/         # CLIコマンド
-│   ├── config/      # 設定管理
-│   ├── secrets/     # キーリング統合
-│   ├── ghostapi/    # Ghost API
-│   └── outfmt/      # 出力フォーマット
-└── docs/            # ドキュメント
+├── cmd/gho/          # Entry point
+├── internal/         # Internal packages
+│   ├── cmd/         # CLI commands
+│   ├── config/      # Configuration management
+│   ├── secrets/     # Keyring integration
+│   ├── ghostapi/    # Ghost API client
+│   └── outfmt/      # Output formatting
+└── docs/            # Documentation
 ```
 
-### 品質チェックコマンド
+### Quality Check Commands
 
 ```bash
-make test         # テスト実行
-make type-check   # 型チェック
-make lint         # Lint実行
-make build        # ビルド
+make test         # Run tests
+make type-check   # Run type check
+make lint         # Run lint
+make build        # Build
 ```
 
-### 重要なリンク
+### Important Links
 
 - [Ghost Admin API Documentation](https://ghost.org/docs/admin-api/)
 - [Kong CLI Framework](https://github.com/alecthomas/kong)

@@ -1,26 +1,26 @@
-# gho UX改善 - 残りタスク（Phase 4 & 5）
+# gho UX Improvements - Remaining Tasks (Phase 4 & 5)
 
-## 概要
+## Overview
 
-gogcliのUX改善機能をghoに適用するプロジェクトの続きです。Phase 1-3は完了しており、Phase 4-5が残っています。
+Continuation of the project to apply gogcli UX improvement features to gho. Phases 1-3 are complete, with Phases 4-5 remaining.
 
-## 完了済み
+## Completed
 
-- ✅ **Phase 1**: コマンドエイリアス（`gho p list`、`gho t list`など）
-- ✅ **Phase 2**: シェル補完（bash/zsh/fish/powershell対応）
-- ✅ **Phase 3**: カスタムヘルプ（色付け、端末幅調整）
+- ✅ **Phase 1**: Command aliases (`gho p list`, `gho t list`, etc.)
+- ✅ **Phase 2**: Shell completion (bash/zsh/fish/powershell support)
+- ✅ **Phase 3**: Custom help (coloring, terminal width adjustment)
 
-## 残りタスク
+## Remaining Tasks
 
-### Phase 4: エラーメッセージの改善
+### Phase 4: Error Message Improvements
 
-**目的**: ユーザーフレンドリーなエラーメッセージを提供し、解決方法を提示する
+**Purpose**: Provide user-friendly error messages and suggest solutions
 
-**実装内容**:
+**Implementation**:
 
-1. **認証エラーの改善**
-   - 現状: `No API key configured`
-   - 改善後:
+1. **Authentication Error Improvements**
+   - Current: `No API key configured`
+   - Improved:
      ```
      No API key configured for site "myblog".
 
@@ -28,9 +28,9 @@ gogcliのUX改善機能をghoに適用するプロジェクトの続きです。
        gho auth add myblog https://myblog.com
      ```
 
-2. **サイト未指定エラーの改善**
-   - 現状: `No site specified`
-   - 改善後:
+2. **Site Unspecified Error Improvements**
+   - Current: `No site specified`
+   - Improved:
      ```
      No site specified.
 
@@ -38,29 +38,29 @@ gogcliのUX改善機能をghoに適用するプロジェクトの続きです。
        gho config set default_site myblog
      ```
 
-3. **不明なフラグエラーの改善**
-   - 現状: `unknown flag --foo`
-   - 改善後:
+3. **Unknown Flag Error Improvements**
+   - Current: `unknown flag --foo`
+   - Improved:
      ```
      unknown flag --foo
      Run with --help to see available flags
      ```
 
-**変更ファイル**: `internal/errfmt/errfmt.go`
+**Modified Files**: `internal/errfmt/errfmt.go`
 
-**実装手順**:
+**Implementation Steps**:
 
-1. **TDD原則に従う**: まずテストを書いてから実装
-2. `internal/errfmt/errfmt.go`を編集
-3. 以下の関数を追加/修正:
-   - `FormatAuthError(site string) string` - 認証エラーのフォーマット
-   - `FormatSiteError() string` - サイト未指定エラーのフォーマット
-   - `FormatFlagError(flag string) string` - 不明なフラグエラーのフォーマット
+1. **Follow TDD principles**: Write tests before implementation
+2. Edit `internal/errfmt/errfmt.go`
+3. Add/modify the following functions:
+   - `FormatAuthError(site string) string` - Format authentication errors
+   - `FormatSiteError() string` - Format site unspecified errors
+   - `FormatFlagError(flag string) string` - Format unknown flag errors
 
-**参考ファイル**:
+**Reference Files**:
 - `/Users/mtane0412/dev/gogcli/internal/errfmt/errfmt.go`
 
-**テストケース例**:
+**Example Test Cases**:
 ```go
 func TestFormatAuthError(t *testing.T) {
     msg := FormatAuthError("myblog")
@@ -71,21 +71,21 @@ func TestFormatAuthError(t *testing.T) {
 
 ---
 
-### Phase 5: フラグエイリアスの追加
+### Phase 5: Flag Aliases
 
-**目的**: よく使うフラグに短縮形を提供する
+**Purpose**: Provide shorthand for commonly used flags
 
-**実装内容**:
+**Implementation**:
 
-主要なフラグにエイリアスを追加します：
+Add aliases to major flags:
 
-| フラグ | エイリアス | 対象コマンド |
-|--------|-----------|-------------|
-| `--limit` | `--max`, `-n` | list系コマンド |
-| `--filter` | `--where`, `-w` | list系コマンド |
-| `--output` | `--format`, `-o` | 全コマンド（将来用） |
+| Flag | Aliases | Target Commands |
+|------|---------|----------------|
+| `--limit` | `--max`, `-n` | list commands |
+| `--filter` | `--where`, `-w` | list commands |
+| `--output` | `--format`, `-o` | All commands (future) |
 
-**変更ファイル**:
+**Modified Files**:
 - `internal/cmd/posts.go`
 - `internal/cmd/pages.go`
 - `internal/cmd/tags.go`
@@ -95,11 +95,11 @@ func TestFormatAuthError(t *testing.T) {
 - `internal/cmd/tiers.go`
 - `internal/cmd/offers.go`
 
-**実装手順**:
+**Implementation Steps**:
 
-1. **TDD原則に従う**: まずテストを書いてから実装
-2. 各コマンドの`ListCmd`構造体を編集
-3. 例（`internal/cmd/posts.go`）:
+1. **Follow TDD principles**: Write tests before implementation
+2. Edit each command's `ListCmd` structure
+3. Example (`internal/cmd/posts.go`):
    ```go
    // Before
    Limit  int    `name:"limit" help:"Maximum number of posts to return"`
@@ -110,7 +110,7 @@ func TestFormatAuthError(t *testing.T) {
    Filter string `name:"filter" aliases:"where,w" help:"Filter posts"`
    ```
 
-**テストケース例**:
+**Example Test Cases**:
 ```go
 func TestPostsListCmd_LimitAliases(t *testing.T) {
     testCases := []struct {
@@ -137,112 +137,112 @@ func TestPostsListCmd_LimitAliases(t *testing.T) {
 
 ---
 
-## 実装ガイドライン
+## Implementation Guidelines
 
-### TDD原則（厳格に適用）
+### TDD Principles (Strictly Applied)
 
-1. **RED**: 失敗するテストを先に書く
-2. **GREEN**: テストを通す最小限のコードを書く
-3. **REFACTOR**: コードを整理する
+1. **RED**: Write a failing test first
+2. **GREEN**: Write minimal code to make the test pass
+3. **REFACTOR**: Clean up the code
 
-### 品質チェック
+### Quality Checks
 
-実装後、必ず以下を実行してください：
+After implementation, always execute:
 
 ```bash
-# テスト実行
+# Run tests
 make test
 
-# 型チェック
+# Type check
 make type-check
 
 # Lint
 make lint
 
-# ビルド
+# Build
 make build
 ```
 
-### コミットメッセージ
+### Commit Messages
 
-各Phaseごとにコミットを作成してください：
+Create commit for each Phase:
 
 ```bash
 # Phase 4
-git add <変更ファイル>
-git commit -m "feat: エラーメッセージの改善（Phase 4）
+git add <modified files>
+git commit -m "feat: improve error messages (Phase 4)
 
-<変更内容の説明>
+<description of changes>
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 
 # Phase 5
-git add <変更ファイル>
-git commit -m "feat: フラグエイリアスの追加（Phase 5）
+git add <modified files>
+git commit -m "feat: add flag aliases (Phase 5)
 
-<変更内容の説明>
+<description of changes>
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ```
 
-### ブランチ
+### Branch
 
-作業は既存のfeatureブランチで続けてください：
+Continue work on existing feature branch:
 
 ```bash
-# 現在のブランチを確認
+# Check current branch
 git branch --show-current
 # => feature/gogcli-ux-improvements
 
-# このブランチで作業を継続
+# Continue work on this branch
 ```
 
 ---
 
-## 参考情報
+## Reference Information
 
-### 既存の実装（gogcli）
+### Existing Implementation (gogcli)
 
-参考にするべきgogcliのファイル：
-- `/Users/mtane0412/dev/gogcli/internal/errfmt/errfmt.go` - エラーメッセージフォーマット
-- `/Users/mtane0412/dev/gogcli/internal/cmd/root.go` - フラグエイリアスの例
+gogcli files to reference:
+- `/Users/mtane0412/dev/gogcli/internal/errfmt/errfmt.go` - Error message formatting
+- `/Users/mtane0412/dev/gogcli/internal/cmd/root.go` - Flag alias examples
 
-### ghoの現状
+### gho Current Status
 
-- コマンドエイリアス: ✅ 実装済み（`posts` → `post`, `p`）
-- シェル補完: ✅ 実装済み（bash/zsh/fish/powershell）
-- カスタムヘルプ: ✅ 実装済み（色付け、端末幅調整）
-- エラーメッセージ改善: ❌ 未実装
-- フラグエイリアス: ❌ 未実装
+- Command aliases: ✅ Implemented (`posts` → `post`, `p`)
+- Shell completion: ✅ Implemented (bash/zsh/fish/powershell)
+- Custom help: ✅ Implemented (coloring, terminal width adjustment)
+- Error message improvements: ❌ Not implemented
+- Flag aliases: ❌ Not implemented
 
-### 優先度
+### Priority
 
-1. **Phase 5（フラグエイリアス）** - より簡単で影響範囲が小さい
-2. **Phase 4（エラーメッセージ）** - エラーハンドリングの設計が必要
+1. **Phase 5 (Flag Aliases)** - Simpler with smaller scope
+2. **Phase 4 (Error Messages)** - Requires error handling design
 
-Phase 5から始めることを推奨します。
-
----
-
-## 成功基準
-
-- [ ] Phase 4のテストがすべて成功する
-- [ ] Phase 5のテストがすべて成功する
-- [ ] 既存のテストがすべて成功する（回帰テストなし）
-- [ ] `make lint`がエラーなく完了する
-- [ ] `make type-check`がエラーなく完了する
-- [ ] 実際にビルドして動作確認ができる
-- [ ] コミットメッセージが明確で、変更内容が理解できる
+Starting with Phase 5 is recommended.
 
 ---
 
-## 質問・不明点
+## Success Criteria
 
-不明な点があれば、以下を参照してください：
+- [ ] All Phase 4 tests pass
+- [ ] All Phase 5 tests pass
+- [ ] All existing tests pass (no regressions)
+- [ ] `make lint` completes without errors
+- [ ] `make type-check` completes without errors
+- [ ] Can actually build and verify operation
+- [ ] Commit messages are clear and changes understandable
+
+---
+
+## Questions & Unclear Points
+
+For unclear points, refer to:
 
 1. **TDD**: `@rules/tdd.md`
-2. **品質チェック**: `@rules/quality-checks.md`
-3. **Gitワークフロー**: `@rules/git-workflow.md`
-4. **テストコード**: `@rules/testing.md`
+2. **Quality Checks**: `@rules/quality-checks.md`
+3. **Git Workflow**: `@rules/git-workflow.md`
+4. **Test Code**: `@rules/testing.md`
 
-または、ユーザーに質問してください。
+Or ask the user.

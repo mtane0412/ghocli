@@ -1,139 +1,139 @@
-# gho と gogcli の設計統一 - 進捗状況
+# gho and gogcli Design Alignment - Progress Status
 
-## 概要
+## Overview
 
-ghoプロジェクトをgogcliの設計パターンに合わせてリファクタリングするプロジェクトの進捗状況を記録します。
+Records progress of the project to refactor the gho project to align with gogcli design patterns.
 
-## 完了したタスク（高優先度）
+## Completed Tasks (High Priority)
 
-### ✅ タスク1: ExitError型の実装
-**ファイル**: `internal/cmd/exit.go`, `internal/cmd/exit_test.go`
+### ✅ Task 1: ExitError Type Implementation
+**Files**: `internal/cmd/exit.go`, `internal/cmd/exit_test.go`
 
-- 終了コードを管理するExitError型を実装
-- ExitCode関数で適切な終了コードを返却
-- errors.As対応でエラーチェーンに対応
-- テストカバレッジ: 100%
+- Implemented ExitError type to manage exit codes
+- ExitCode function returns appropriate exit codes
+- errors.As support for error chaining
+- Test coverage: 100%
 
-**コミット**: `9f8b4f4` (2026-01-31)
-
----
-
-### ✅ タスク2: outfmtパッケージのcontext対応
-**ファイル**: `internal/outfmt/outfmt.go`, `internal/outfmt/outfmt_test.go`
-
-- Mode構造体（JSON, Plain フラグ）を追加
-- WithMode, IsJSON, IsPlain関数でcontextベースの出力モード管理
-- tableWriter関数でtabwriterの管理を簡潔化
-- 既存のFormatter構造体は互換性のため維持
-
-**コミット**: `9f8b4f4` (2026-01-31)
+**Commit**: `9f8b4f4` (2026-01-31)
 
 ---
 
-### ✅ タスク3: Execute関数の実装
-**ファイル**: `internal/cmd/root.go`, `internal/cmd/root_test.go`
+### ✅ Task 2: Context Support in outfmt Package
+**Files**: `internal/outfmt/outfmt.go`, `internal/outfmt/outfmt_test.go`
 
-- main.goからロジックを分離したExecute関数を実装
-- context初期化、outfmt Mode設定、UI設定を統合
-- ExecuteOptionsでバージョン情報を注入可能
-- Kongパーサーの構築を一元化
+- Added Mode structure (JSON, Plain flags)
+- Context-based output mode management with WithMode, IsJSON, IsPlain functions
+- Simplified tabwriter management with tableWriter function
+- Kept existing Formatter structure for compatibility
 
-**コミット**: `9f8b4f4` (2026-01-31)
-
----
-
-### ✅ タスク4: main.goのリファクタリング
-**ファイル**: `cmd/gho/main.go`
-
-- Execute関数呼び出しのシンプルなエントリーポイントに変更
-- ExitCode関数で適切な終了コードを返却
-- buildVersion関数でバージョン情報を構築
-
-**コミット**: `9f8b4f4` (2026-01-31)
+**Commit**: `9f8b4f4` (2026-01-31)
 
 ---
 
-### ✅ タスク5: 全コマンドのシグネチャ変更
-**ファイル**: `internal/cmd/*.go` (17ファイル)
+### ✅ Task 3: Execute Function Implementation
+**Files**: `internal/cmd/root.go`, `internal/cmd/root_test.go`
 
-- すべてのRun関数を `Run(ctx context.Context, root *RootFlags) error` に統一
-- contextのimportを全ファイルに追加
-- キャンセル処理やタイムアウト制御が可能に
+- Implemented Execute function that separates logic from main.go
+- Integrated context initialization, outfmt Mode setup, and UI configuration
+- Version information injectable via ExecuteOptions
+- Centralized Kong parser construction
 
-**対象ファイル**:
+**Commit**: `9f8b4f4` (2026-01-31)
+
+---
+
+### ✅ Task 4: main.go Refactoring
+**Files**: `cmd/gho/main.go`
+
+- Changed to simple entry point that calls Execute function
+- Returns appropriate exit code with ExitCode function
+- Builds version information with buildVersion function
+
+**Commit**: `9f8b4f4` (2026-01-31)
+
+---
+
+### ✅ Task 5: All Command Signature Changes
+**Files**: `internal/cmd/*.go` (17 files)
+
+- Unified all Run functions to `Run(ctx context.Context, root *RootFlags) error`
+- Added context import to all files
+- Enabled cancellation and timeout control
+
+**Target Files**:
 - auth.go, config.go, images.go, members.go, newsletters.go
 - offers.go, pages.go, posts.go, site.go, tags.go
 - themes.go, tiers.go, users.go, webhooks.go
 
-**コミット**: `9f8b4f4` (2026-01-31)
+**Commit**: `9f8b4f4` (2026-01-31)
 
 ---
 
-### ✅ タスク7: UIパッケージのcontext対応
-**ファイル**: `internal/ui/output.go`, `internal/ui/output_test.go`
+### ✅ Task 7: Context Support in UI Package
+**Files**: `internal/ui/output.go`, `internal/ui/output_test.go`
 
-- WithUI, FromContext関数でcontextベースのUI管理
-- 出力先（stdout/stderr）の分離を維持
-- contextから安全にUIインスタンスを取得可能
+- Context-based UI management with WithUI, FromContext functions
+- Maintains separation of output destinations (stdout/stderr)
+- Safe retrieval of UI instance from context
 
-**コミット**: `9f8b4f4` (2026-01-31)
-
----
-
-## 残りのタスク（中〜低優先度）
-
-### ⏳ タスク6: errfmtパッケージの実装
-**優先度**: 中
-
-**目的**: ユーザーフレンドリーなエラーメッセージを提供
-
-**詳細**: `docs/remaining-tasks-guide.md` の「タスク6」を参照
+**Commit**: `9f8b4f4` (2026-01-31)
 
 ---
 
-### ⏳ タスク8: confirmコマンドのcontext対応
-**優先度**: 中
+## Remaining Tasks (Medium-Low Priority)
 
-**目的**: ExitErrorを返すように修正し、contextからUIインスタンスを取得
+### ⏳ Task 6: errfmt Package Implementation
+**Priority**: Medium
 
-**詳細**: `docs/remaining-tasks-guide.md` の「タスク8」を参照
+**Purpose**: Provide user-friendly error messages
 
----
-
-### ⏳ タスク9: inputパッケージの実装
-**優先度**: 低
-
-**目的**: 入力抽象化を実装し、テスタビリティを向上
-
-**詳細**: `docs/remaining-tasks-guide.md` の「タスク9」を参照
+**Details**: See "Task 6" in `docs/remaining-tasks-guide.md`
 
 ---
 
-## 品質確認
+### ⏳ Task 8: Context Support for confirm Command
+**Priority**: Medium
 
-すべての変更は以下の品質基準をクリアしています：
+**Purpose**: Modify to return ExitError and retrieve UI instance from context
 
-- ✅ **ビルド成功**: `make build`
-- ✅ **全テスト成功**: `make test`
-- ✅ **Lint成功**: `make lint` (0 issues)
-- ✅ **型チェック成功**: `make type-check`
+**Details**: See "Task 8" in `docs/remaining-tasks-guide.md`
 
 ---
 
-## 次のステップ
+### ⏳ Task 9: input Package Implementation
+**Priority**: Low
 
-残りのタスクを実装する場合は、以下の順序を推奨します：
+**Purpose**: Implement input abstraction to improve testability
 
-1. **タスク6 (errfmt)**: エラーメッセージの改善はユーザー体験に直結
-2. **タスク8 (confirm)**: 既存のconfirmコマンドの改善
-3. **タスク9 (input)**: 入力抽象化は最後に実装しても問題なし
-
-詳細な実装ガイドは `docs/remaining-tasks-guide.md` を参照してください。
+**Details**: See "Task 9" in `docs/remaining-tasks-guide.md`
 
 ---
 
-## 参照リソース
+## Quality Verification
 
-- **元の設計差異分析レポート**: プランモードのトランスクリプト参照
-- **gogcliリポジトリ**: 参照実装として利用
-- **実装ガイド**: `docs/remaining-tasks-guide.md`
+All changes meet the following quality standards:
+
+- ✅ **Build Success**: `make build`
+- ✅ **All Tests Pass**: `make test`
+- ✅ **Lint Success**: `make lint` (0 issues)
+- ✅ **Type Check Success**: `make type-check`
+
+---
+
+## Next Steps
+
+If implementing remaining tasks, the following order is recommended:
+
+1. **Task 6 (errfmt)**: Error message improvements directly impact user experience
+2. **Task 8 (confirm)**: Improving existing confirm command
+3. **Task 9 (input)**: Input abstraction can be implemented last without issues
+
+See `docs/remaining-tasks-guide.md` for detailed implementation guide.
+
+---
+
+## Reference Resources
+
+- **Original Design Difference Analysis Report**: See plan mode transcript
+- **gogcli Repository**: Used as reference implementation
+- **Implementation Guide**: `docs/remaining-tasks-guide.md`
