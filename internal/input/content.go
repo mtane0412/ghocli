@@ -2,7 +2,7 @@
  * content.go
  * Content input utility
  *
- * Provides functionality to read content from files, stdin, and inline content
+ * Provides functionality to read content from files and inline content
  */
 
 package input

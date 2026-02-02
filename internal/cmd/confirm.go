@@ -52,7 +52,7 @@ func ConfirmDestructive(ctx context.Context, root *RootFlags, message string) er
 		// Error if UI is not configured (normally does not occur)
 		return &ExitError{
 			Code: 1,
-			Err:  errors.New("UI not configured in context"),
+			Err:  errors.New("ui not configured in context"),
 		}
 	}
 
