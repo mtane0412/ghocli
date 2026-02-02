@@ -18,6 +18,7 @@ import (
 	"github.com/k3a/html2text"
 	"github.com/mtane0412/ghocli/internal/fields"
 	"github.com/mtane0412/ghocli/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/input"
 	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
@@ -239,6 +240,7 @@ type PostsCreateCmd struct {
 	Title   string `help:"Post title" short:"t" required:""`
 	HTML    string `help:"Post content (HTML)" short:"c"`
 	Lexical string `help:"Post content (Lexical JSON)" short:"x"`
+	File    string `help:"Read content from file" type:"existingfile"`
 	Status  string `help:"Post status (draft, published)" default:"draft"`
 }
 
@@ -250,15 +252,39 @@ func (c *PostsCreateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return err
 	}
 
+	// ファイルからHTMLコンテンツを読み込む（指定されている場合）
+	htmlContent := c.HTML
+	if c.File != "" {
+		// ファイルから読み込み
+		fileContent, err := input.ReadContent(c.File, "")
+		if err != nil {
+			return fmt.Errorf("failed to read file: %w", err)
+		}
+		// ファイルから読み込んだ内容をHTMLとして扱う
+		htmlContent = fileContent
+	}
+
 	// Create new post
 	newPost := &ghostapi.Post{
 		Title:   c.Title,
-		HTML:    c.HTML,
+		HTML:    htmlContent,
 		Lexical: c.Lexical,
 		Status:  c.Status,
 	}
 
-	createdPost, err := client.CreatePost(newPost)
+	// HTMLコンテンツが指定されている場合は、自動的にsource=htmlを適用
+	var createdPost *ghostapi.Post
+	if htmlContent != "" && c.Lexical == "" {
+		// HTMLをサーバー側でLexical形式に変換
+		opts := ghostapi.CreateOptions{
+			Source: "html",
+		}
+		createdPost, err = client.CreatePostWithOptions(newPost, opts)
+	} else {
+		// Lexical形式またはコンテンツなしの場合は通常の作成
+		createdPost, err = client.CreatePost(newPost)
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to create post: %w", err)
 	}
@@ -285,6 +311,7 @@ type PostsUpdateCmd struct {
 	Title   string `help:"Post title" short:"t"`
 	HTML    string `help:"Post content (HTML)" short:"c"`
 	Lexical string `help:"Post content (Lexical JSON)" short:"x"`
+	File    string `help:"Read content from file" type:"existingfile"`
 	Status  string `help:"Post status (draft, published)"`
 }
 
@@ -302,6 +329,18 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		return fmt.Errorf("failed to get post: %w", err)
 	}
 
+	// ファイルからHTMLコンテンツを読み込む（指定されている場合）
+	htmlContent := c.HTML
+	if c.File != "" {
+		// ファイルから読み込み
+		fileContent, err := input.ReadContent(c.File, "")
+		if err != nil {
+			return fmt.Errorf("failed to read file: %w", err)
+		}
+		// ファイルから読み込んだ内容をHTMLとして扱う
+		htmlContent = fileContent
+	}
+
 	// Apply updates
 	updatePost := &ghostapi.Post{
 		Title:     existingPost.Title,
@@ -315,8 +354,8 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 	if c.Title != "" {
 		updatePost.Title = c.Title
 	}
-	if c.HTML != "" {
-		updatePost.HTML = c.HTML
+	if htmlContent != "" {
+		updatePost.HTML = htmlContent
 	}
 	if c.Lexical != "" {
 		updatePost.Lexical = c.Lexical
@@ -325,8 +364,19 @@ func (c *PostsUpdateCmd) Run(ctx context.Context, root *RootFlags) error {
 		updatePost.Status = c.Status
 	}
 
-	// Update post
-	updatedPost, err := client.UpdatePost(c.ID, updatePost)
+	// HTMLコンテンツが更新される場合は、自動的にsource=htmlを適用
+	var updatedPost *ghostapi.Post
+	if htmlContent != "" && c.Lexical == "" {
+		// HTMLをサーバー側でLexical形式に変換
+		opts := ghostapi.CreateOptions{
+			Source: "html",
+		}
+		updatedPost, err = client.UpdatePostWithOptions(c.ID, updatePost, opts)
+	} else {
+		// Lexical形式またはHTMLの更新なしの場合は通常の更新
+		updatedPost, err = client.UpdatePost(c.ID, updatePost)
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to update post: %w", err)
 	}

@@ -86,6 +86,11 @@ type ListOptions struct {
 	Include string // Additional information to include (tags, authors, etc.)
 }
 
+// CreateOptions contains options for creating/updating posts
+type CreateOptions struct {
+	Source string // "html" for server-side HTML-to-Lexical conversion
+}
+
 // PostListResponse represents a post list response
 type PostListResponse struct {
 	Posts []Post `json:"posts"`
@@ -172,6 +177,11 @@ func (c *Client) GetPost(idOrSlug string) (*Post, error) {
 
 // CreatePost creates a new post
 func (c *Client) CreatePost(post *Post) (*Post, error) {
+	return c.CreatePostWithOptions(post, CreateOptions{})
+}
+
+// CreatePostWithOptions creates a new post with options
+func (c *Client) CreatePostWithOptions(post *Post, opts CreateOptions) (*Post, error) {
 	path := "/ghost/api/admin/posts/"
 
 	// Create request body
@@ -183,8 +193,18 @@ func (c *Client) CreatePost(post *Post) (*Post, error) {
 		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
+	// Build request options
+	var reqOpts *RequestOptions
+	if opts.Source != "" {
+		reqOpts = &RequestOptions{
+			QueryParams: map[string]string{
+				"source": opts.Source,
+			},
+		}
+	}
+
 	// Execute request
-	respBody, err := c.doRequest("POST", path, bytes.NewReader(jsonData))
+	respBody, err := c.doRequestWithOptions("POST", path, bytes.NewReader(jsonData), reqOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -206,6 +226,11 @@ func (c *Client) CreatePost(post *Post) (*Post, error) {
 
 // UpdatePost updates a post
 func (c *Client) UpdatePost(id string, post *Post) (*Post, error) {
+	return c.UpdatePostWithOptions(id, post, CreateOptions{})
+}
+
+// UpdatePostWithOptions updates a post with options
+func (c *Client) UpdatePostWithOptions(id string, post *Post, opts CreateOptions) (*Post, error) {
 	path := fmt.Sprintf("/ghost/api/admin/posts/%s/", id)
 
 	// Create request body
@@ -217,8 +242,18 @@ func (c *Client) UpdatePost(id string, post *Post) (*Post, error) {
 		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
+	// Build request options
+	var reqOpts *RequestOptions
+	if opts.Source != "" {
+		reqOpts = &RequestOptions{
+			QueryParams: map[string]string{
+				"source": opts.Source,
+			},
+		}
+	}
+
 	// Execute request
-	respBody, err := c.doRequest("PUT", path, bytes.NewReader(jsonData))
+	respBody, err := c.doRequestWithOptions("PUT", path, bytes.NewReader(jsonData), reqOpts)
 	if err != nil {
 		return nil, err
 	}

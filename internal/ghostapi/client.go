@@ -71,6 +71,16 @@ func NewClient(baseURL, keyID, secret string) (*Client, error) {
 
 // doRequest executes an HTTP request and returns the response body.
 func (c *Client) doRequest(method, path string, body io.Reader) ([]byte, error) {
+	return c.doRequestWithOptions(method, path, body, nil)
+}
+
+// RequestOptions contains optional parameters for requests
+type RequestOptions struct {
+	QueryParams map[string]string
+}
+
+// doRequestWithOptions executes an HTTP request with optional parameters and returns the response body.
+func (c *Client) doRequestWithOptions(method, path string, body io.Reader, opts *RequestOptions) ([]byte, error) {
 	// Generate JWT token
 	token, err := GenerateJWT(c.keyID, c.secret)
 	if err != nil {
@@ -79,6 +89,24 @@ func (c *Client) doRequest(method, path string, body io.Reader) ([]byte, error) 
 
 	// Build request URL
 	url := c.baseURL + path
+
+	// Add query parameters if provided
+	if opts != nil && len(opts.QueryParams) > 0 {
+		params := []string{}
+		for key, val := range opts.QueryParams {
+			if val != "" {
+				params = append(params, fmt.Sprintf("%s=%s", key, val))
+			}
+		}
+		if len(params) > 0 {
+			// URLにクエリパラメータが既に含まれているかチェック
+			if strings.Contains(url, "?") {
+				url += "&" + strings.Join(params, "&")
+			} else {
+				url += "?" + strings.Join(params, "&")
+			}
+		}
+	}
 
 	// Create HTTP request
 	req, err := http.NewRequest(method, url, body)

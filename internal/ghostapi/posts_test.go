@@ -504,3 +504,231 @@ func TestDeletePost_投稿の削除(t *testing.T) {
 		t.Fatalf("投稿の削除に失敗: %v", err)
 	}
 }
+
+// TestCreatePostWithOptions_HTMLソースパラメータ付きで投稿を作成
+func TestCreatePostWithOptions_HTMLソースパラメータ付きで投稿を作成(t *testing.T) {
+	// Create test HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		if r.URL.Path != "/ghost/api/admin/posts/" {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/posts/")
+		}
+		if r.Method != "POST" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "POST")
+		}
+
+		// クエリパラメータの検証
+		sourceParam := r.URL.Query().Get("source")
+		if sourceParam != "html" {
+			t.Errorf("sourceパラメータ = %q; want %q", sourceParam, "html")
+		}
+
+		// リクエストボディの検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+		}
+		posts := reqBody["posts"].([]interface{})
+		post := posts[0].(map[string]interface{})
+		if post["title"] != "HTML投稿" {
+			t.Errorf("Title = %q; want %q", post["title"], "HTML投稿")
+		}
+		if post["html"] != "<p>HTMLコンテンツ</p>" {
+			t.Errorf("HTML = %q; want %q", post["html"], "<p>HTMLコンテンツ</p>")
+		}
+
+		// レスポンスを返す（サーバー側でLexical形式に変換された想定）
+		response := map[string]interface{}{
+			"posts": []map[string]interface{}{
+				{
+					"id":         "64fac5417c4c6b0001234569",
+					"title":      "HTML投稿",
+					"slug":       "html-post",
+					"html":       "<p>HTMLコンテンツ</p>",
+					"lexical":    `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"HTMLコンテンツ","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+					"status":     "draft",
+					"created_at": time.Now().Format(time.RFC3339),
+					"updated_at": time.Now().Format(time.RFC3339),
+				},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// HTML投稿を作成（source=htmlオプション付き）
+	newPost := &Post{
+		Title:  "HTML投稿",
+		HTML:   "<p>HTMLコンテンツ</p>",
+		Status: "draft",
+	}
+	opts := CreateOptions{
+		Source: "html",
+	}
+	createdPost, err := client.CreatePostWithOptions(newPost, opts)
+	if err != nil {
+		t.Fatalf("投稿の作成に失敗: %v", err)
+	}
+
+	// レスポンスの検証
+	if createdPost.Title != "HTML投稿" {
+		t.Errorf("Title = %q; want %q", createdPost.Title, "HTML投稿")
+	}
+	if createdPost.HTML != "<p>HTMLコンテンツ</p>" {
+		t.Errorf("HTML = %q; want %q", createdPost.HTML, "<p>HTMLコンテンツ</p>")
+	}
+	// Lexical形式が設定されていることを確認
+	if createdPost.Lexical == "" {
+		t.Error("Lexicalが空です（サーバー側で変換されるべき）")
+	}
+}
+
+// TestCreatePostWithOptions_ソースパラメータなしで後方互換性を保持
+func TestCreatePostWithOptions_ソースパラメータなしで後方互換性を保持(t *testing.T) {
+	// Create test HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		if r.URL.Path != "/ghost/api/admin/posts/" {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, "/ghost/api/admin/posts/")
+		}
+
+		// クエリパラメータが存在しないことを確認
+		sourceParam := r.URL.Query().Get("source")
+		if sourceParam != "" {
+			t.Errorf("sourceパラメータが存在してはいけない; got %q", sourceParam)
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"posts": []map[string]interface{}{
+				{
+					"id":         "64fac5417c4c6b0001234569",
+					"title":      "通常投稿",
+					"slug":       "normal-post",
+					"status":     "draft",
+					"created_at": time.Now().Format(time.RFC3339),
+					"updated_at": time.Now().Format(time.RFC3339),
+				},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// 通常の投稿を作成（ソースパラメータなし）
+	newPost := &Post{
+		Title:  "通常投稿",
+		Status: "draft",
+	}
+	opts := CreateOptions{} // Sourceは空文字列
+	createdPost, err := client.CreatePostWithOptions(newPost, opts)
+	if err != nil {
+		t.Fatalf("投稿の作成に失敗: %v", err)
+	}
+
+	// レスポンスの検証
+	if createdPost.Title != "通常投稿" {
+		t.Errorf("Title = %q; want %q", createdPost.Title, "通常投稿")
+	}
+}
+
+// TestUpdatePostWithOptions_HTMLソースパラメータ付きで投稿を更新
+func TestUpdatePostWithOptions_HTMLソースパラメータ付きで投稿を更新(t *testing.T) {
+	postID := "64fac5417c4c6b0001234567"
+
+	// Create test HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// リクエストの検証
+		expectedPath := "/ghost/api/admin/posts/" + postID + "/"
+		if r.URL.Path != expectedPath {
+			t.Errorf("リクエストパス = %q; want %q", r.URL.Path, expectedPath)
+		}
+		if r.Method != "PUT" {
+			t.Errorf("HTTPメソッド = %q; want %q", r.Method, "PUT")
+		}
+
+		// クエリパラメータの検証
+		sourceParam := r.URL.Query().Get("source")
+		if sourceParam != "html" {
+			t.Errorf("sourceパラメータ = %q; want %q", sourceParam, "html")
+		}
+
+		// リクエストボディの検証
+		var reqBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("リクエストボディの読み込みに失敗: %v", err)
+		}
+		posts := reqBody["posts"].([]interface{})
+		post := posts[0].(map[string]interface{})
+		if post["html"] != "<p>更新されたHTMLコンテンツ</p>" {
+			t.Errorf("HTML = %q; want %q", post["html"], "<p>更新されたHTMLコンテンツ</p>")
+		}
+
+		// レスポンスを返す
+		response := map[string]interface{}{
+			"posts": []map[string]interface{}{
+				{
+					"id":         postID,
+					"title":      "更新された投稿",
+					"slug":       "updated-post",
+					"html":       "<p>更新されたHTMLコンテンツ</p>",
+					"lexical":    `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"更新されたHTMLコンテンツ","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+					"status":     "published",
+					"created_at": "2024-01-15T10:00:00.000Z",
+					"updated_at": time.Now().Format(time.RFC3339),
+				},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// クライアントを作成
+	client, err := NewClient(server.URL, "keyid", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatalf("クライアントの作成に失敗: %v", err)
+	}
+
+	// 投稿を更新（source=htmlオプション付き）
+	updatePost := &Post{
+		Title:  "更新された投稿",
+		HTML:   "<p>更新されたHTMLコンテンツ</p>",
+		Status: "published",
+	}
+	opts := CreateOptions{
+		Source: "html",
+	}
+	updatedPost, err := client.UpdatePostWithOptions(postID, updatePost, opts)
+	if err != nil {
+		t.Fatalf("投稿の更新に失敗: %v", err)
+	}
+
+	// レスポンスの検証
+	if updatedPost.ID != postID {
+		t.Errorf("ID = %q; want %q", updatedPost.ID, postID)
+	}
+	if updatedPost.HTML != "<p>更新されたHTMLコンテンツ</p>" {
+		t.Errorf("HTML = %q; want %q", updatedPost.HTML, "<p>更新されたHTMLコンテンツ</p>")
+	}
+	// Lexical形式が設定されていることを確認
+	if updatedPost.Lexical == "" {
+		t.Error("Lexicalが空です（サーバー側で変換されるべき）")
+	}
+}
