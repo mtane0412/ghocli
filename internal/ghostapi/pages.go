@@ -164,6 +164,19 @@ func (c *Client) GetPage(idOrSlug string) (*Page, error) {
 
 // CreatePage creates a new page
 func (c *Client) CreatePage(page *Page) (*Page, error) {
+	return c.CreatePageWithOptions(page, CreateOptions{})
+}
+
+// CreatePageWithOptions creates a new page with options
+//
+// 引数:
+//   - page: 作成するページのデータ
+//   - opts: 作成オプション（source="html"でHTML→Lexical変換）
+//
+// 戻り値:
+//   - *Page: 作成されたページ
+//   - error: エラー
+func (c *Client) CreatePageWithOptions(page *Page, opts CreateOptions) (*Page, error) {
 	path := "/ghost/api/admin/pages/"
 
 	// Create request body
@@ -175,8 +188,18 @@ func (c *Client) CreatePage(page *Page) (*Page, error) {
 		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
+	// Build request options
+	var reqOpts *RequestOptions
+	if opts.Source != "" {
+		reqOpts = &RequestOptions{
+			QueryParams: map[string]string{
+				"source": opts.Source,
+			},
+		}
+	}
+
 	// Execute request
-	respBody, err := c.doRequest("POST", path, bytes.NewReader(jsonData))
+	respBody, err := c.doRequestWithOptions("POST", path, bytes.NewReader(jsonData), reqOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -198,6 +221,20 @@ func (c *Client) CreatePage(page *Page) (*Page, error) {
 
 // UpdatePage updates a page
 func (c *Client) UpdatePage(id string, page *Page) (*Page, error) {
+	return c.UpdatePageWithOptions(id, page, CreateOptions{})
+}
+
+// UpdatePageWithOptions updates a page with options
+//
+// 引数:
+//   - id: 更新するページのID
+//   - page: 更新するページのデータ
+//   - opts: 更新オプション（source="html"でHTML→Lexical変換）
+//
+// 戻り値:
+//   - *Page: 更新されたページ
+//   - error: エラー
+func (c *Client) UpdatePageWithOptions(id string, page *Page, opts CreateOptions) (*Page, error) {
 	path := fmt.Sprintf("/ghost/api/admin/pages/%s/", id)
 
 	// Create request body
@@ -209,8 +246,18 @@ func (c *Client) UpdatePage(id string, page *Page) (*Page, error) {
 		return nil, fmt.Errorf("failed to create request body: %w", err)
 	}
 
+	// Build request options
+	var reqOpts *RequestOptions
+	if opts.Source != "" {
+		reqOpts = &RequestOptions{
+			QueryParams: map[string]string{
+				"source": opts.Source,
+			},
+		}
+	}
+
 	// Execute request
-	respBody, err := c.doRequest("PUT", path, bytes.NewReader(jsonData))
+	respBody, err := c.doRequestWithOptions("PUT", path, bytes.NewReader(jsonData), reqOpts)
 	if err != nil {
 		return nil, err
 	}
