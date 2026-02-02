@@ -9,7 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mtane0412/gho/internal/errfmt"
+	"github.com/mtane0412/ghocli/internal/errfmt"
 )
 
 // TestFormat_NilError は、nilエラーの場合に空文字を返すことを検証する

@@ -14,8 +14,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mtane0412/gho/internal/ghostapi"
-	"github.com/mtane0412/gho/internal/outfmt"
+	"github.com/mtane0412/ghocli/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/outfmt"
 )
 
 // TiersCmd はティア管理コマンドです

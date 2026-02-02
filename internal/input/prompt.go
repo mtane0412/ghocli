@@ -12,7 +12,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/mtane0412/gho/internal/ui"
+	"github.com/mtane0412/ghocli/internal/ui"
 )
 
 // PromptLine reads a single line of input from os.Stdin

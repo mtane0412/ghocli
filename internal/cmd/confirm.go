@@ -17,8 +17,8 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/mtane0412/gho/internal/input"
-	"github.com/mtane0412/gho/internal/ui"
+	"github.com/mtane0412/ghocli/internal/input"
+	"github.com/mtane0412/ghocli/internal/ui"
 )
 
 // ConfirmDestructive は破壊的操作の実行前にユーザー確認を行います

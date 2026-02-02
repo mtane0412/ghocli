@@ -1,0 +1,47 @@
+# GitHub Actions ワークフロー
+# ghoコマンドのリリース自動化とHomebrew tap更新
+
+name: Release
+
+on:
+  push:
+    # v*タグがプッシュされたときにトリガー（例: v0.1.0, v1.2.3）
+    tags:
+      - 'v*'
+
+permissions:
+  # リリースの作成に必要な権限
+  contents: write
+  # Homebrewリポジトリへのプッシュに必要な権限
+  packages: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリをチェックアウト
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # 完全な履歴を取得（changelogに必要）
+          fetch-depth: 0
+
+      # Goのセットアップ
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      # GoReleaserの実行
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          # GoReleaserのバージョン（最新を使用）
+          version: '~> v2'
+          # GoReleaserコマンド（releaseを実行）
+          args: release --clean
+        env:
+          # GitHubトークン（リリース作成に使用）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Homebrew tapトークン（tapリポジトリへのプッシュに使用）
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

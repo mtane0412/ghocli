@@ -1,0 +1,121 @@
+# GoReleaser設定ファイル
+# ghoコマンドのクロスプラットフォームビルドとHomebrew tap対応
+
+version: 2
+
+before:
+  hooks:
+    # 依存関係を確認
+    - go mod tidy
+    # テストを実行
+    - go test ./...
+
+builds:
+  - id: gho
+    # メインパッケージのパス
+    main: ./cmd/gho
+    # バイナリ名
+    binary: gho
+    # ビルド対象のOS・アーキテクチャ
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Windows on ARM64は現状サポート対象外
+    ignore:
+      - goos: windows
+        goarch: arm64
+    # バージョン情報をldflagsで埋め込む
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - id: gho-archive
+    format: tar.gz
+    # Windowsはzip形式
+    format_overrides:
+      - goos: windows
+        format: zip
+    # アーカイブ名のフォーマット
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - LICENSE*
+      - README*
+      - CHANGELOG*
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+
+# Homebrew tap設定
+brews:
+  - # tapリポジトリ
+    repository:
+      owner: mtane0412
+      name: homebrew-ghocli
+      # Personal Access Tokenを環境変数から取得
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+
+    # コミット情報
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+
+    # formulaの配置ディレクトリ（tapのルートに配置）
+    folder: Formula
+
+    # 説明
+    description: "Ghost Admin API CLI Tool"
+
+    # ホームページ
+    homepage: "https://github.com/mtane0412/ghocli"
+
+    # ライセンス
+    license: "MIT"
+
+    # テスト
+    test: |
+      system "#{bin}/gho", "version"
+
+    # インストール定義
+    install: |
+      bin.install "gho"
+
+# GitHubリリース設定
+release:
+  github:
+    owner: mtane0412
+    name: ghocli
+
+  # リリースノートの生成
+  draft: false
+  prerelease: auto
+
+  # リリース名のフォーマット
+  name_template: "{{.ProjectName}} v{{.Version}}"

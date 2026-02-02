@@ -10,7 +10,7 @@ package main
 import (
 	"os"
 
-	"github.com/mtane0412/gho/internal/cmd"
+	"github.com/mtane0412/ghocli/internal/cmd"
 )
 
 var (

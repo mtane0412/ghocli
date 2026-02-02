@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtane0412/gho/internal/input"
-	"github.com/mtane0412/gho/internal/ui"
+	"github.com/mtane0412/ghocli/internal/input"
+	"github.com/mtane0412/ghocli/internal/ui"
 )
 
 // TestPromptLineFrom は、io.Readerから入力を読み取るPromptLineFrom関数のテスト

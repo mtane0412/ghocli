@@ -10,7 +10,7 @@ package outfmt
 import (
 	"strings"
 
-	"github.com/mtane0412/gho/internal/ghostapi"
+	"github.com/mtane0412/ghocli/internal/ghostapi"
 )
 
 // FormatAuthors は著者一覧を名前のカンマ区切りにフォーマットします

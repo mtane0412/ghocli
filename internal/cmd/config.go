@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mtane0412/gho/internal/config"
+	"github.com/mtane0412/ghocli/internal/config"
 )
 
 // ConfigCmd is the root command for configuration management
